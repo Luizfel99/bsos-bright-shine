@@ -1446,9 +1446,7 @@
                 },
 
                 clearAll: function() {
-                    if (confirm('⚠️ ATENÇÃO: Isso apagará TODOS os dados!
-
-Tem certeza?')) {
+                    if (confirm('⚠️ ATENÇÃO: Isso apagará TODOS os dados!\n\nTem certeza?')) {
                         if (confirm('Confirmação final: Esta ação não pode ser desfeita.')) {
                             localStorage.removeItem(app.config.storageKey);
                             location.reload();
