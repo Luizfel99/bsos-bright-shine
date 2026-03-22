@@ -1052,264 +1052,271 @@ ${g.jobs.map(j => `• ${j.house} (${j.hours}h)`).join('
             },
 
             // NOVO: Controle de Semanas
-            weeks: {
-                currentWeekId: null,
+      weeks: {
+    currentWeekId: null,
 
-                getWeekId: function(date = new Date()) {
-                    // Cria ID único para a semana (ano-semana)
-                    const d = new Date(date);
-                    d.setHours(0, 0, 0, 0);
-                    // Ajusta para domingo (início da semana)
-                    const day = d.getDay();
-                    const diff = d.getDate() - day;
-                    const sunday = new Date(d.setDate(diff));
-                    return `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
-                },
+    getWeekId: function(date = new Date()) {
+        // Cria ID baseado no domingo da semana (início da semana de trabalho)
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        const day = d.getDay(); // 0=Domingo, 6=Sábado
+        const diff = d.getDate() - day; // Volta para o domingo
+        const sunday = new Date(d.setDate(diff));
+        return `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
+    },
 
-                getWeekRange: function(weekId) {
-                    const start = new Date(weekId);
-                    const end = new Date(start);
-                    end.setDate(end.getDate() + 6);
-                    end.setHours(23, 59, 59, 999);
-                    return { start, end };
-                },
+    getWeekRange: function(weekId) {
+        const start = new Date(weekId); // Domingo 00:00
+        const end = new Date(start);
+        end.setDate(end.getDate() + 6); // Sábado
+        end.setHours(23, 59, 59, 999); // Sábado 23:59:59
+        return { start, end };
+    },
 
-                getCurrentWeekJobs: function() {
-                    const weekId = this.getWeekId();
-                    return app.data.jobs.filter(j => j.weekId === weekId || (!j.weekId && this.isInCurrentWeek(j.date)));
-                },
+    getCurrentWeekJobs: function() {
+        const weekId = this.getWeekId();
+        return app.data.jobs.filter(j => j.weekId === weekId || (!j.weekId && this.isInCurrentWeek(j.date)));
+    },
 
-                isInCurrentWeek: function(dateStr) {
-                    const date = new Date(dateStr);
-                    const weekId = this.getWeekId();
-                    const range = this.getWeekRange(weekId);
-                    return date >= range.start && date <= range.end;
-                },
+    isInCurrentWeek: function(dateStr) {
+        const date = new Date(dateStr);
+        const weekId = this.getWeekId();
+        const range = this.getWeekRange(weekId);
+        return date >= range.start && date <= range.end;
+    },
 
-                closeWeek: async function() {
-                    const weekId = this.getWeekId();
-                    const weekJobs = this.getCurrentWeekJobs();
+    closeWeek: async function() {
+        const weekId = this.getWeekId();
+        const weekJobs = this.getCurrentWeekJobs();
 
-                    if (weekJobs.length === 0) {
-                        app.ui.showToast('⚠️ Nenhum trabalho nesta semana para fechar!', 'warning');
-                        return;
+        if (weekJobs.length === 0) {
+            app.ui.showToast('⚠️ ' + app.i18n.t('no_jobs_week'), 'warning');
+            return;
+        }
+
+        // Calcula totais (de domingo a sábado)
+        const totals = {};
+        weekJobs.forEach(j => {
+            if (!totals[j.employeeId]) {
+                totals[j.employeeId] = { name: j.employeeName, hours: 0, total: 0 };
+            }
+            totals[j.employeeId].hours += j.hours;
+            totals[j.employeeId].total += j.total;
+        });
+
+        // Mostra resumo da semana (Domingo a Sábado)
+        const range = this.getWeekRange(weekId);
+        let reportHtml = `<h3>📊 ${app.i18n.t('close_week')} - ${weekId}</h3>`;
+        reportHtml += `<div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: center; font-size: 0.9rem;">`;
+        reportHtml += `📅 ${range.start.toLocaleDateString()} (Sun) → ${range.end.toLocaleDateString()} (Sat)`;
+        reportHtml += `</div>`;
+        
+        reportHtml += `<div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px; margin: 20px 0; text-align: center;">`;
+        reportHtml += `<div style="font-size: 2rem; font-weight: 700;">${weekJobs.length} ${app.i18n.t('houses_stat')}</div>`;
+        reportHtml += `<div style="font-size: 1.2rem;">${weekJobs.reduce((s, j) => s + j.hours, 0).toFixed(1)}h | $${weekJobs.reduce((s, j) => s + j.total, 0).toFixed(2)}</div>`;
+        reportHtml += `</div>`;
+
+        reportHtml += `<h4>💰 ${app.i18n.t('payment_summary')}:</h4>`;
+        Object.values(totals).forEach(t => {
+            reportHtml += `<div style="display: flex; justify-content: space-between; padding: 15px; background: #f0f0f0; border-radius: 8px; margin-bottom: 10px;">`;
+            reportHtml += `<div><strong>${t.name}</strong><br><small>${t.hours.toFixed(1)} hours</small></div>`;
+            reportHtml += `<div style="font-size: 1.3rem; font-weight: 700; color: #00C853;">$${t.total.toFixed(2)}</div>`;
+            reportHtml += `</div>`;
+        });
+
+        reportHtml += `<div style="margin-top: 20px; padding: 20px; background: #FFF3E0; border-radius: 12px; border-left: 4px solid #FF9800;">`;
+        reportHtml += `<p>⚠️ <strong>${app.i18n.t('attention')}:</strong> ${app.i18n.t('week_close_msg')}</p>`;
+        reportHtml += `</div>`;
+
+        reportHtml += `<div style="display: flex; gap: 10px; margin-top: 20px;">`;
+        reportHtml += `<button class="btn btn-secondary" onclick="app.modals.close()" style="flex: 1;">${app.i18n.t('cancel')}</button>`;
+        reportHtml += `<button class="btn btn-success" onclick="app.weeks.confirmCloseWeek()" style="flex: 1;">✅ ${app.i18n.t('close_week')}</button>`;
+        reportHtml += `</div>`;
+
+        app.data.pendingWeekClose = { weekId, weekJobs, totals };
+        app.modals.show(app.i18n.t('close_week'), reportHtml);
+    },
+
+    confirmCloseWeek: async function() {
+        if (!app.data.pendingWeekClose) return;
+
+        const { weekId, weekJobs, totals } = app.data.pendingWeekClose;
+
+        try {
+            // Marca trabalhos como fechados (período domingo-sábado completo)
+            weekJobs.forEach(j => {
+                j.weekId = weekId;
+                j.status = 'closed';
+                j.closedAt = new Date().toISOString();
+            });
+
+            // Salva no Firebase
+            if (app.data.isOnline) {
+                const batch = db.batch();
+                weekJobs.forEach(job => {
+                    const ref = db.collection('jobs').doc(String(job.id));
+                    batch.update(ref, { weekId: weekId, status: 'closed', closedAt: job.closedAt });
+                });
+                await batch.commit();
+
+                await db.collection('weeks').doc(weekId).set({
+                    weekId: weekId,
+                    weekRange: {
+                        start: app.weeks.getWeekRange(weekId).start.toISOString(),
+                        end: app.weeks.getWeekRange(weekId).end.toISOString()
+                    },
+                    closedAt: new Date().toISOString(),
+                    totalJobs: weekJobs.length,
+                    totalHours: weekJobs.reduce((s, j) => s + j.hours, 0),
+                    totalAmount: weekJobs.reduce((s, j) => s + j.total, 0),
+                    employeeTotals: totals,
+                    jobs: weekJobs.map(j => j.id)
+                });
+            }
+
+            app.dataManager.save();
+            app.modals.close();
+            app.ui.showToast('✅ ' + app.i18n.t('closed_success'));
+
+            app.data.currentFilter = 'today';
+            app.renderAll();
+
+            setTimeout(() => {
+                app.ui.showToast('📅 ' + app.i18n.t('new_week_started'), 'success');
+            }, 2000);
+
+        } catch (error) {
+            console.error('Error closing week:', error);
+            app.ui.showToast('❌ Error closing week', 'error');
+        }
+
+        app.data.pendingWeekClose = null;
+    },
+
+    showWeekHistory: async function() {
+        app.modals.show(app.i18n.t('history'), '<div id="weekHistoryContent"><div class="loader"></div> Loading...</div>');
+
+        try {
+            let weeks = [];
+
+            if (app.data.isOnline) {
+                const snapshot = await db.collection('weeks').orderBy('closedAt', 'desc').get();
+                weeks = snapshot.docs.map(doc => doc.data());
+            } else {
+                const closedJobs = app.data.jobs.filter(j => j.status === 'closed' && j.weekId);
+                const weekMap = {};
+                closedJobs.forEach(j => {
+                    if (!weekMap[j.weekId]) {
+                        weekMap[j.weekId] = { 
+                            weekId: j.weekId, 
+                            jobs: [], 
+                            totalHours: 0, 
+                            totalAmount: 0,
+                            weekRange: app.weeks.getWeekRange(j.weekId)
+                        };
                     }
+                    weekMap[j.weekId].jobs.push(j);
+                    weekMap[j.weekId].totalHours += j.hours;
+                    weekMap[j.weekId].totalAmount += j.total;
+                });
+                weeks = Object.values(weekMap);
+            }
 
-                    // Calcula totais
-                    const totals = {};
-                    weekJobs.forEach(j => {
-                        if (!totals[j.employeeId]) {
-                            totals[j.employeeId] = { name: j.employeeName, hours: 0, total: 0 };
-                        }
-                        totals[j.employeeId].hours += j.hours;
-                        totals[j.employeeId].total += j.total;
+            if (weeks.length === 0) {
+                document.getElementById('weekHistoryContent').innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No closed weeks yet.</p>';
+                return;
+            }
+
+            let html = '<div style="max-height: 60vh; overflow-y: auto;">';
+            weeks.forEach(w => {
+                const range = w.weekRange || app.weeks.getWeekRange(w.weekId);
+                const start = new Date(range.start);
+                const end = new Date(range.end);
+                
+                html += `<div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">`;
+                html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">`;
+                html += `<div><div style="font-weight: 700; font-size: 1.1rem;">Week: ${w.weekId}</div>`;
+                html += `<div style="font-size: 0.8rem; color: #666;">${start.toLocaleDateString()} (Sun) - ${end.toLocaleDateString()} (Sat)</div></div>`;
+                html += `<div style="background: #00C853; color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem;">Closed ✓</div>`;
+                html += `</div>`;
+                
+                html += `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; margin-bottom: 15px;">`;
+                html += `<div style="background: #f0f0f0; padding: 10px; border-radius: 8px;"><div style="font-weight: 700;">${w.totalJobs || w.jobs?.length || 0}</div><div style="font-size: 0.75rem; color: #666;">${app.i18n.t('houses_stat')}</div></div>`;
+                html += `<div style="background: #f0f0f0; padding: 10px; border-radius: 8px;"><div style="font-weight: 700;">${(w.totalHours || 0).toFixed(1)}h</div><div style="font-size: 0.75rem; color: #666;">${app.i18n.t('hours_stat')}</div></div>`;
+                html += `<div style="background: #f0f0f0; padding: 10px; border-radius: 8px;"><div style="font-weight: 700; color: #00C853;">$${(w.totalAmount || 0).toFixed(0)}</div><div style="font-size: 0.75rem; color: #666;">Total</div></div>`;
+                html += `</div>`;
+                
+                if (w.employeeTotals) {
+                    html += `<div style="border-top: 1px solid #e0e0e0; padding-top: 10px;">`;
+                    Object.values(w.employeeTotals).forEach(emp => {
+                        html += `<div style="display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.9rem;">`;
+                        html += `<span>${emp.name}</span><span style="font-weight: 600;">$${emp.total.toFixed(2)}</span>`;
+                        html += `</div>`;
                     });
-
-                    // Gera relatório de fechamento
-                    let reportHtml = `<h3>📊 Fechamento Semanal - ${weekId}</h3>`;
-                    reportHtml += `<div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px; margin: 20px 0; text-align: center;">`;
-                    reportHtml += `<div style="font-size: 2rem; font-weight: 700;">${weekJobs.length} Casas</div>`;
-                    reportHtml += `<div style="font-size: 1.2rem;">${weekJobs.reduce((s, j) => s + j.hours, 0).toFixed(1)} Horas | $${weekJobs.reduce((s, j) => s + j.total, 0).toFixed(2)} Total</div>`;
-                    reportHtml += `</div>`;
-
-                    reportHtml += `<h4>💰 Pagamentos por Funcionário:</h4>`;
-                    Object.values(totals).forEach(t => {
-                        reportHtml += `<div style="display: flex; justify-content: space-between; padding: 15px; background: #f0f0f0; border-radius: 8px; margin-bottom: 10px;">`;
-                        reportHtml += `<div><strong>${t.name}</strong><br><small>${t.hours.toFixed(1)} horas</small></div>`;
-                        reportHtml += `<div style="font-size: 1.3rem; font-weight: 700; color: #00C853;">$${t.total.toFixed(2)}</div>`;
-                        reportHtml += `</div>`;
-                    });
-
-                    reportHtml += `<div style="margin-top: 20px; padding: 20px; background: #FFF3E0; border-radius: 12px; border-left: 4px solid #FF9800;">`;
-                    reportHtml += `<p>⚠️ <strong>Atenção:</strong> Ao confirmar o fechamento:</p>`;
-                    reportHtml += `<ul style="margin-left: 20px; margin-top: 10px;">`;
-                    reportHtml += `<li>Todos os trabalhos desta semana serão arquivados</li>`;
-                    reportHtml += `<li>Uma nova semana será iniciada automaticamente</li>`;
-                    reportHtml += `<li>Os funcionários poderão começar a registrar na nova semana</li>`;
-                    reportHtml += `</ul></div>`;
-
-                    reportHtml += `<div style="display: flex; gap: 10px; margin-top: 20px;">`;
-                    reportHtml += `<button class="btn btn-secondary" onclick="app.modals.close()" style="flex: 1;">Cancelar</button>`;
-                    reportHtml += `<button class="btn btn-success" onclick="app.weeks.confirmCloseWeek()" style="flex: 1;">✅ Confirmar Fechamento</button>`;
-                    reportHtml += `</div>`;
-
-                    // Salva dados temporários para confirmação
-                    app.data.pendingWeekClose = { weekId, weekJobs, totals };
-
-                    app.modals.show('🔒 Fechamento de Semana', reportHtml);
-                },
-
-                confirmCloseWeek: async function() {
-                    if (!app.data.pendingWeekClose) return;
-
-                    const { weekId, weekJobs, totals } = app.data.pendingWeekClose;
-
-                    try {
-                        // Marca trabalhos como fechados
-                        weekJobs.forEach(j => {
-                            j.weekId = weekId;
-                            j.status = 'closed';
-                            j.closedAt = new Date().toISOString();
-                        });
-
-                        // Salva no Firebase
-                        if (app.data.isOnline) {
-                            const batch = db.batch();
-                            weekJobs.forEach(job => {
-                                const ref = db.collection('jobs').doc(String(job.id));
-                                batch.update(ref, { weekId: weekId, status: 'closed', closedAt: job.closedAt });
-                            });
-                            await batch.commit();
-
-                            // Salva resumo da semana
-                            await db.collection('weeks').doc(weekId).set({
-                                weekId: weekId,
-                                closedAt: new Date().toISOString(),
-                                totalJobs: weekJobs.length,
-                                totalHours: weekJobs.reduce((s, j) => s + j.hours, 0),
-                                totalAmount: weekJobs.reduce((s, j) => s + j.total, 0),
-                                employeeTotals: totals,
-                                jobs: weekJobs.map(j => j.id)
-                            });
-                        }
-
-                        app.dataManager.save();
-                        app.modals.close();
-                        app.ui.showToast('✅ Semana fechada com sucesso!');
-
-                        // Limpa filtros e atualiza
-                        app.data.currentFilter = 'today';
-                        app.renderAll();
-
-                        // Mostra nova semana
-                        setTimeout(() => {
-                            app.ui.showToast('📅 Nova semana iniciada! Pronto para registrar.', 'success');
-                        }, 2000);
-
-                    } catch (error) {
-                        console.error('Erro ao fechar semana:', error);
-                        app.ui.showToast('❌ Erro ao fechar semana. Tente novamente.', 'error');
-                    }
-
-                    app.data.pendingWeekClose = null;
-                },
-
-                showWeekHistory: async function() {
-                    app.modals.show('📚 Histórico de Semanas', '<div id="weekHistoryContent"><div class="loader"></div> Carregando...</div>');
-
-                    try {
-                        let weeks = [];
-
-                        if (app.data.isOnline) {
-                            const snapshot = await db.collection('weeks').orderBy('closedAt', 'desc').get();
-                            weeks = snapshot.docs.map(doc => doc.data());
-                        } else {
-                            // Offline: busca nos jobs locais
-                            const closedJobs = app.data.jobs.filter(j => j.status === 'closed' && j.weekId);
-                            const weekMap = {};
-                            closedJobs.forEach(j => {
-                                if (!weekMap[j.weekId]) {
-                                    weekMap[j.weekId] = { weekId: j.weekId, jobs: [], totalHours: 0, totalAmount: 0 };
-                                }
-                                weekMap[j.weekId].jobs.push(j);
-                                weekMap[j.weekId].totalHours += j.hours;
-                                weekMap[j.weekId].totalAmount += j.total;
-                            });
-                            weeks = Object.values(weekMap);
-                        }
-
-                        if (weeks.length === 0) {
-                            document.getElementById('weekHistoryContent').innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">Nenhuma semana fechada ainda.</p>';
-                            return;
-                        }
-
-                        let html = '<div style="max-height: 60vh; overflow-y: auto;">';
-                        weeks.forEach(w => {
-                            const range = this.getWeekRange(w.weekId);
-                            html += `<div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">`;
-                            html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">`;
-                            html += `<div><div style="font-weight: 700; font-size: 1.1rem;">Semana ${w.weekId}</div>`;
-                            html += `<div style="font-size: 0.85rem; color: #666;">${range.start.toLocaleDateString('pt-BR')} - ${range.end.toLocaleDateString('pt-BR')}</div></div>`;
-                            html += `<div style="background: #00C853; color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem;">Fechada ✓</div>`;
-                            html += `</div>`;
-                            html += `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; margin-bottom: 15px;">`;
-                            html += `<div style="background: #f0f0f0; padding: 10px; border-radius: 8px;"><div style="font-weight: 700;">${w.totalJobs || w.jobs?.length || 0}</div><div style="font-size: 0.75rem; color: #666;">Casas</div></div>`;
-                            html += `<div style="background: #f0f0f0; padding: 10px; border-radius: 8px;"><div style="font-weight: 700;">${(w.totalHours || 0).toFixed(1)}h</div><div style="font-size: 0.75rem; color: #666;">Horas</div></div>`;
-                            html += `<div style="background: #f0f0f0; padding: 10px; border-radius: 8px;"><div style="font-weight: 700; color: #00C853;">$${(w.totalAmount || 0).toFixed(0)}</div><div style="font-size: 0.75rem; color: #666;">Total</div></div>`;
-                            html += `</div>`;
-                            if (w.employeeTotals) {
-                                html += `<div style="border-top: 1px solid #e0e0e0; padding-top: 10px;">`;
-                                Object.values(w.employeeTotals).forEach(emp => {
-                                    html += `<div style="display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.9rem;">`;
-                                    html += `<span>${emp.name}</span><span style="font-weight: 600;">$${emp.total.toFixed(2)}</span>`;
-                                    html += `</div>`;
-                                });
-                                html += `</div>`;
-                            }
-                            html += `<button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="app.weeks.exportWeek('${w.weekId}')">📄 Exportar PDF</button>`;
-                            html += `</div>`;
-                        });
-                        html += '</div>';
-
-                        document.getElementById('weekHistoryContent').innerHTML = html;
-
-                    } catch (error) {
-                        document.getElementById('weekHistoryContent').innerHTML = '<p style="color: red; text-align: center;">Erro ao carregar histórico.</p>';
-                    }
-                },
-
-                exportWeek: function(weekId) {
-                    const weekJobs = app.data.jobs.filter(j => j.weekId === weekId);
-                    if (weekJobs.length === 0) {
-                        app.ui.showToast('Sem dados para exportar', 'error');
-                        return;
-                    }
-
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
-                    const range = this.getWeekRange(weekId);
-
-                    doc.setFontSize(20); doc.setTextColor(255, 107, 53); doc.text('Bright & Shine Pro', 14, 20);
-                    doc.setFontSize(14); doc.setTextColor(100, 100, 100); doc.text(`Fechamento Semanal - ${weekId}`, 14, 30);
-                    doc.setFontSize(10); doc.text(`Período: ${range.start.toLocaleDateString('pt-BR')} a ${range.end.toLocaleDateString('pt-BR')}`, 14, 38);
-
-                    // Agrupa por funcionário
-                    const grouped = {};
-                    weekJobs.forEach(j => {
-                        if (!grouped[j.employeeId]) grouped[j.employeeId] = { name: j.employeeName, jobs: [], total: 0, hours: 0 };
-                        grouped[j.employeeId].jobs.push(j);
-                        grouped[j.employeeId].total += j.total;
-                        grouped[j.employeeId].hours += j.hours;
-                    });
-
-                    let startY = 50;
-                    Object.values(grouped).forEach(emp => {
-                        doc.setFontSize(11); doc.setTextColor(0, 78, 137); doc.text(`${emp.name} - Total: $${emp.total.toFixed(2)}`, 14, startY);
-                        const body = emp.jobs.map(j => [new Date(j.date).toLocaleDateString('pt-BR'), j.house.substring(0, 35), `${j.hours}h`, `$${j.total.toFixed(2)}`]);
-                        doc.autoTable({ head: [['Data', 'Casa', 'Horas', 'Valor']], body: body, startY: startY + 5, theme: 'grid', headStyles: { fillColor: [255, 107, 53], textColor: 255, fontSize: 9 }, bodyStyles: { fontSize: 9 }, margin: { left: 14, right: 14 } });
-                        startY = doc.lastAutoTable.finalY + 15;
-                    });
-
-                    const grandTotal = weekJobs.reduce((s, j) => s + j.total, 0);
-                    doc.setFillColor(26, 26, 46); doc.rect(14, startY, 182, 12, 'F');
-                    doc.setTextColor(0, 230, 118); doc.setFontSize(12); doc.text(`TOTAL DA SEMANA: $${grandTotal.toFixed(2)}`, 105, startY + 8, { align: 'center' });
-
-                    doc.save(`BSOS_Fechamento_${weekId}.pdf`);
-                    app.ui.showToast('📄 PDF da semana baixado!');
-                },
-
-                checkAutoClose: function() {
-                    // Verifica se é sábado após 23:59 e fecha automaticamente
-                    const now = new Date();
-                    if (now.getDay() === 6 && now.getHours() === 23 && now.getMinutes() >= 59) {
-                        // Sábado quase meia-noite
-                        const weekJobs = this.getCurrentWeekJobs();
-                        if (weekJobs.length > 0 && !weekJobs[0].status === 'closed') {
-                            this.closeWeek();
-                        }
-                    }
+                    html += `</div>`;
                 }
-            },
+                html += `<button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="app.weeks.exportWeek('${w.weekId}')">📄 ${app.i18n.t('export_pdf')}</button>`;
+                html += `</div>`;
+            });
+            html += '</div>';
+
+            document.getElementById('weekHistoryContent').innerHTML = html;
+
+        } catch (error) {
+            document.getElementById('weekHistoryContent').innerHTML = '<p style="color: red; text-align: center;">Error loading history.</p>';
+        }
+    },
+
+    exportWeek: function(weekId) {
+        const weekJobs = app.data.jobs.filter(j => j.weekId === weekId);
+        if (weekJobs.length === 0) {
+            app.ui.showToast(app.i18n.t('no_data_export'), 'error');
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const range = this.getWeekRange(weekId);
+
+        doc.setFontSize(20); doc.setTextColor(255, 107, 53); doc.text('Bright & Shine Pro', 14, 20);
+        doc.setFontSize(14); doc.setTextColor(100, 100, 100); doc.text(`Weekly Report: ${weekId}`, 14, 30);
+        doc.setFontSize(10); doc.text(`Period: ${range.start.toLocaleDateString()} (Sun) to ${range.end.toLocaleDateString()} (Sat)`, 14, 38);
+
+        const grouped = {};
+        weekJobs.forEach(j => {
+            if (!grouped[j.employeeId]) grouped[j.employeeId] = { name: j.employeeName, jobs: [], total: 0, hours: 0 };
+            grouped[j.employeeId].jobs.push(j);
+            grouped[j.employeeId].total += j.total;
+            grouped[j.employeeId].hours += j.hours;
+        });
+
+        let startY = 50;
+        Object.values(grouped).forEach(emp => {
+            doc.setFontSize(11); doc.setTextColor(0, 78, 137); doc.text(`${emp.name} - Total: $${emp.total.toFixed(2)}`, 14, startY);
+            const body = emp.jobs.map(j => [new Date(j.date).toLocaleDateString(), j.house.substring(0, 35), `${j.hours}h`, `$${j.total.toFixed(2)}`]);
+            doc.autoTable({ head: [['Date', 'House', 'Hours', 'Amount']], body: body, startY: startY + 5, theme: 'grid', headStyles: { fillColor: [255, 107, 53], textColor: 255, fontSize: 9 }, bodyStyles: { fontSize: 9 }, margin: { left: 14, right: 14 } });
+            startY = doc.lastAutoTable.finalY + 15;
+        });
+
+        const grandTotal = weekJobs.reduce((s, j) => s + j.total, 0);
+        doc.setFillColor(26, 26, 46); doc.rect(14, startY, 182, 12, 'F');
+        doc.setTextColor(0, 230, 118); doc.setFontSize(12); doc.text(`${app.i18n.t('total_week')}: $${grandTotal.toFixed(2)}`, 105, startY + 8, { align: 'center' });
+
+        doc.save(`BSOS_Week_${weekId}.pdf`);
+        app.ui.showToast('📄 Week PDF downloaded!');
+    },
+
+    checkAutoClose: function() {
+        // Fecha automaticamente no sábado às 23:59 (fim da semana domingo-sábado)
+        const now = new Date();
+        if (now.getDay() === 6 && now.getHours() === 23 && now.getMinutes() >= 59) {
+            const weekJobs = this.getCurrentWeekJobs();
+            if (weekJobs.length > 0 && weekJobs[0].status !== 'closed') {
+                this.closeWeek();
+            }
+        }
+    }
+}
 
             modals: {
                 show: function(title, content) {
