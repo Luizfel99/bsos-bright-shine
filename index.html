@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en-US">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -65,7 +65,8 @@
         .quick-banner.show { display: block; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
         .modal-overlay.show { display: flex; }
-        .modal-box { background: white; border-radius: 20px; padding: 30px; max-width: 900px; width: 90%; max-height: 85vh; overflow-y: auto; position: relative; }
+        .modal-box { background: white; border-radius: 20px; padding: 30px; max-width: 900px; width: 90%; max-height: 85vh; overflow-y: auto; position: relative; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .toast { position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); display: none; z-index: 2000; font-weight: 600; }
         .toast.show { display: block; }
         .toast.error { background: var(--danger); }
@@ -92,6 +93,10 @@
         .week-closed-banner h3 { color: #2E7D32; margin-bottom: 10px; }
         .loader { border: 3px solid #f3f3f3; border-radius: 50%; border-top: 3px solid var(--primary); width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .settings-btn { background: linear-gradient(135deg, #607D8B, #455A64); color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.3s; }
+        .settings-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .danger-zone { background: #FFEBEE; border-left: 4px solid var(--danger); padding: 20px; border-radius: 12px; margin-top: 20px; }
+        .danger-zone h4 { color: var(--danger); margin-bottom: 10px; font-size: 1rem; }
     </style>
 <base target="_blank">
 </head>
@@ -99,90 +104,130 @@
     <div class="toast" id="toast"></div>
     <div class="sync-indicator" id="syncIndicator" style="display: none;">
         <span id="syncIcon">☁️</span>
-        <span id="syncText">Sincronizando...</span>
+        <span id="syncText">Syncing...</span>
     </div>
+    
+    <!-- Main Modal -->
     <div class="modal-overlay" id="modal">
         <div class="modal-box">
             <button onclick="app.modals.close()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
-            <h2 id="modalTitle" style="margin-bottom: 20px; color: var(--dark);">Relatório</h2>
+            <h2 id="modalTitle" style="margin-bottom: 20px; color: var(--dark);">Report</h2>
             <div id="modalContent"></div>
         </div>
     </div>
+    
+    <!-- Alert Modal -->
     <div class="modal-overlay" id="alertModal">
         <div class="modal-box" style="max-width: 500px;">
-            <h2 style="margin-bottom: 20px; color: var(--dark);">⚠️ Atenção</h2>
+            <h2 style="margin-bottom: 20px; color: var(--dark);">⚠️ Attention</h2>
             <div id="alertModalContent"></div>
             <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-secondary" onclick="app.alerts.close()" style="flex: 1;">Cancelar</button>
-                <button class="btn btn-success" onclick="app.jobs.confirmSave()" style="flex: 1;">Confirmar e Salvar</button>
+                <button class="btn btn-secondary" onclick="app.alerts.close()" style="flex: 1;">Cancel</button>
+                <button class="btn btn-success" onclick="app.jobs.confirmSave()" style="flex: 1;">Confirm & Save</button>
             </div>
         </div>
     </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-box" style="max-width: 500px;">
+            <button onclick="app.settings.close()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
+            <h2 style="margin-bottom: 25px; color: var(--dark);">⚙️ Settings</h2>
+            
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 600;">🌐 Language / Idioma</label>
+                <select id="languageSelect" onchange="app.settings.changeLanguage(this.value)" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #e0e0e0; font-family: inherit; font-size: 1rem;">
+                    <option value="en-US">🇺🇸 English (US)</option>
+                    <option value="pt-BR">🇧🇷 Português (Brasil)</option>
+                </select>
+            </div>
+
+            <div class="danger-zone">
+                <h4>🗑️ Danger Zone</h4>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px; line-height: 1.5;">
+                    Clear all data will permanently remove employees, jobs, and history. This action cannot be undone.
+                </p>
+                <button class="btn btn-danger" onclick="app.dataManager.clearAll()" style="width: 100%; font-size: 1rem;">
+                    ⚠️ Clear All Data
+                </button>
+            </div>
+
+            <div style="text-align: center; padding-top: 20px; margin-top: 20px; border-top: 1px solid #e0e0e0; color: #999; font-size: 0.8rem;">
+                BSOS Cloud v5.1 | Bright & Shine Pro Services
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="header">
             <h1>🏠 Bright & Shine Pro</h1>
-            <p class="subtitle">BSOS Cloud - Sistema de Controle de Pagamentos</p>
+            <p class="subtitle">BSOS Cloud - Payment Control System</p>
             <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
                 <div class="sync-status" id="syncStatus" onclick="app.cloud.forceSync()">
                     <span id="statusIcon">☁️</span>
-                    <span id="statusText">Conectando...</span>
+                    <span id="statusText">Connecting...</span>
                 </div>
                 <span class="cloud-badge">☁️ CLOUD</span>
-                <span class="week-badge" id="weekBadge">📅 Semana Atual</span>
+                <span class="week-badge" id="weekBadge">📅 Current Week</span>
+                <button class="settings-btn" onclick="app.settings.open()">
+                    ⚙️ Settings
+                </button>
             </div>
         </div>
 
         <div class="week-info" id="weekInfo">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <div>
-                    <div style="font-weight: 700; font-size: 1.1rem; color: #E65100;">📅 Semana Atual</div>
-                    <div style="font-size: 0.9rem; color: #666;" id="weekRange">Carregando...</div>
+                    <div style="font-weight: 700; font-size: 1.1rem; color: #E65100;" data-i18n="currentWeek">📅 Current Week</div>
+                    <div style="font-size: 0.9rem; color: #666;" id="weekRange">Loading...</div>
                 </div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn btn-purple" onclick="app.weeks.showWeekHistory()">📚 Histórico</button>
-                    <button class="btn btn-warning" onclick="app.weeks.closeWeek()">🔒 Fechar Semana</button>
+                    <button class="btn btn-purple" onclick="app.weeks.showWeekHistory()" data-i18n="history">📚 History</button>
+                    <button class="btn btn-warning" onclick="app.weeks.closeWeek()" data-i18n="closeWeek">🔒 Close Week</button>
                 </div>
             </div>
         </div>
 
         <div class="week-closed-banner" id="weekClosedBanner" style="display: none;">
-            <h3>✅ Semana Fechada!</h3>
-            <p>Esta semana já foi fechada. Os dados foram arquivados.</p>
-            <button class="btn btn-secondary" onclick="app.weeks.showWeekHistory()" style="margin-top: 10px;">Ver Histórico</button>
+            <h3>✅ Week Closed!</h3>
+            <p data-i18n="weekClosedMsg">This week has been closed. Data has been archived.</p>
+            <button class="btn btn-secondary" onclick="app.weeks.showWeekHistory()" style="margin-top: 10px;" data-i18n="viewHistory">View History</button>
         </div>
 
         <div class="grid">
+            <!-- COLUMN 1: TEAM -->
             <div class="card">
-                <div class="section-title">👥 Equipe</div>
+                <div class="section-title" data-i18n="team">👥 Team</div>
                 <div class="tab-buttons">
-                    <button class="tab-btn active" id="tab-list">Time</button>
-                    <button class="tab-btn" id="tab-add">+ Novo</button>
+                    <button class="tab-btn active" id="tab-list" data-i18n="teamTab">Team</button>
+                    <button class="tab-btn" id="tab-add" data-i18n="newTab">+ New</button>
                 </div>
                 <div id="panel-list" class="tab-panel active">
                     <div id="employeeList"></div>
                 </div>
                 <div id="panel-add" class="tab-panel">
                     <div class="form-group">
-                        <label>Nome Completo</label>
+                        <label data-i18n="fullName">Full Name</label>
                         <input type="text" id="newName" placeholder="Ex: Maria Silva">
                     </div>
                     <div class="form-group">
-                        <label>Valor por Hora ($)</label>
+                        <label data-i18n="hourlyRate">Hourly Rate ($)</label>
                         <input type="number" id="newRate" placeholder="25.00" step="0.01">
                     </div>
-                    <button class="btn btn-primary" id="btnAddEmployee">➕ Adicionar Funcionário</button>
+                    <button class="btn btn-primary" id="btnAddEmployee" data-i18n="addEmployee">➕ Add Employee</button>
                 </div>
             </div>
 
+            <!-- COLUMN 2: REGISTERS -->
             <div class="card">
-                <div class="section-title">📋 Registro de Trabalhos</div>
+                <div class="section-title" data-i18n="jobRegistration">📋 Job Registration</div>
                 <div class="quick-banner" id="quickBanner">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <div style="font-size: 0.85rem; opacity: 0.9;">Registrando para</div>
+                            <div style="font-size: 0.85rem; opacity: 0.9;" data-i18n="enteringFor">Entering for</div>
                             <div style="font-size: 1.2rem; font-weight: 700;" id="quickName"></div>
                         </div>
-                        <button onclick="app.employees.exitQuickMode()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;">✕ Sair</button>
+                        <button onclick="app.employees.exitQuickMode()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;" data-i18n="exit">✕ Exit</button>
                     </div>
                 </div>
                 <div class="alert-banner" id="alertBanner">
@@ -191,93 +236,112 @@
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group">
-                        <label>Funcionário</label>
-                        <select id="selEmployee"><option value="">Selecione...</option></select>
+                        <label data-i18n="employee">Employee</label>
+                        <select id="selEmployee"><option value="" data-i18n="select">Select...</option></select>
                     </div>
                     <div class="form-group">
-                        <label>Data</label>
+                        <label data-i18n="date">Date</label>
                         <input type="date" id="workDate">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Endereço da Casa</label>
+                    <label data-i18n="houseAddress">House Address</label>
                     <div class="autocomplete-container">
-                        <input type="text" id="houseAddr" placeholder="Digite o endereço..." autocomplete="off">
+                        <input type="text" id="houseAddr" placeholder="Type address..." autocomplete="off">
                         <div id="autocompleteList" class="autocomplete-list"></div>
                     </div>
-                    <small style="color: #666; font-size: 0.8rem;">💡 Digite para ver sugestões dos endereços salvos</small>
+                    <small style="color: #666; font-size: 0.8rem;" data-i18n="addressHint">💡 Type to see saved address suggestions</small>
                     <div class="quick-addresses" id="quickAddresses" style="margin-top: 8px;"></div>
                     <div style="margin-top: 10px; display: flex; gap: 10px;">
-                        <button class="btn btn-sm btn-secondary" id="btnSaveAddress">💾 Salvar Endereço</button>
-                        <button class="btn btn-sm btn-info" id="btnManageAddresses">⚙️ Gerenciar</button>
+                        <button class="btn btn-sm btn-secondary" id="btnSaveAddress" data-i18n="saveAddress">💾 Save Address</button>
+                        <button class="btn btn-sm btn-info" id="btnManageAddresses" data-i18n="manage">⚙️ Manage</button>
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group">
-                        <label>Horas</label>
+                        <label data-i18n="hours">Hours</label>
                         <input type="number" id="workHours" placeholder="3.5" step="0.5">
                     </div>
                     <div class="form-group">
-                        <label style="color: var(--success);">Total</label>
+                        <label style="color: var(--success);" data-i18n="total">Total</label>
                         <div style="background: var(--dark); color: #00E676; padding: 12px; border-radius: 12px; font-size: 1.4rem; font-weight: 700; text-align: center; font-family: monospace;" id="totalDisplay">$0.00</div>
                     </div>
                 </div>
-                <button class="btn btn-success" id="btnSaveJob" style="margin-top: 10px;">💾 Registrar Trabalho</button>
+                <button class="btn btn-success" id="btnSaveJob" style="margin-top: 10px;" data-i18n="registerJob">💾 Register Job</button>
                 <div style="margin-top: 25px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <strong>📅 Período:</strong>
-                        <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;" id="btnShowAll">Ver Tudo</button>
+                        <strong data-i18n="period">📅 Period:</strong>
+                        <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;" id="btnShowAll" data-i18n="seeAll">See All</button>
                     </div>
                     <div class="filter-bar">
-                        <button class="filter-pill active" data-filter="today">Hoje</button>
-                        <button class="filter-pill" data-filter="week">Semana</button>
-                        <button class="filter-pill" data-filter="month">Mês</button>
+                        <button class="filter-pill active" data-filter="today" data-i18n="today">Today</button>
+                        <button class="filter-pill" data-filter="week" data-i18n="week">Week</button>
+                        <button class="filter-pill" data-filter="month" data-i18n="month">Month</button>
                     </div>
                 </div>
                 <div style="margin-top: 20px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h3 id="jobsTitle">Trabalhos de Hoje</h3>
+                        <h3 id="jobsTitle" data-i18n="jobsTitle">Jobs: Today</h3>
                         <span id="jobsCount" style="background: var(--primary); color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem; font-weight: 600;">0</span>
                     </div>
                     <div style="overflow-x: auto;">
                         <table>
-                            <thead><tr><th>Funcionário</th><th>Casa</th><th>Data</th><th>Horas</th><th>Total</th><th>Ações</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th data-i18n="employee">Employee</th>
+                                    <th data-i18n="house">House</th>
+                                    <th data-i18n="date">Date</th>
+                                    <th data-i18n="hours">Hours</th>
+                                    <th data-i18n="amount">Amount</th>
+                                    <th data-i18n="actions">Actions</th>
+                                </tr>
+                            </thead>
                             <tbody id="jobsTable"></tbody>
                         </table>
                     </div>
                     <div class="empty-state" id="noJobs" style="display: none;">
                         <div style="font-size: 3rem; margin-bottom: 10px;">📋</div>
-                        <p>Nenhum trabalho registrado neste período</p>
+                        <p data-i18n="noJobs">No jobs registered for this period</p>
                     </div>
                 </div>
             </div>
 
+            <!-- COLUMN 3: DASHBOARD -->
             <div class="card">
-                <div class="section-title">📊 Dashboard</div>
+                <div class="section-title" data-i18n="dashboard">📊 Dashboard</div>
                 <div class="stat-grid">
-                    <div class="stat-box"><div class="stat-value" id="statHours">0</div><div class="stat-label">Horas</div></div>
-                    <div class="stat-box"><div class="stat-value" id="statJobs">0</div><div class="stat-label">Casas</div></div>
-                    <div class="stat-box"><div class="stat-value" id="statTotal">$0</div><div class="stat-label">Total</div></div>
-                    <div class="stat-box"><div class="stat-value" id="statPending">$0</div><div class="stat-label">A Pagar</div></div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statHours">0</div>
+                        <div class="stat-label" data-i18n="hoursStat">Hours</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statJobs">0</div>
+                        <div class="stat-label" data-i18n="housesStat">Houses</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statTotal">$0</div>
+                        <div class="stat-label" data-i18n="totalStat">Total</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statPending">$0</div>
+                        <div class="stat-label" data-i18n="toPay">To Pay</div>
+                    </div>
                 </div>
                 <div style="margin-top: 20px;">
-                    <div class="section-title" style="font-size: 1rem;">📤 Exportar</div>
-                    <button class="btn btn-secondary" id="btnWhatsApp" style="width: 100%; margin-bottom: 10px;">📱 WhatsApp</button>
-                    <button class="btn btn-secondary" id="btnCSV" style="width: 100%; margin-bottom: 10px;">📊 Excel CSV Detalhado</button>
-                    <button class="btn btn-secondary" id="btnPDF" style="width: 100%; margin-bottom: 10px;">📄 PDF Profissional</button>
-                    <button class="btn btn-secondary" id="btnReport" style="width: 100%; margin-bottom: 10px;">📄 Relatório Completo</button>
+                    <div class="section-title" style="font-size: 1rem;" data-i18n="export">📤 Export</div>
+                    <button class="btn btn-secondary" id="btnWhatsApp" style="width: 100%; margin-bottom: 10px;" data-i18n="whatsapp">📱 WhatsApp</button>
+                    <button class="btn btn-secondary" id="btnCSV" style="width: 100%; margin-bottom: 10px;" data-i18n="csv">📊 Excel CSV Detailed</button>
+                    <button class="btn btn-secondary" id="btnPDF" style="width: 100%; margin-bottom: 10px;" data-i18n="pdf">📄 Professional PDF</button>
+                    <button class="btn btn-secondary" id="btnReport" style="width: 100%; margin-bottom: 10px;" data-i18n="report">📄 Full Report</button>
                 </div>
                 <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
-                    <div class="section-title" style="font-size: 1rem;">🏆 Top Performers</div>
+                    <div class="section-title" style="font-size: 1rem;" data-i18n="topPerformers">🏆 Top Performers</div>
                     <div id="topList"></div>
-                </div>
-                <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
-                    <button class="btn btn-danger" id="btnClearAll" style="width: 100%; font-size: 0.9rem;">🗑️ Limpar Todos os Dados</button>
                 </div>
             </div>
         </div>
         <div style="text-align: center; margin-top: 30px; color: rgba(255,255,255,0.7); font-size: 0.9rem;">
-            <p>Bright & Shine Pro Services | BSOS Cloud v5.1 | Fechamento Semanal</p>
+            <p>Bright & Shine Pro Services | BSOS Cloud v5.1 | Weekly Closing</p>
         </div>
     </div>
 
@@ -315,42 +379,265 @@
                 isOnline: navigator.onLine
             },
 
-            // Sistema de tradução simples
             i18n: {
+                texts: {
+                    'en-US': {
+                        title: 'BSOS Cloud - Payment Control System',
+                        subtitle: 'BSOS Cloud - Payment Control System',
+                        currentWeek: '📅 Current Week',
+                        weekClosed: '🔒 Week Closed',
+                        closeWeek: '🔒 Close Week',
+                        history: '📚 History',
+                        weekClosedMsg: 'This week has been closed. Data has been archived.',
+                        viewHistory: 'View History',
+                        team: '👥 Team',
+                        teamTab: 'Team',
+                        newTab: '+ New',
+                        fullName: 'Full Name',
+                        hourlyRate: 'Hourly Rate ($)',
+                        addEmployee: '➕ Add Employee',
+                        jobRegistration: '📋 Job Registration',
+                        enteringFor: 'Entering for',
+                        exit: '✕ Exit',
+                        employee: 'Employee',
+                        select: 'Select...',
+                        date: 'Date',
+                        houseAddress: 'House Address',
+                        addressHint: '💡 Type to see saved address suggestions',
+                        saveAddress: '💾 Save Address',
+                        manage: '⚙️ Manage',
+                        hours: 'Hours',
+                        total: 'Total',
+                        registerJob: '💾 Register Job',
+                        period: '📅 Period:',
+                        seeAll: 'See All',
+                        today: 'Today',
+                        week: 'Week',
+                        month: 'Month',
+                        jobsTitle: 'Jobs: ',
+                        house: 'House',
+                        amount: 'Amount',
+                        actions: 'Actions',
+                        noJobs: 'No jobs registered for this period',
+                        dashboard: '📊 Dashboard',
+                        hoursStat: 'Hours',
+                        housesStat: 'Houses',
+                        totalStat: 'Total',
+                        toPay: 'To Pay',
+                        export: '📤 Export',
+                        whatsapp: '📱 WhatsApp',
+                        csv: '📊 Excel CSV Detailed',
+                        pdf: '📄 Professional PDF',
+                        report: '📄 Full Report',
+                        topPerformers: '🏆 Top Performers',
+                        noData: 'No data',
+                        syncing: 'Syncing...',
+                        synced: 'Cloud synced',
+                        offline: 'Offline mode',
+                        connecting: 'Connecting...',
+                        fillAllFields: 'Please fill all fields!',
+                        noJobsWeek: 'No jobs in current week',
+                        paymentSummary: 'Payment Summary',
+                        attention: 'Attention',
+                        weekCloseMsg: 'When closing the week, jobs can no longer be edited. Continue?',
+                        cancel: 'Cancel',
+                        closedSuccess: 'Week closed successfully!',
+                        newWeekStarted: 'New week started!',
+                        settings: 'Settings',
+                        language: 'Language',
+                        dangerZone: 'Danger Zone',
+                        clearDataMsg: 'Clear all data will permanently remove employees, jobs, and history. This action cannot be undone.',
+                        clearAllData: '⚠️ Clear All Data',
+                        weekHistory: 'Week History',
+                        exportPDF: 'Export PDF',
+                        totalWeek: 'Week Total',
+                        noDataExport: 'No data to export',
+                        jobRegistered: 'registered!',
+                        jobUpdated: 'Job updated!',
+                        error: 'Error',
+                        warning: 'Warning',
+                        copied: 'Copied!',
+                        fillNameRate: 'Please fill name and hourly rate!',
+                        deleteConfirm: 'Delete this job?',
+                        removed: 'Removed!',
+                        updated: 'Updated!',
+                        added: 'added!',
+                        saveError: 'Save error',
+                        loadError: 'Load error',
+                        connectionError: 'Connection error',
+                        weekAlreadyClosed: 'This week has been closed! Cannot add more jobs.',
+                        closedJobEdit: 'Closed job cannot be edited!',
+                        closedJobDelete: 'Closed job cannot be deleted!',
+                        dailyLimit: 'Daily limit of 12 hours exceeded!',
+                        houseRegistered: 'House already registered for this date!',
+                        onlyHours: 'Only',
+                        hoursCorrect: 'hours. Correct?',
+                        hoursUnusual: 'hours is unusual. Confirm?'
+                    },
+                    'pt-BR': {
+                        title: 'BSOS Cloud - Sistema de Controle de Pagamentos',
+                        subtitle: 'BSOS Cloud - Sistema de Controle de Pagamentos',
+                        currentWeek: '📅 Semana Atual',
+                        weekClosed: '🔒 Semana Fechada',
+                        closeWeek: '🔒 Fechar Semana',
+                        history: '📚 Histórico',
+                        weekClosedMsg: 'Esta semana já foi fechada. Os dados foram arquivados.',
+                        viewHistory: 'Ver Histórico',
+                        team: '👥 Equipe',
+                        teamTab: 'Time',
+                        newTab: '+ Novo',
+                        fullName: 'Nome Completo',
+                        hourlyRate: 'Valor por Hora ($)',
+                        addEmployee: '➕ Adicionar Funcionário',
+                        jobRegistration: '📋 Registro de Trabalhos',
+                        enteringFor: 'Registrando para',
+                        exit: '✕ Sair',
+                        employee: 'Funcionário',
+                        select: 'Selecione...',
+                        date: 'Data',
+                        houseAddress: 'Endereço da Casa',
+                        addressHint: '💡 Digite para ver sugestões dos endereços salvos',
+                        saveAddress: '💾 Salvar Endereço',
+                        manage: '⚙️ Gerenciar',
+                        hours: 'Horas',
+                        total: 'Total',
+                        registerJob: '💾 Registrar Trabalho',
+                        period: '📅 Período:',
+                        seeAll: 'Ver Tudo',
+                        today: 'Hoje',
+                        week: 'Semana',
+                        month: 'Mês',
+                        jobsTitle: 'Trabalhos: ',
+                        house: 'Casa',
+                        amount: 'Valor',
+                        actions: 'Ações',
+                        noJobs: 'Nenhum trabalho registrado neste período',
+                        dashboard: '📊 Dashboard',
+                        hoursStat: 'Horas',
+                        housesStat: 'Casas',
+                        totalStat: 'Total',
+                        toPay: 'A Pagar',
+                        export: '📤 Exportar',
+                        whatsapp: '📱 WhatsApp',
+                        csv: '📊 Excel CSV Detalhado',
+                        pdf: '📄 PDF Profissional',
+                        report: '📄 Relatório Completo',
+                        topPerformers: '🏆 Top Performers',
+                        noData: 'Sem dados',
+                        syncing: 'Sincronizando...',
+                        synced: 'Sincronizado na nuvem',
+                        offline: 'Modo offline',
+                        connecting: 'Conectando...',
+                        fillAllFields: 'Preencha todos os campos!',
+                        noJobsWeek: 'Nenhum trabalho na semana atual',
+                        paymentSummary: 'Resumo de Pagamento',
+                        attention: 'Atenção',
+                        weekCloseMsg: 'Ao fechar a semana, os trabalhos não poderão mais ser editados. Continuar?',
+                        cancel: 'Cancelar',
+                        closedSuccess: 'Semana fechada com sucesso!',
+                        newWeekStarted: 'Nova semana iniciada!',
+                        settings: 'Configurações',
+                        language: 'Idioma',
+                        dangerZone: 'Zona de Perigo',
+                        clearDataMsg: 'Limpar todos os dados removerá permanentemente funcionários, trabalhos e histórico. Esta ação não pode ser desfeita.',
+                        clearAllData: '⚠️ Limpar Todos os Dados',
+                        weekHistory: 'Histórico de Semanas',
+                        exportPDF: 'Exportar PDF',
+                        totalWeek: 'Total da Semana',
+                        noDataExport: 'Sem dados para exportar',
+                        jobRegistered: 'registrado!',
+                        jobUpdated: 'Trabalho atualizado!',
+                        error: 'Erro',
+                        warning: 'Aviso',
+                        copied: 'Copiado!',
+                        fillNameRate: 'Preencha nome e valor!',
+                        deleteConfirm: 'Excluir este trabalho?',
+                        removed: 'Removido!',
+                        updated: 'Atualizado!',
+                        added: 'adicionado!',
+                        saveError: 'Erro ao salvar',
+                        loadError: 'Erro ao carregar',
+                        connectionError: 'Erro de conexão',
+                        weekAlreadyClosed: 'Esta semana já foi fechada! Não é possível adicionar mais trabalhos.',
+                        closedJobEdit: 'Trabalho fechado não pode ser editado!',
+                        closedJobDelete: 'Trabalho fechado não pode ser excluído!',
+                        dailyLimit: 'Limite diário de 12h excedido!',
+                        houseRegistered: 'Casa já registrada nesta data!',
+                        onlyHours: 'Apenas',
+                        hoursCorrect: 'h. Correto?',
+                        hoursUnusual: 'h é incomum. Confirmar?'
+                    }
+                },
+                
+                currentLang: 'en-US',
+                
                 t: function(key) {
-                    const texts = {
-                        'no_jobs_week': 'Nenhum trabalho na semana atual',
-                        'close_week': 'Fechar Semana',
-                        'payment_summary': 'Resumo de Pagamento',
-                        'attention': 'Atenção',
-                        'week_close_msg': 'Ao fechar a semana, os trabalhos não poderão mais ser editados. Continue?',
-                        'cancel': 'Cancelar',
-                        'closed_success': 'Semana fechada com sucesso!',
-                        'new_week_started': 'Nova semana iniciada!',
-                        'history': 'Histórico de Semanas',
-                        'houses_stat': 'Casas',
-                        'hours_stat': 'Horas',
-                        'total_week': 'Total da Semana',
-                        'no_data_export': 'Sem dados para exportar',
-                        'export_pdf': 'Exportar PDF'
-                    };
-                    return texts[key] || key;
+                    return this.texts[this.currentLang][key] || key;
+                },
+                
+                setLanguage: function(lang) {
+                    this.currentLang = lang;
+                    localStorage.setItem('bsos_language', lang);
+                    this.applyTranslations();
+                },
+                
+                applyTranslations: function() {
+                    const elements = document.querySelectorAll('[data-i18n]');
+                    elements.forEach(el => {
+                        const key = el.getAttribute('data-i18n');
+                        if (this.texts[this.currentLang][key]) {
+                            // Preserva emojis no início se existirem
+                            const original = el.textContent;
+                            const emoji = original.match(/^[^\w\s]+/) ? original.match(/^[^\w\s]+/)[0] + ' ' : '';
+                            el.textContent = emoji + this.texts[this.currentLang][key];
+                        }
+                    });
+                    
+                    // Atualiza placeholders
+                    document.getElementById('newName').placeholder = this.t('fullName') + ': Maria Silva';
+                    document.getElementById('houseAddr').placeholder = this.t('select') + ' ' + this.t('houseAddress').toLowerCase() + '...';
+                    
+                    // Atualiza título dinâmico
+                    const titles = { today: this.t('today'), week: this.t('week'), month: this.t('month'), all: 'All' };
+                    const currentTitle = titles[app.data.currentFilter] || 'All';
+                    document.getElementById('jobsTitle').textContent = this.t('jobsTitle') + currentTitle;
+                    
+                    // Atualiza status da nuvem
+                    const statusText = document.getElementById('statusText').textContent;
+                    if (statusText.includes('Syncing') || statusText.includes('Sincronizando')) {
+                        document.getElementById('statusText').textContent = this.t('syncing');
+                    } else if (app.data.isOnline) {
+                        document.getElementById('statusText').textContent = this.t('synced');
+                    } else {
+                        document.getElementById('statusText').textContent = this.t('offline');
+                    }
                 }
             },
 
             init: function() {
-                console.log('🚀 BSOS Cloud v5.1 - Fechamento Semanal Initializing...');
+                console.log('🚀 BSOS Cloud v5.1 - Weekly Closing Initializing...');
+                
+                // Load saved language
+                const savedLang = localStorage.getItem('bsos_language');
+                if (savedLang && this.i18n.texts[savedLang]) {
+                    this.i18n.currentLang = savedLang;
+                    document.getElementById('languageSelect').value = savedLang;
+                }
+                
                 this.setupNetworkListeners();
                 this.loadData();
                 this.setupEventListeners();
                 this.setupKeyboardShortcuts();
                 document.getElementById('workDate').valueAsDate = new Date();
                 this.weeks.currentWeekId = this.weeks.getWeekId();
-                this.updateWeekDisplay();
+                
+                // Apply initial translations
+                this.i18n.applyTranslations();
+                
                 this.renderAll();
                 this.cloud.init();
                 setInterval(() => this.weeks.checkAutoClose(), 60000);
-                console.log('✅ BSOS Cloud v5.1 Ready!');
+                console.log('✅ BSOS Cloud v5.1 Ready! Language: ' + this.i18n.currentLang);
             },
 
             updateWeekDisplay: function() {
@@ -359,18 +646,21 @@
                 const weekJobs = this.weeks.getCurrentWeekJobs();
                 const isClosed = weekJobs.length > 0 && weekJobs[0].status === 'closed';
 
+                const lang = this.i18n.currentLang;
+                const dateFormat = lang === 'pt-BR' ? 'pt-BR' : 'en-US';
+                
                 document.getElementById('weekRange').textContent = 
-                    `${range.start.toLocaleDateString('pt-BR')} - ${range.end.toLocaleDateString('pt-BR')} | ${weekJobs.length} trabalhos`;
+                    `${range.start.toLocaleDateString(dateFormat)} - ${range.end.toLocaleDateString(dateFormat)} | ${weekJobs.length} ${lang === 'pt-BR' ? 'trabalhos' : 'jobs'}`;
 
                 if (isClosed) {
                     document.getElementById('weekInfo').style.display = 'none';
                     document.getElementById('weekClosedBanner').style.display = 'block';
-                    document.getElementById('weekBadge').textContent = '🔒 Semana Fechada';
+                    document.getElementById('weekBadge').textContent = '🔒 ' + (lang === 'pt-BR' ? 'Semana Fechada' : 'Week Closed');
                     document.getElementById('weekBadge').style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
                 } else {
                     document.getElementById('weekInfo').style.display = 'block';
                     document.getElementById('weekClosedBanner').style.display = 'none';
-                    document.getElementById('weekBadge').textContent = '📅 Semana Atual';
+                    document.getElementById('weekBadge').textContent = '📅 ' + (lang === 'pt-BR' ? 'Semana Atual' : 'Current Week');
                 }
             },
 
@@ -404,7 +694,9 @@
                 document.getElementById('btnCSV').addEventListener('click', () => this.export.csv());
                 document.getElementById('btnPDF').addEventListener('click', () => this.export.pdf());
                 document.getElementById('btnReport').addEventListener('click', () => this.export.report());
-                document.getElementById('btnClearAll').addEventListener('click', () => this.dataManager.clearAll());
+                
+                // REMOVIDO: Event listener do btnClearAll (agora está no modal de settings)
+                
                 document.addEventListener('click', (e) => {
                     if (!e.target.closest('.autocomplete-container')) {
                         document.getElementById('autocompleteList').classList.remove('show');
@@ -414,6 +706,7 @@
                     if (e.key === 'Escape') {
                         this.modals.close();
                         this.alerts.close();
+                        this.settings.close();
                         document.getElementById('autocompleteList').classList.remove('show');
                     }
                 });
@@ -423,7 +716,7 @@
             },
 
             setupKeyboardShortcuts: function() {
-                // Atalhos podem ser adicionados aqui
+                // Additional shortcuts can be added here
             },
 
             renderAll: function() {
@@ -445,7 +738,7 @@
                         if (data.savedAddresses) this.data.savedAddresses = data.savedAddresses;
                         if (data.currentFilter) this.data.currentFilter = data.currentFilter;
                     }
-                } catch (e) { console.error('Load error:', e); }
+                } catch (e) { console.error(this.i18n.t('loadError'), e); }
             },
 
             updateSyncStatus: function(status) {
@@ -453,15 +746,33 @@
                 const icon = document.getElementById('statusIcon');
                 const text = document.getElementById('statusText');
                 const configs = {
-                    online: { icon: '☁️', text: 'Sincronizado na nuvem', class: '' },
-                    offline: { icon: '📴', text: 'Modo offline', class: 'offline' },
-                    syncing: { icon: '🔄', text: 'Sincronizando...', class: 'pending' },
-                    error: { icon: '❌', text: 'Erro de conexão', class: 'error' }
+                    online: { icon: '☁️', text: this.i18n.t('synced'), class: '' },
+                    offline: { icon: '📴', text: this.i18n.t('offline'), class: 'offline' },
+                    syncing: { icon: '🔄', text: this.i18n.t('syncing'), class: 'pending' },
+                    error: { icon: '❌', text: this.i18n.t('connectionError'), class: 'error' }
                 };
                 const config = configs[status] || configs.online;
                 icon.textContent = config.icon;
                 text.textContent = config.text;
                 el.className = 'sync-status ' + config.class;
+            },
+
+            settings: {
+                open: function() {
+                    document.getElementById('settingsModal').classList.add('show');
+                    document.getElementById('languageSelect').value = app.i18n.currentLang;
+                },
+                
+                close: function() {
+                    document.getElementById('settingsModal').classList.remove('show');
+                },
+                
+                changeLanguage: function(lang) {
+                    if (app.i18n.texts[lang]) {
+                        app.i18n.setLanguage(lang);
+                        app.ui.showToast(lang === 'pt-BR' ? '🇧🇷 Idioma alterado para Português' : '🇺🇸 Language changed to English');
+                    }
+                }
             },
 
             cloud: {
@@ -520,7 +831,7 @@
                         app.renderAll();
                         app.dataManager.save();
                         app.updateSyncStatus('online');
-                        app.ui.showToast('☁️ Dados sincronizados!');
+                        app.ui.showToast('☁️ ' + (app.i18n.currentLang === 'pt-BR' ? 'Dados sincronizados!' : 'Data synced!'));
                     } catch (error) {
                         console.error('Sync error:', error);
                         app.updateSyncStatus('error');
@@ -570,9 +881,9 @@
                 forceSync: function() {
                     if (app.data.isOnline) {
                         this.sync();
-                        app.ui.showToast('🔄 Sincronizando...');
+                        app.ui.showToast('🔄 ' + app.i18n.t('syncing'));
                     } else {
-                        app.ui.showToast('📴 Sem conexão', 'warning');
+                        app.ui.showToast('📴 ' + app.i18n.t('offline'), 'warning');
                     }
                 }
             },
@@ -587,7 +898,7 @@
                 updateSelect: function() {
                     const sel = document.getElementById('selEmployee');
                     const val = sel.value;
-                    let html = '<option value="">Selecione...</option>';
+                    let html = `<option value="">${app.i18n.t('select')}</option>`;
                     app.data.employees.forEach(e => {
                         html += `<option value="${e.id}" ${val == e.id ? 'selected' : ''}>${e.name}</option>`;
                     });
@@ -609,7 +920,7 @@
                         const isSelected = app.data.quickEmployeeId === emp.id;
                         let html = `<div class="employee-card ${isSelected ? 'selected' : ''}">`;
                         html += `<div style="flex: 1;"><div class="employee-name">${emp.name}</div>`;
-                        html += `<div class="employee-rate">$${emp.rate.toFixed(2)}/hora</div></div>`;
+                        html += `<div class="employee-rate">$${emp.rate.toFixed(2)}/${app.i18n.t('hoursStat')}</div></div>`;
                         html += `<div style="display: flex; align-items: center; gap: 8px;">`;
                         html += `<span class="rate-tag">$${emp.rate}</span>`;
                         html += `<button class="btn btn-info" onclick="app.employees.edit(${emp.id})">✏️</button>`;
@@ -629,7 +940,7 @@
                 add: function() {
                     const name = document.getElementById('newName').value.trim();
                     const rate = parseFloat(document.getElementById('newRate').value);
-                    if (!name || !rate) { app.ui.showToast('Preencha nome e valor!', 'error'); return; }
+                    if (!name || !rate) { app.ui.showToast(app.i18n.t('fillNameRate'), 'error'); return; }
                     const newEmployee = { id: Date.now(), name, rate };
                     app.data.employees.push(newEmployee);
                     app.cloud.saveEmployee(newEmployee);
@@ -638,14 +949,14 @@
                     this.render();
                     app.ui.updateSelect();
                     app.dataManager.save();
-                    app.ui.showToast(`${name} adicionada!`);
+                    app.ui.showToast(`${name} ${app.i18n.t('added')}`);
                     app.ui.showTab('list');
                 },
                 edit: function(id) { app.data.editingEmployeeId = id; this.render(); },
                 save: function(id) {
                     const name = document.getElementById(`edit-name-${id}`).value.trim();
                     const rate = parseFloat(document.getElementById(`edit-rate-${id}`).value);
-                    if (!name || !rate) { app.ui.showToast('Preencha todos os campos!', 'error'); return; }
+                    if (!name || !rate) { app.ui.showToast(app.i18n.t('fillAllFields'), 'error'); return; }
                     const emp = app.data.employees.find(e => e.id === id);
                     emp.name = name; emp.rate = rate;
                     app.data.jobs.forEach(j => { if (j.employeeId === id) { j.employeeName = name; j.rate = rate; j.total = j.hours * rate; } });
@@ -656,19 +967,20 @@
                     app.ui.updateSelect();
                     app.dashboard.update();
                     app.dataManager.save();
-                    app.ui.showToast('Atualizado!');
+                    app.ui.showToast(app.i18n.t('updated'));
                 },
                 cancelEdit: function() { app.data.editingEmployeeId = null; this.render(); },
                 remove: function(id) {
                     const emp = app.data.employees.find(e => e.id === id);
-                    if (!confirm(`Excluir ${emp.name}?`)) return;
+                    const confirmMsg = app.i18n.currentLang === 'pt-BR' ? `Excluir ${emp.name}?` : `Delete ${emp.name}?`;
+                    if (!confirm(confirmMsg)) return;
                     if (app.data.quickEmployeeId === id) this.exitQuickMode();
                     app.data.employees = app.data.employees.filter(e => e.id !== id);
                     if (app.data.isOnline) db.collection('employees').doc(String(id)).delete();
                     this.render();
                     app.ui.updateSelect();
                     app.dataManager.save();
-                    app.ui.showToast('Removido!');
+                    app.ui.showToast(app.i18n.t('removed'));
                 },
                 onSelect: function() {
                     const id = document.getElementById('selEmployee').value;
@@ -706,14 +1018,17 @@
                 },
                 saveCurrent: function() {
                     const address = document.getElementById('houseAddr').value.trim();
-                    if (!address) { app.ui.showToast('Digite um endereço primeiro!', 'error'); return; }
-                    if (app.data.savedAddresses.includes(address)) { app.ui.showToast('Endereço já está salvo!'); return; }
+                    if (!address) { app.ui.showToast(app.i18n.t('fillAllFields'), 'error'); return; }
+                    if (app.data.savedAddresses.includes(address)) { 
+                        app.ui.showToast(app.i18n.currentLang === 'pt-BR' ? 'Endereço já está salvo!' : 'Address already saved!'); 
+                        return; 
+                    }
                     app.data.savedAddresses.push(address);
                     app.data.savedAddresses.sort();
                     app.cloud.saveAddresses();
                     app.dataManager.save();
                     this.renderQuick();
-                    app.ui.showToast('✅ Endereço salvo!');
+                    app.ui.showToast('✅ ' + (app.i18n.currentLang === 'pt-BR' ? 'Endereço salvo!' : 'Address saved!'));
                 },
                 renderQuick: function() {
                     const container = document.getElementById('quickAddresses');
@@ -725,45 +1040,50 @@
                     }).join('');
                 },
                 showManager: function() {
-                    let html = `<h3>📍 Gerenciar Endereços (${app.data.savedAddresses.length})</h3>`;
+                    const t = app.i18n;
+                    let html = `<h3>📍 ${t.currentLang === 'pt-BR' ? 'Gerenciar Endereços' : 'Manage Addresses'} (${app.data.savedAddresses.length})</h3>`;
                     html += `<div style="margin: 20px 0;"><div style="display: flex; gap: 10px; margin-bottom: 15px;">`;
-                    html += `<input type="text" id="newAddrInput" placeholder="Novo endereço..." style="flex: 1; padding: 8px;">`;
-                    html += `<button class="btn btn-success" onclick="app.addresses.addNew()">➕ Adicionar</button></div>`;
+                    html += `<input type="text" id="newAddrInput" placeholder="${t.t('houseAddress')}..." style="flex: 1; padding: 8px;">`;
+                    html += `<button class="btn btn-success" onclick="app.addresses.addNew()">➕ ${t.t('addEmployee').replace('➕ ', '')}</button></div>`;
                     if (app.data.savedAddresses.length === 0) {
-                        html += `<p style="text-align: center; color: #999;">Nenhum endereço salvo</p>`;
+                        html += `<p style="text-align: center; color: #999;">${t.t('noData')}</p>`;
                     } else {
                         html += `<div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px;">`;
                         app.data.savedAddresses.forEach((addr, idx) => {
                             html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #f0f0f0;">`;
-                            html += `<span>${addr}</span><div><button class="btn btn-sm btn-info" onclick="document.getElementById('houseAddr').value = '${addr.replace(/'/g, "\\'")}'; app.modals.close();" style="margin-right: 5px;">Usar</button>`;
+                            html += `<span>${addr}</span><div><button class="btn btn-sm btn-info" onclick="document.getElementById('houseAddr').value = '${addr.replace(/'/g, "\\'")}'; app.modals.close();" style="margin-right: 5px;">${t.t('select')}</button>`;
                             html += `<button class="btn btn-sm btn-danger" onclick="app.addresses.remove(${idx})">🗑️</button></div></div>`;
                         });
                         html += `</div>`;
                     }
                     html += `</div>`;
-                    app.modals.show('Gerenciar Endereços', html);
+                    app.modals.show(t.currentLang === 'pt-BR' ? 'Gerenciar Endereços' : 'Manage Addresses', html);
                 },
                 addNew: function() {
                     const input = document.getElementById('newAddrInput');
                     const addr = input.value.trim();
                     if (!addr) return;
-                    if (app.data.savedAddresses.includes(addr)) { app.ui.showToast('Endereço já existe!', 'error'); return; }
+                    if (app.data.savedAddresses.includes(addr)) { 
+                        app.ui.showToast(app.i18n.currentLang === 'pt-BR' ? 'Endereço já existe!' : 'Address already exists!', 'error'); 
+                        return; 
+                    }
                     app.data.savedAddresses.push(addr);
                     app.data.savedAddresses.sort();
                     app.cloud.saveAddresses();
                     app.dataManager.save();
                     this.showManager();
                     this.renderQuick();
-                    app.ui.showToast('✅ Adicionado!');
+                    app.ui.showToast('✅ ' + (app.i18n.currentLang === 'pt-BR' ? 'Adicionado!' : 'Added!'));
                 },
                 remove: function(index) {
-                    if (!confirm('Remover este endereço?')) return;
+                    const confirmMsg = app.i18n.currentLang === 'pt-BR' ? 'Remover este endereço?' : 'Remove this address?';
+                    if (!confirm(confirmMsg)) return;
                     app.data.savedAddresses.splice(index, 1);
                     app.cloud.saveAddresses();
                     app.dataManager.save();
                     this.showManager();
                     this.renderQuick();
-                    app.ui.showToast('Removido!');
+                    app.ui.showToast(app.i18n.t('removed'));
                 }
             },
 
@@ -775,27 +1095,28 @@
                     document.getElementById('totalDisplay').textContent = emp ? `$${(hours * emp.rate).toFixed(2)}` : '$0.00';
                 },
                 validateAndSave: function() {
+                    const t = app.i18n;
                     const empId = document.getElementById('selEmployee').value;
                     const house = document.getElementById('houseAddr').value.trim();
                     const hours = parseFloat(document.getElementById('workHours').value);
                     const date = document.getElementById('workDate').value;
 
-                    if (!empId || !house || !hours || !date) { app.ui.showToast('Preencha todos os campos!', 'error'); return; }
+                    if (!empId || !house || !hours || !date) { app.ui.showToast(t.t('fillAllFields'), 'error'); return; }
 
                     const weekJobs = app.weeks.getCurrentWeekJobs();
                     if (weekJobs.length > 0 && weekJobs[0].status === 'closed') {
-                        app.ui.showToast('⚠️ Esta semana já foi fechada! Não é possível adicionar mais trabalhos.', 'error');
+                        app.ui.showToast('⚠️ ' + t.t('weekAlreadyClosed'), 'error');
                         return;
                     }
 
                     const emp = app.data.employees.find(e => e.id == empId);
                     const alerts = [];
-                    if (hours < 1) alerts.push({ type: 'warning', msg: `Apenas ${hours}h. Correto?` });
-                    if (hours > 8) alerts.push({ type: 'warning', msg: `${hours}h é incomum. Confirmar?` });
+                    if (hours < 1) alerts.push({ type: 'warning', msg: `${t.t('onlyHours')} ${hours} ${t.t('hoursCorrect')}` });
+                    if (hours > 8) alerts.push({ type: 'warning', msg: `${hours} ${t.t('hoursUnusual')}` });
                     const dailyHours = app.data.jobs.filter(j => j.employeeId === parseInt(empId) && j.date === date && j.id !== app.data.editingJobId).reduce((sum, j) => sum + j.hours, 0);
-                    if (dailyHours + hours > 12) alerts.push({ type: 'error', msg: 'Limite diário de 12h excedido!' });
+                    if (dailyHours + hours > 12) alerts.push({ type: 'error', msg: t.t('dailyLimit') });
                     const duplicate = app.data.jobs.find(j => j.house.toLowerCase() === house.toLowerCase() && j.date === date && j.employeeId === parseInt(empId) && j.id !== app.data.editingJobId);
-                    if (duplicate) alerts.push({ type: 'warning', msg: 'Casa já registrada nesta data!' });
+                    if (duplicate) alerts.push({ type: 'warning', msg: t.t('houseRegistered') });
 
                     app.data.pendingJobData = { employeeId: parseInt(empId), employeeName: emp.name, house, hours, rate: emp.rate, date, total: hours * emp.rate, status: 'pending', weekId: app.weeks.getWeekId() };
 
@@ -821,7 +1142,7 @@
                     app.data.jobs.push(data);
                     app.cloud.saveJob(data);
                     this.afterSave();
-                    app.ui.showToast(`✅ ${data.employeeName}: registrado!`);
+                    app.ui.showToast(`✅ ${data.employeeName}: ${app.i18n.t('jobRegistered')}`);
                 },
                 update: function(id, data) {
                     const index = app.data.jobs.findIndex(j => j.id === id);
@@ -830,7 +1151,7 @@
                         app.data.jobs[index] = data;
                         app.cloud.saveJob(data);
                         this.afterSave();
-                        app.ui.showToast('✅ Trabalho atualizado!');
+                        app.ui.showToast('✅ ' + app.i18n.t('jobUpdated'));
                     }
                 },
                 afterSave: function() {
@@ -849,12 +1170,15 @@
                     const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => j.status !== 'closed');
                     const filtered = app.data.currentFilter === 'all' ? weekJobs : app.filters.getFiltered().filter(j => !j.status || j.status !== 'closed');
 
-                    const titles = { today: 'Hoje', week: 'Semana', month: 'Mês', all: 'Todos' };
-                    document.getElementById('jobsTitle').textContent = 'Trabalhos: ' + (titles[app.data.currentFilter] || 'Todos');
+                    const t = app.i18n;
+                    const titles = { today: t.t('today'), week: t.t('week'), month: t.t('month'), all: 'All' };
+                    const currentTitle = titles[app.data.currentFilter] || 'All';
+                    document.getElementById('jobsTitle').textContent = t.t('jobsTitle') + currentTitle;
                     document.getElementById('jobsCount').textContent = filtered.length;
 
                     const tbody = document.getElementById('jobsTable');
                     const empty = document.getElementById('noJobs');
+                    const dateFormat = t.currentLang === 'pt-BR' ? 'pt-BR' : 'en-US';
 
                     if (filtered.length === 0) {
                         tbody.innerHTML = '';
@@ -866,7 +1190,7 @@
                         <tr>
                             <td><strong>${j.employeeName}</strong></td>
                             <td>${j.house}</td>
-                            <td>${new Date(j.date).toLocaleDateString('pt-BR')}</td>
+                            <td>${new Date(j.date).toLocaleDateString(dateFormat)}</td>
                             <td>${j.hours}h</td>
                             <td><strong>$${j.total.toFixed(2)}</strong></td>
                             <td>
@@ -878,7 +1202,7 @@
                 },
                 edit: function(id) {
                     const job = app.data.jobs.find(j => j.id === id);
-                    if (!job || job.status === 'closed') { app.ui.showToast('⚠️ Trabalho fechado não pode ser editado!', 'error'); return; }
+                    if (!job || job.status === 'closed') { app.ui.showToast('⚠️ ' + app.i18n.t('closedJobEdit'), 'error'); return; }
                     app.data.editingJobId = id;
                     document.getElementById('selEmployee').value = job.employeeId;
                     document.getElementById('workDate').value = job.date;
@@ -892,8 +1216,8 @@
                 },
                 remove: function(id) {
                     const job = app.data.jobs.find(j => j.id === id);
-                    if (job && job.status === 'closed') { app.ui.showToast('⚠️ Trabalho fechado não pode ser excluído!', 'error'); return; }
-                    if (!confirm('Excluir este trabalho?')) return;
+                    if (job && job.status === 'closed') { app.ui.showToast('⚠️ ' + app.i18n.t('closedJobDelete'), 'error'); return; }
+                    if (!confirm(app.i18n.t('deleteConfirm'))) return;
                     app.data.jobs = app.data.jobs.filter(j => j.id !== id);
                     app.cloud.deleteJob(id);
                     this.render();
@@ -960,22 +1284,24 @@
                             <div><div style="font-weight: 700;">${i===0?'🥇 ':''}${t.name}</div><div style="font-size: 0.8rem; color: #666;">${t.hours.toFixed(1)}h</div></div>
                             <div style="font-weight: 700; color: #00C853;">$${t.total.toFixed(0)}</div>
                         </div>
-                    `).join('') || '<p style="color: #999; text-align: center;">Sem dados</p>';
+                    `).join('') || `<p style="color: #999; text-align: center;">${app.i18n.t('noData')}</p>`;
                 }
             },
 
             export: {
                 pdf: function() {
                     const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
-                    if (!weekJobs.length) { app.ui.showToast('Sem dados para exportar!', 'error'); return; }
+                    if (!weekJobs.length) { app.ui.showToast(app.i18n.t('noDataExport'), 'error'); return; }
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
                     const weekId = app.weeks.getWeekId();
                     const range = app.weeks.getWeekRange(weekId);
+                    const t = app.i18n;
+                    const dateFormat = t.currentLang === 'pt-BR' ? 'pt-BR' : 'en-US';
 
                     doc.setFontSize(20); doc.setTextColor(255, 107, 53); doc.text('Bright & Shine Pro', 14, 20);
-                    doc.setFontSize(14); doc.text(`Semana Atual - ${weekId}`, 14, 30);
-                    doc.setFontSize(10); doc.text(`${range.start.toLocaleDateString('pt-BR')} a ${range.end.toLocaleDateString('pt-BR')}`, 14, 38);
+                    doc.setFontSize(14); doc.text(`${t.t('currentWeek')} - ${weekId}`, 14, 30);
+                    doc.setFontSize(10); doc.text(`${range.start.toLocaleDateString(dateFormat)} ${t.t('to')} ${range.end.toLocaleDateString(dateFormat)}`, 14, 38);
 
                     const grouped = {};
                     weekJobs.forEach(j => {
@@ -990,46 +1316,50 @@
                         grandTotal += data.totalAmount;
                         doc.setFontSize(11); doc.setTextColor(0, 78, 137); doc.text(`${data.employee.name} - $${data.employee.rate.toFixed(2)}/h`, 14, startY);
                         const body = data.jobs.sort((a, b) => new Date(a.date) - new Date(b.date)).map(j => [
-                            new Date(j.date).toLocaleDateString('pt-BR'), j.house.substring(0, 40), `${j.hours}h`, `$${j.total.toFixed(2)}`
+                            new Date(j.date).toLocaleDateString(dateFormat), j.house.substring(0, 40), `${j.hours}h`, `$${j.total.toFixed(2)}`
                         ]);
-                        doc.autoTable({ head: [['Data', 'Casa', 'Horas', 'Valor']], body: body, startY: startY + 5, theme: 'grid', headStyles: { fillColor: [255, 107, 53], textColor: 255, fontSize: 9 }, bodyStyles: { fontSize: 9 }, margin: { left: 14, right: 14 } });
+                        doc.autoTable({ head: [[t.t('date'), t.t('house'), t.t('hours'), t.t('amount')]], body: body, startY: startY + 5, theme: 'grid', headStyles: { fillColor: [255, 107, 53], textColor: 255, fontSize: 9 }, bodyStyles: { fontSize: 9 }, margin: { left: 14, right: 14 } });
                         startY = doc.lastAutoTable.finalY + 15;
                     });
 
                     doc.setFillColor(26, 26, 46); doc.rect(14, startY, 182, 15, 'F');
-                    doc.setTextColor(0, 230, 118); doc.setFontSize(14); doc.text(`TOTAL: $${grandTotal.toFixed(2)}`, 105, startY + 10, { align: 'center' });
+                    doc.setTextColor(0, 230, 118); doc.setFontSize(14); doc.text(`${t.t('totalWeek')}: $${grandTotal.toFixed(2)}`, 105, startY + 10, { align: 'center' });
 
-                    doc.save(`BSOS_Semana_${weekId}.pdf`);
-                    app.ui.showToast('📄 PDF baixado!');
+                    doc.save(`BSOS_Week_${weekId}.pdf`);
+                    app.ui.showToast('📄 ' + (t.currentLang === 'pt-BR' ? 'PDF baixado!' : 'PDF downloaded!'));
                 },
                 csv: function() {
                     const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
-                    if (!weekJobs.length) { app.ui.showToast('Sem dados!', 'error'); return; }
-                    let csv = 'FUNCIONARIO,CASA,DATA,HORAS,VALOR_HORA,TOTAL\n';
+                    if (!weekJobs.length) { app.ui.showToast(app.i18n.t('noDataExport'), 'error'); return; }
+                    const t = app.i18n;
+                    let csv = 'EMPLOYEE,HOUSE,DATE,HOURS,RATE,TOTAL\n';
                     weekJobs.forEach(j => { csv += `"${j.employeeName}","${j.house}",${j.date},${j.hours},${j.rate},${j.total.toFixed(2)}\n`; });
                     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a'); a.href = url; a.download = `BSOS_Semana_${app.weeks.getWeekId()}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                    app.ui.showToast('📊 CSV baixado!');
+                    const a = document.createElement('a'); a.href = url; a.download = `BSOS_Week_${app.weeks.getWeekId()}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    app.ui.showToast('📊 ' + (t.currentLang === 'pt-BR' ? 'CSV baixado!' : 'CSV downloaded!'));
                 },
                 whatsapp: function() {
                     const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
-                    if (!weekJobs.length) { app.ui.showToast('Sem dados!', 'error'); return; }
+                    if (!weekJobs.length) { app.ui.showToast(app.i18n.t('noDataExport'), 'error'); return; }
+                    const t = app.i18n;
                     const grouped = {};
                     weekJobs.forEach(j => {
                         if (!grouped[j.employeeId]) grouped[j.employeeId] = { name: j.employeeName, jobs: [], total: 0, hours: 0 };
                         grouped[j.employeeId].jobs.push(j); grouped[j.employeeId].total += j.total; grouped[j.employeeId].hours += j.hours;
                     });
-                    let html = '<h3>📱 WhatsApp - Semana Atual</h3>';
+                    let html = `<h3>📱 WhatsApp - ${t.t('currentWeek')}</h3>`;
                     Object.values(grouped).forEach(g => {
                         const text = `*${g.name}*\n⏰ ${g.hours.toFixed(1)}h | 💰 $${g.total.toFixed(2)}\n\n${g.jobs.map(j => `• ${j.house} (${j.hours}h)`).join('\n')}`;
-                        html += `<div style="background: #f5f5f5; padding: 15px; border-radius: 12px; margin-bottom: 15px;"><div style="font-weight: 700; margin-bottom: 10px;">${g.name}</div><pre style="background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; white-space: pre-wrap;">${text}</pre><button class="btn btn-success" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent); app.ui.showToast('Copiado!')">📋 Copiar</button></div>`;
+                        html += `<div style="background: #f5f5f5; padding: 15px; border-radius: 12px; margin-bottom: 15px;"><div style="font-weight: 700; margin-bottom: 10px;">${g.name}</div><pre style="background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; white-space: pre-wrap;">${text}</pre><button class="btn btn-success" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent); app.ui.showToast('${t.t('copied')}')">📋 ${t.t('copied')}</button></div>`;
                     });
-                    app.modals.show('Exportar WhatsApp', html);
+                    app.modals.show('WhatsApp', html);
                 },
                 report: function() {
                     const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
-                    if (!weekJobs.length) { app.ui.showToast('Sem dados!', 'error'); return; }
+                    if (!weekJobs.length) { app.ui.showToast(app.i18n.t('noDataExport'), 'error'); return; }
+                    const t = app.i18n;
+                    const dateFormat = t.currentLang === 'pt-BR' ? 'pt-BR' : 'en-US';
                     const grouped = {};
                     weekJobs.forEach(j => {
                         if (!grouped[j.employeeId]) {
@@ -1040,14 +1370,14 @@
                     let html = ''; let grandTotal = 0;
                     Object.values(grouped).sort((a, b) => a.employee.name.localeCompare(b.employee.name)).forEach(data => {
                         grandTotal += data.totalAmount;
-                        html += `<div style="background: white; border-radius: 16px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1);"><div style="background: linear-gradient(135deg, #004E89, #1A659E); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;"><div><div style="font-size: 1.2rem; font-weight: 700;">${data.employee.name}</div><div style="opacity: 0.9; font-size: 0.9rem;">$${data.employee.rate.toFixed(2)}/hora</div></div><div style="background: #00C853; color: white; padding: 8px 16px; border-radius: 20px; font-weight: 700;">$${data.totalAmount.toFixed(2)}</div></div><div style="padding: 20px;"><table style="width: 100%; font-size: 0.9rem;"><tr style="background: #f0f0f0;"><th style="padding: 10px; text-align: left;">Data</th><th style="padding: 10px; text-align: left;">Casa</th><th style="padding: 10px; text-align: center;">Horas</th><th style="padding: 10px; text-align: right;">Valor</th></tr>`;
+                        html += `<div style="background: white; border-radius: 16px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1);"><div style="background: linear-gradient(135deg, #004E89, #1A659E); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;"><div><div style="font-size: 1.2rem; font-weight: 700;">${data.employee.name}</div><div style="opacity: 0.9; font-size: 0.9rem;">$${data.employee.rate.toFixed(2)}/${t.t('hoursStat')}</div></div><div style="background: #00C853; color: white; padding: 8px 16px; border-radius: 20px; font-weight: 700;">$${data.totalAmount.toFixed(2)}</div></div><div style="padding: 20px;"><table style="width: 100%; font-size: 0.9rem;"><tr style="background: #f0f0f0;"><th style="padding: 10px; text-align: left;">${t.t('date')}</th><th style="padding: 10px; text-align: left;">${t.t('house')}</th><th style="padding: 10px; text-align: center;">${t.t('hours')}</th><th style="padding: 10px; text-align: right;">${t.t('amount')}</th></tr>`;
                         data.jobs.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(j => {
-                            html += `<tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 10px;">${new Date(j.date).toLocaleDateString('pt-BR')}</td><td style="padding: 10px;">${j.house}</td><td style="padding: 10px; text-align: center;">${j.hours}h</td><td style="padding: 10px; text-align: right; font-weight: 700;">$${j.total.toFixed(2)}</td></tr>`;
+                            html += `<tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 10px;">${new Date(j.date).toLocaleDateString(dateFormat)}</td><td style="padding: 10px;">${j.house}</td><td style="padding: 10px; text-align: center;">${j.hours}h</td><td style="padding: 10px; text-align: right; font-weight: 700;">$${j.total.toFixed(2)}</td></tr>`;
                         });
-                        html += `</table><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #e0e0e0; text-align: center;"><div><div style="font-size: 1.2rem; font-weight: 700; color: #004E89;">${data.jobs.length}</div><div style="font-size: 0.8rem; color: #666;">Casas</div></div><div><div style="font-size: 1.2rem; font-weight: 700; color: #004E89;">${data.totalHours.toFixed(1)}h</div><div style="font-size: 0.8rem; color: #666;">Horas</div></div><div><div style="font-size: 1.2rem; font-weight: 700; color: #00C853;">$${data.totalAmount.toFixed(2)}</div><div style="font-size: 0.8rem; color: #666;">Total</div></div></div></div></div>`;
+                        html += `</table><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #e0e0e0; text-align: center;"><div><div style="font-size: 1.2rem; font-weight: 700; color: #004E89;">${data.jobs.length}</div><div style="font-size: 0.8rem; color: #666;">${t.t('housesStat')}</div></div><div><div style="font-size: 1.2rem; font-weight: 700; color: #004E89;">${data.totalHours.toFixed(1)}h</div><div style="font-size: 0.8rem; color: #666;">${t.t('hoursStat')}</div></div><div><div style="font-size: 1.2rem; font-weight: 700; color: #00C853;">$${data.totalAmount.toFixed(2)}</div><div style="font-size: 0.8rem; color: #666;">${t.t('totalStat')}</div></div></div></div></div>`;
                     });
-                    html += `<div style="background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 25px; border-radius: 16px; text-align: center;"><div style="font-size: 2.5rem; font-weight: 700; color: #00E676;">$${grandTotal.toFixed(2)}</div><div style="font-size: 1rem; opacity: 0.8; margin-top: 10px;">TOTAL SEMANA • ${weekJobs.length} trabalhos</div></div>`;
-                    app.modals.show('📊 Relatório da Semana', html);
+                    html += `<div style="background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 25px; border-radius: 16px; text-align: center;"><div style="font-size: 2.5rem; font-weight: 700; color: #00E676;">$${grandTotal.toFixed(2)}</div><div style="font-size: 1rem; opacity: 0.8; margin-top: 10px;">${t.t('totalWeek')} • ${weekJobs.length} ${t.t('housesStat').toLowerCase()}</div></div>`;
+                    app.modals.show(t.t('report'), html);
                 }
             },
 
@@ -1084,11 +1414,12 @@
                 },
 
                 closeWeek: async function() {
+                    const t = app.i18n;
                     const weekId = this.getWeekId();
                     const weekJobs = this.getCurrentWeekJobs();
 
                     if (weekJobs.length === 0) {
-                        app.ui.showToast('⚠️ ' + app.i18n.t('no_jobs_week'), 'warning');
+                        app.ui.showToast('⚠️ ' + t.t('noJobsWeek'), 'warning');
                         return;
                     }
 
@@ -1102,39 +1433,44 @@
                     });
 
                     const range = this.getWeekRange(weekId);
-                    let reportHtml = `<h3>📊 ${app.i18n.t('close_week')} - ${weekId}</h3>`;
+                    const dateFormat = t.currentLang === 'pt-BR' ? 'pt-BR' : 'en-US';
+                    const sunLabel = t.currentLang === 'pt-BR' ? 'Dom' : 'Sun';
+                    const satLabel = t.currentLang === 'pt-BR' ? 'Sáb' : 'Sat';
+                    
+                    let reportHtml = `<h3>📊 ${t.t('closeWeek')} - ${weekId}</h3>`;
                     reportHtml += `<div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: center; font-size: 0.9rem;">`;
-                    reportHtml += `📅 ${range.start.toLocaleDateString()} (Dom) → ${range.end.toLocaleDateString()} (Sáb)`;
+                    reportHtml += `📅 ${range.start.toLocaleDateString(dateFormat)} (${sunLabel}) → ${range.end.toLocaleDateString(dateFormat)} (${satLabel})`;
                     reportHtml += `</div>`;
                     
                     reportHtml += `<div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px; margin: 20px 0; text-align: center;">`;
-                    reportHtml += `<div style="font-size: 2rem; font-weight: 700;">${weekJobs.length} ${app.i18n.t('houses_stat')}</div>`;
+                    reportHtml += `<div style="font-size: 2rem; font-weight: 700;">${weekJobs.length} ${t.t('housesStat')}</div>`;
                     reportHtml += `<div style="font-size: 1.2rem;">${weekJobs.reduce((s, j) => s + j.hours, 0).toFixed(1)}h | $${weekJobs.reduce((s, j) => s + j.total, 0).toFixed(2)}</div>`;
                     reportHtml += `</div>`;
 
-                    reportHtml += `<h4>💰 ${app.i18n.t('payment_summary')}:</h4>`;
-                    Object.values(totals).forEach(t => {
+                    reportHtml += `<h4>💰 ${t.t('paymentSummary')}:</h4>`;
+                    Object.values(totals).forEach(emp => {
                         reportHtml += `<div style="display: flex; justify-content: space-between; padding: 15px; background: #f0f0f0; border-radius: 8px; margin-bottom: 10px;">`;
-                        reportHtml += `<div><strong>${t.name}</strong><br><small>${t.hours.toFixed(1)} horas</small></div>`;
-                        reportHtml += `<div style="font-size: 1.3rem; font-weight: 700; color: #00C853;">$${t.total.toFixed(2)}</div>`;
+                        reportHtml += `<div><strong>${emp.name}</strong><br><small>${emp.hours.toFixed(1)} ${t.t('hoursStat')}</small></div>`;
+                        reportHtml += `<div style="font-size: 1.3rem; font-weight: 700; color: #00C853;">$${emp.total.toFixed(2)}</div>`;
                         reportHtml += `</div>`;
                     });
 
                     reportHtml += `<div style="margin-top: 20px; padding: 20px; background: #FFF3E0; border-radius: 12px; border-left: 4px solid #FF9800;">`;
-                    reportHtml += `<p>⚠️ <strong>${app.i18n.t('attention')}:</strong> ${app.i18n.t('week_close_msg')}</p>`;
+                    reportHtml += `<p>⚠️ <strong>${t.t('attention')}:</strong> ${t.t('weekCloseMsg')}</p>`;
                     reportHtml += `</div>`;
 
                     reportHtml += `<div style="display: flex; gap: 10px; margin-top: 20px;">`;
-                    reportHtml += `<button class="btn btn-secondary" onclick="app.modals.close()" style="flex: 1;">${app.i18n.t('cancel')}</button>`;
-                    reportHtml += `<button class="btn btn-success" onclick="app.weeks.confirmCloseWeek()" style="flex: 1;">✅ ${app.i18n.t('close_week')}</button>`;
+                    reportHtml += `<button class="btn btn-secondary" onclick="app.modals.close()" style="flex: 1;">${t.t('cancel')}</button>`;
+                    reportHtml += `<button class="btn btn-success" onclick="app.weeks.confirmCloseWeek()" style="flex: 1;">✅ ${t.t('closeWeek')}</button>`;
                     reportHtml += `</div>`;
 
                     app.data.pendingWeekClose = { weekId, weekJobs, totals };
-                    app.modals.show(app.i18n.t('close_week'), reportHtml);
+                    app.modals.show(t.t('closeWeek'), reportHtml);
                 },
 
                 confirmCloseWeek: async function() {
                     if (!app.data.pendingWeekClose) return;
+                    const t = app.i18n;
 
                     const { weekId, weekJobs, totals } = app.data.pendingWeekClose;
 
@@ -1170,25 +1506,26 @@
 
                         app.dataManager.save();
                         app.modals.close();
-                        app.ui.showToast('✅ ' + app.i18n.t('closed_success'));
+                        app.ui.showToast('✅ ' + t.t('closedSuccess'));
 
                         app.data.currentFilter = 'today';
                         app.renderAll();
 
                         setTimeout(() => {
-                            app.ui.showToast('📅 ' + app.i18n.t('new_week_started'), 'success');
+                            app.ui.showToast('📅 ' + t.t('newWeekStarted'), 'success');
                         }, 2000);
 
                     } catch (error) {
                         console.error('Error closing week:', error);
-                        app.ui.showToast('❌ Erro ao fechar semana', 'error');
+                        app.ui.showToast('❌ Error closing week', 'error');
                     }
 
                     app.data.pendingWeekClose = null;
                 },
 
                 showWeekHistory: async function() {
-                    app.modals.show(app.i18n.t('history'), '<div id="weekHistoryContent"><div class="loader"></div> Carregando...</div>');
+                    const t = app.i18n;
+                    app.modals.show(t.t('weekHistory'), '<div id="weekHistoryContent"><div class="loader"></div> ' + (t.currentLang === 'pt-BR' ? 'Carregando...' : 'Loading...') + '</div>');
 
                     try {
                         let weeks = [];
@@ -1217,9 +1554,14 @@
                         }
 
                         if (weeks.length === 0) {
-                            document.getElementById('weekHistoryContent').innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">Nenhuma semana fechada ainda.</p>';
+                            document.getElementById('weekHistoryContent').innerHTML = `<p style="text-align: center; color: #999; padding: 40px;">${t.currentLang === 'pt-BR' ? 'Nenhuma semana fechada ainda.' : 'No closed weeks yet.'}</p>`;
                             return;
                         }
+
+                        const dateFormat = t.currentLang === 'pt-BR' ? 'pt-BR' : 'en-US';
+                        const sunLabel = t.currentLang === 'pt-BR' ? 'Dom' : 'Sun';
+                        const satLabel = t.currentLang === 'pt-BR' ? 'Sáb' : 'Sat';
+                        const closedLabel = t.currentLang === 'pt-BR' ? 'Fechada' : 'Closed';
 
                         let html = '<div style="max-height: 60vh; overflow-y: auto;">';
                         weeks.forEach(w => {
@@ -1229,15 +1571,15 @@
                             
                             html += `<div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">`;
                             html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">`;
-                            html += `<div><div style="font-weight: 700; font-size: 1.1rem;">Semana: ${w.weekId}</div>`;
-                            html += `<div style="font-size: 0.8rem; color: #666;">${start.toLocaleDateString()} (Dom) - ${end.toLocaleDateString()} (Sáb)</div></div>`;
-                            html += `<div style="background: #00C853; color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem;">Fechada ✓</div>`;
+                            html += `<div><div style="font-weight: 700; font-size: 1.1rem;">${t.currentLang === 'pt-BR' ? 'Semana' : 'Week'}: ${w.weekId}</div>`;
+                            html += `<div style="font-size: 0.8rem; color: #666;">${start.toLocaleDateString(dateFormat)} (${sunLabel}) - ${end.toLocaleDateString(dateFormat)} (${satLabel})</div></div>`;
+                            html += `<div style="background: #00C853; color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem;">${closedLabel} ✓</div>`;
                             html += `</div>`;
                             
                             html += `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; margin-bottom: 15px;">`;
-                            html += `<div style="background: #f0f0f0; padding: 10px; border-radius: 8px;"><div style="font-weight: 700;">${w.totalJobs || w.jobs?.length || 0}</div><div style="font-size: 0.75rem; color: #666;">${app.i18n.t('houses_stat')}</div></div>`;
-                            html += `<div style="background: #f0f0f0; padding: 10px; border-radius: 8px;"><div style="font-weight: 700;">${(w.totalHours || 0).toFixed(1)}h</div><div style="font-size: 0.75rem; color: #666;">${app.i18n.t('hours_stat')}</div></div>`;
-                            html += `<div style="background: #f0f0f0; padding: 10px; border-radius: 8px;"><div style="font-weight: 700; color: #00C853;">$${(w.totalAmount || 0).toFixed(0)}</div><div style="font-size: 0.75rem; color: #666;">Total</div></div>`;
+                            html += `<div style="background: #f0f0f0; padding: 10px; border-radius: 8px;"><div style="font-weight: 700;">${w.totalJobs || w.jobs?.length || 0}</div><div style="font-size: 0.75rem; color: #666;">${t.t('housesStat')}</div></div>`;
+                            html += `<div style="background: #f0f0f0; padding: 10px; border-radius: 8px;"><div style="font-weight: 700;">${(w.totalHours || 0).toFixed(1)}h</div><div style="font-size: 0.75rem; color: #666;">${t.t('hoursStat')}</div></div>`;
+                            html += `<div style="background: #f0f0f0; padding: 10px; border-radius: 8px;"><div style="font-weight: 700; color: #00C853;">$${(w.totalAmount || 0).toFixed(0)}</div><div style="font-size: 0.75rem; color: #666;">${t.t('totalStat')}</div></div>`;
                             html += `</div>`;
                             
                             if (w.employeeTotals) {
@@ -1249,7 +1591,7 @@
                                 });
                                 html += `</div>`;
                             }
-                            html += `<button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="app.weeks.exportWeek('${w.weekId}')">📄 ${app.i18n.t('export_pdf')}</button>`;
+                            html += `<button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="app.weeks.exportWeek('${w.weekId}')">📄 ${t.t('exportPDF')}</button>`;
                             html += `</div>`;
                         });
                         html += '</div>';
@@ -1257,24 +1599,28 @@
                         document.getElementById('weekHistoryContent').innerHTML = html;
 
                     } catch (error) {
-                        document.getElementById('weekHistoryContent').innerHTML = '<p style="color: red; text-align: center;">Erro ao carregar histórico.</p>';
+                        document.getElementById('weekHistoryContent').innerHTML = '<p style="color: red; text-align: center;">' + (t.currentLang === 'pt-BR' ? 'Erro ao carregar histórico.' : 'Error loading history.') + '</p>';
                     }
                 },
 
                 exportWeek: function(weekId) {
                     const weekJobs = app.data.jobs.filter(j => j.weekId === weekId);
+                    const t = app.i18n;
                     if (weekJobs.length === 0) {
-                        app.ui.showToast(app.i18n.t('no_data_export'), 'error');
+                        app.ui.showToast(t.t('noDataExport'), 'error');
                         return;
                     }
 
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
                     const range = this.getWeekRange(weekId);
+                    const dateFormat = t.currentLang === 'pt-BR' ? 'pt-BR' : 'en-US';
+                    const sunLabel = t.currentLang === 'pt-BR' ? 'Dom' : 'Sun';
+                    const satLabel = t.currentLang === 'pt-BR' ? 'Sáb' : 'Sat';
 
                     doc.setFontSize(20); doc.setTextColor(255, 107, 53); doc.text('Bright & Shine Pro', 14, 20);
-                    doc.setFontSize(14); doc.setTextColor(100, 100, 100); doc.text(`Relatório Semanal: ${weekId}`, 14, 30);
-                    doc.setFontSize(10); doc.text(`Período: ${range.start.toLocaleDateString()} (Dom) a ${range.end.toLocaleDateString()} (Sáb)`, 14, 38);
+                    doc.setFontSize(14); doc.setTextColor(100, 100, 100); doc.text(`${t.t('weekHistory')}: ${weekId}`, 14, 30);
+                    doc.setFontSize(10); doc.text(`${t.t('period')} ${range.start.toLocaleDateString(dateFormat)} (${sunLabel}) ${t.t('to')} ${range.end.toLocaleDateString(dateFormat)} (${satLabel})`, 14, 38);
 
                     const grouped = {};
                     weekJobs.forEach(j => {
@@ -1286,18 +1632,18 @@
 
                     let startY = 50;
                     Object.values(grouped).forEach(emp => {
-                        doc.setFontSize(11); doc.setTextColor(0, 78, 137); doc.text(`${emp.name} - Total: $${emp.total.toFixed(2)}`, 14, startY);
-                        const body = emp.jobs.map(j => [new Date(j.date).toLocaleDateString(), j.house.substring(0, 35), `${j.hours}h`, `$${j.total.toFixed(2)}`]);
-                        doc.autoTable({ head: [['Data', 'Casa', 'Horas', 'Valor']], body: body, startY: startY + 5, theme: 'grid', headStyles: { fillColor: [255, 107, 53], textColor: 255, fontSize: 9 }, bodyStyles: { fontSize: 9 }, margin: { left: 14, right: 14 } });
+                        doc.setFontSize(11); doc.setTextColor(0, 78, 137); doc.text(`${emp.name} - ${t.t('total')}: $${emp.total.toFixed(2)}`, 14, startY);
+                        const body = emp.jobs.map(j => [new Date(j.date).toLocaleDateString(dateFormat), j.house.substring(0, 35), `${j.hours}h`, `$${j.total.toFixed(2)}`]);
+                        doc.autoTable({ head: [[t.t('date'), t.t('house'), t.t('hours'), t.t('amount')]], body: body, startY: startY + 5, theme: 'grid', headStyles: { fillColor: [255, 107, 53], textColor: 255, fontSize: 9 }, bodyStyles: { fontSize: 9 }, margin: { left: 14, right: 14 } });
                         startY = doc.lastAutoTable.finalY + 15;
                     });
 
                     const grandTotal = weekJobs.reduce((s, j) => s + j.total, 0);
                     doc.setFillColor(26, 26, 46); doc.rect(14, startY, 182, 12, 'F');
-                    doc.setTextColor(0, 230, 118); doc.setFontSize(12); doc.text(`${app.i18n.t('total_week')}: $${grandTotal.toFixed(2)}`, 105, startY + 8, { align: 'center' });
+                    doc.setTextColor(0, 230, 118); doc.setFontSize(12); doc.text(`${t.t('totalWeek')}: $${grandTotal.toFixed(2)}`, 105, startY + 8, { align: 'center' });
 
-                    doc.save(`BSOS_Semana_${weekId}.pdf`);
-                    app.ui.showToast('📄 PDF da semana baixado!');
+                    doc.save(`BSOS_Week_${weekId}.pdf`);
+                    app.ui.showToast('📄 ' + (t.currentLang === 'pt-BR' ? 'PDF da semana baixado!' : 'Week PDF downloaded!'));
                 },
 
                 checkAutoClose: function() {
@@ -1322,10 +1668,12 @@
 
             alerts: {
                 show: function(alerts) {
+                    const t = app.i18n;
                     const icons = { error: '❌', warning: '⚠️', info: 'ℹ️' };
                     let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
                     alerts.forEach(alert => {
-                        html += `<div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px; background: ${alert.type === 'error' ? '#FFEBEE' : '#FFF3E0'}; border-radius: 8px;"><span style="font-size: 1.2rem;">${icons[alert.type]}</span><span>${alert.msg}</span></div>`;
+                        const typeLabel = alert.type === 'error' ? t.t('error') : t.t('warning');
+                        html += `<div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px; background: ${alert.type === 'error' ? '#FFEBEE' : '#FFF3E0'}; border-radius: 8px;"><span style="font-size: 1.2rem;">${icons[alert.type]}</span><span><strong>${typeLabel}:</strong> ${alert.msg}</span></div>`;
                     });
                     html += '</div>';
                     document.getElementById('alertModalContent').innerHTML = html;
@@ -1348,13 +1696,26 @@
                             lastSaved: new Date().toISOString()
                         };
                         localStorage.setItem(app.config.storageKey, JSON.stringify(data));
-                    } catch (e) { console.error('Save error:', e); }
+                    } catch (e) { console.error(app.i18n.t('saveError'), e); }
                 },
                 clearAll: function() {
-                    if (confirm('⚠️ ATENÇÃO: Isso apagará TODOS os dados!\n\nTem certeza?')) {
-                        if (confirm('Confirmação final: Esta ação não pode ser desfeita.')) {
+                    const t = app.i18n;
+                    const msg1 = t.currentLang === 'pt-BR' 
+                        ? '⚠️ ATENÇÃO: Isso apagará TODOS os dados!\n\nTem certeza?'
+                        : '⚠️ WARNING: This will delete ALL data!\n\nAre you sure?';
+                    
+                    const msg2 = t.currentLang === 'pt-BR'
+                        ? 'Confirmação final: Esta ação não pode ser desfeita.'
+                        : 'Final confirmation: This action cannot be undone.';
+                    
+                    const msg3 = t.currentLang === 'pt-BR'
+                        ? 'Também apagar dados da nuvem?'
+                        : 'Also delete cloud data?';
+
+                    if (confirm(msg1)) {
+                        if (confirm(msg2)) {
                             localStorage.removeItem(app.config.storageKey);
-                            if (app.data.isOnline && confirm('Também apagar dados da nuvem?')) {
+                            if (app.data.isOnline && confirm(msg3)) {
                                 db.collection('employees').get().then(snap => { snap.docs.forEach(doc => doc.ref.delete()); });
                                 db.collection('jobs').get().then(snap => { snap.docs.forEach(doc => doc.ref.delete()); });
                                 db.collection('weeks').get().then(snap => { snap.docs.forEach(doc => doc.ref.delete()); });
