@@ -27,31 +27,43 @@
             --border: #e2e8f0;
             --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
             --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1);
+            --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255,255,255,0.98);
         }
-        
+
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --border: #334155;
+            --card-bg: rgba(30, 41, 59, 0.98);
+            --gradient-bg: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--gradient-bg);
             min-height: 100vh;
             color: var(--text);
             padding: 20px;
+            transition: all 0.3s ease;
         }
-        
+
         .container { max-width: 1400px; margin: 0 auto; }
-        
-        /* Header Moderno */
+
         .header {
-            background: rgba(255,255,255,0.98);
+            background: var(--card-bg);
             padding: 30px;
             border-radius: 20px;
             text-align: center;
             margin-bottom: 20px;
             box-shadow: var(--shadow-lg);
             backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
         }
-        
+
         h1 {
             font-size: 2.5rem;
             background: linear-gradient(135deg, var(--primary), #8b5cf6);
@@ -60,34 +72,33 @@
             margin-bottom: 10px;
             font-weight: 700;
         }
-        
-        .subtitle { color: #666; font-size: 1.1rem; margin-bottom: 15px; }
-        
-        /* Grid Layout */
+
+        .subtitle { color: var(--secondary); font-size: 1.1rem; margin-bottom: 15px; }
+
         .grid {
             display: grid;
             grid-template-columns: 300px 1fr 350px;
             gap: 20px;
         }
-        
+
         @media (max-width: 1200px) {
             .grid { grid-template-columns: 1fr; }
         }
-        
+
         @media (max-width: 768px) {
             body { padding: 10px; }
             h1 { font-size: 1.8rem; }
         }
-        
-        /* Cards */
+
         .card {
             background: var(--card);
             border-radius: 16px;
             padding: 24px;
             box-shadow: var(--shadow-lg);
             border: 1px solid var(--border);
+            transition: all 0.3s ease;
         }
-        
+
         .section-title {
             font-size: 1.1rem;
             font-weight: 700;
@@ -95,17 +106,16 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            color: var(--dark);
+            color: var(--text);
         }
-        
-        /* Tabs */
+
         .tab-buttons {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
             border-bottom: 2px solid var(--border);
         }
-        
+
         .tab-btn {
             padding: 12px 20px;
             border: none;
@@ -118,29 +128,29 @@
             border-bottom: 3px solid transparent;
             transition: all 0.3s;
         }
-        
+
         .tab-btn:hover { color: var(--primary); }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-        
+
         .tab-panel { display: none; }
         .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
-        
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
-        /* Form Elements */
+
         .form-group { margin-bottom: 16px; }
-        
+
         label {
             display: block;
             font-weight: 600;
             margin-bottom: 8px;
-            color: #555;
+            color: var(--text);
             font-size: 0.9rem;
+            opacity: 0.9;
         }
-        
+
         input, select, textarea {
             width: 100%;
             padding: 12px 16px;
@@ -149,16 +159,16 @@
             font-family: inherit;
             font-size: 0.95rem;
             transition: all 0.3s;
-            background: white;
+            background: var(--card);
+            color: var(--text);
         }
-        
+
         input:focus, select:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
         }
-        
-        /* Buttons */
+
         .btn {
             padding: 12px 20px;
             border: none;
@@ -173,42 +183,41 @@
             justify-content: center;
             gap: 8px;
         }
-        
+
         .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, var(--primary), #3b82f6);
             color: white;
             width: 100%;
         }
-        
+
         .btn-secondary {
             background: linear-gradient(135deg, var(--secondary), #475569);
             color: white;
         }
-        
+
         .btn-success {
             background: linear-gradient(135deg, var(--success), #059669);
             color: white;
         }
-        
+
         .btn-danger {
             background: linear-gradient(135deg, var(--danger), #dc2626);
             color: white;
         }
-        
+
         .btn-info {
             background: linear-gradient(135deg, var(--info), #2563eb);
             color: white;
             padding: 8px 12px;
             font-size: 0.85rem;
         }
-        
+
         .btn-sm { padding: 8px 16px; font-size: 0.85rem; }
-        
-        /* Employee Cards */
+
         .employee-card {
-            background: white;
+            background: var(--card);
             border: 2px solid var(--border);
             border-radius: 12px;
             padding: 16px;
@@ -219,13 +228,13 @@
             transition: all 0.2s;
             cursor: pointer;
         }
-        
+
         .employee-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
-        .employee-card.selected { border-color: var(--success); background: #f0fdf4; }
-        
-        .employee-name { font-weight: 700; font-size: 1rem; color: var(--dark); }
+        .employee-card.selected { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+
+        .employee-name { font-weight: 700; font-size: 1rem; color: var(--text); }
         .employee-rate { font-size: 0.85rem; color: var(--secondary); }
-        
+
         .rate-tag {
             background: linear-gradient(135deg, var(--primary), #8b5cf6);
             color: white;
@@ -234,26 +243,25 @@
             font-weight: 600;
             font-size: 0.85rem;
         }
-        
-        /* Stats Grid */
+
         .stat-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-bottom: 20px;
         }
-        
+
         .stat-box {
-            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            background: var(--bg);
             border-radius: 16px;
             padding: 20px;
             text-align: center;
             border: 2px solid var(--border);
             transition: transform 0.2s;
         }
-        
+
         .stat-box:hover { transform: translateY(-2px); }
-        
+
         .stat-value {
             font-size: 1.8rem;
             font-weight: 700;
@@ -261,10 +269,9 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
+
         .stat-label { font-size: 0.85rem; color: var(--secondary); margin-top: 5px; font-weight: 600; }
-        
-        /* Table */
+
         .table-container {
             max-height: 400px;
             overflow-y: auto;
@@ -272,10 +279,11 @@
             border-radius: 12px;
             border: 1px solid var(--border);
             position: relative;
+            background: var(--card);
         }
-        
+
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        
+
         th {
             background: linear-gradient(135deg, var(--dark), #1e293b);
             color: white;
@@ -286,33 +294,32 @@
             top: 0;
             z-index: 10;
         }
-        
-        td { padding: 12px; border-bottom: 1px solid var(--border); background: white; }
-        tr:hover td { background: #f8fafc; }
-        
-        /* Filters */
+
+        td { padding: 12px; border-bottom: 1px solid var(--border); background: var(--card); color: var(--text); }
+        tr:hover td { background: var(--bg); }
+
         .filter-bar {
             display: flex;
             gap: 8px;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
-        
+
         .filter-pill {
             padding: 8px 16px;
             border: 2px solid var(--border);
-            background: white;
+            background: var(--card);
+            color: var(--text);
             border-radius: 20px;
             cursor: pointer;
             font-weight: 600;
             font-size: 0.9rem;
             transition: all 0.3s;
         }
-        
+
         .filter-pill:hover { border-color: var(--primary); color: var(--primary); }
         .filter-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        /* Quick Entry Banner */
+
         .quick-banner {
             background: linear-gradient(135deg, var(--success), #059669);
             color: white;
@@ -321,18 +328,17 @@
             margin-bottom: 20px;
             display: none;
         }
-        
+
         .quick-banner.show { display: block; animation: slideIn 0.3s ease; }
-        
-        /* Autocomplete */
+
         .autocomplete-container { position: relative; width: 100%; }
-        
+
         .autocomplete-list {
             position: absolute;
             top: 100%;
             left: 0;
             right: 0;
-            background: white;
+            background: var(--card);
             border: 2px solid var(--primary);
             border-top: none;
             border-radius: 0 0 12px 12px;
@@ -342,19 +348,19 @@
             display: none;
             box-shadow: var(--shadow-lg);
         }
-        
+
         .autocomplete-list.show { display: block; }
-        
+
         .autocomplete-item {
             padding: 10px 16px;
             cursor: pointer;
             border-bottom: 1px solid var(--border);
             font-size: 0.95rem;
+            color: var(--text);
         }
-        
-        .autocomplete-item:hover { background: #f0f9ff; }
-        
-        /* Address Tags */
+
+        .autocomplete-item:hover { background: var(--bg); }
+
         .address-tag {
             display: inline-flex;
             align-items: center;
@@ -369,10 +375,13 @@
             font-weight: 500;
             transition: all 0.2s;
         }
-        
+
+        [data-theme="dark"] .address-tag {
+            background: rgba(37, 99, 235, 0.2);
+        }
+
         .address-tag:hover { background: var(--primary); color: white; }
-        
-        /* Alerts */
+
         .alert-banner {
             background: #fef3c7;
             border-left: 4px solid var(--warning);
@@ -383,12 +392,21 @@
             align-items: center;
             gap: 10px;
             font-weight: 500;
+            color: #92400e;
         }
-        
+
+        [data-theme="dark"] .alert-banner {
+            background: rgba(245, 158, 11, 0.1);
+            color: #fbbf24;
+        }
+
         .alert-banner.show { display: flex; }
-        .alert-banner.error { background: #fee2e2; border-left-color: var(--danger); }
-        
-        /* Week Info */
+        .alert-banner.error { background: #fee2e2; border-left-color: var(--danger); color: #991b1b; }
+        [data-theme="dark"] .alert-banner.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+        }
+
         .week-info {
             background: linear-gradient(135deg, #dbeafe, #bfdbfe);
             border: 2px solid var(--primary);
@@ -396,7 +414,11 @@
             padding: 20px;
             margin-bottom: 20px;
         }
-        
+
+        [data-theme="dark"] .week-info {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(59, 130, 246, 0.1));
+        }
+
         .week-closed-banner {
             background: linear-gradient(135deg, #d1fae5, #a7f3d0);
             border: 2px solid var(--success);
@@ -406,8 +428,11 @@
             text-align: center;
             display: none;
         }
-        
-        /* Modals */
+
+        [data-theme="dark"] .week-closed-banner {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1));
+        }
+
         .modal-overlay {
             display: none;
             position: fixed;
@@ -422,11 +447,11 @@
             align-items: center;
             padding: 20px;
         }
-        
+
         .modal-overlay.show { display: flex; }
-        
+
         .modal-box {
-            background: white;
+            background: var(--card);
             border-radius: 20px;
             padding: 30px;
             max-width: 900px;
@@ -436,13 +461,15 @@
             position: relative;
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
             animation: modalSlide 0.3s ease;
+            color: var(--text);
+            border: 1px solid var(--border);
         }
-        
+
         @keyframes modalSlide {
             from { transform: translateY(-20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-        
+
         .modal-close {
             position: absolute;
             top: 15px;
@@ -458,33 +485,33 @@
             justify-content: center;
             border-radius: 50%;
             transition: background 0.2s;
+            color: var(--text);
         }
-        
-        .modal-close:hover { background: #f1f5f9; }
-        
-        /* Quick Entry Multiple Houses */
+
+        .modal-close:hover { background: var(--bg); }
+
         .house-entry {
-            background: #f8fafc;
+            background: var(--bg);
             border: 2px solid var(--border);
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 12px;
             position: relative;
         }
-        
+
         .house-entry-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
         }
-        
+
         .house-number {
             font-weight: 700;
             color: var(--primary);
             font-size: 1rem;
         }
-        
+
         .remove-house {
             color: var(--danger);
             cursor: pointer;
@@ -494,9 +521,9 @@
             font-weight: 600;
             transition: all 0.2s;
         }
-        
+
         .remove-house:hover { background: #fee2e2; }
-        
+
         .add-house-btn {
             width: 100%;
             padding: 12px;
@@ -508,48 +535,19 @@
             font-weight: 600;
             transition: all 0.3s;
         }
-        
+
         .add-house-btn:hover {
             border-color: var(--primary);
             color: var(--primary);
             background: rgba(37,99,235,0.05);
         }
-        
-        /* Chart Container */
+
         .chart-container {
             position: relative;
             height: 250px;
             margin-top: 10px;
         }
-        
-        /* Rate Calculator */
-        .rate-calculator {
-            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-            padding: 16px;
-            border-radius: 12px;
-            margin-top: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .rate-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-            color: #065f46;
-        }
-        
-        .rate-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--success);
-        }
-        
-        /* Sync Status */
+
         .sync-status {
             display: inline-flex;
             align-items: center;
@@ -563,13 +561,17 @@
             background: rgba(255,255,255,0.5);
             transition: all 0.3s;
         }
-        
+
+        [data-theme="dark"] .sync-status {
+            background: rgba(30, 41, 59, 0.5);
+        }
+
         .sync-status:hover { background: rgba(255,255,255,0.8); }
+        [data-theme="dark"] .sync-status:hover { background: rgba(51, 65, 85, 0.8); }
         .sync-status.pending { color: var(--warning); }
         .sync-status.error { color: var(--danger); }
         .sync-status.offline { color: var(--secondary); }
-        
-        /* Toast */
+
         .toast {
             position: fixed;
             top: 20px;
@@ -584,17 +586,16 @@
             font-weight: 600;
             animation: slideIn 0.3s ease;
         }
-        
+
         .toast.show { display: block; }
         .toast.error { background: var(--danger); }
         .toast.warning { background: var(--warning); }
-        
+
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
-        
-        /* Badges */
+
         .badge {
             display: inline-flex;
             align-items: center;
@@ -604,21 +605,23 @@
             font-size: 0.75rem;
             font-weight: 700;
         }
-        
+
         .badge-green { background: #d1fae5; color: #065f46; }
         .badge-yellow { background: #fef3c7; color: #92400e; }
         .badge-red { background: #fee2e2; color: #991b1b; }
-        
-        /* Empty State */
+
+        [data-theme="dark"] .badge-green { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        [data-theme="dark"] .badge-yellow { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        [data-theme="dark"] .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
         .empty-state {
             text-align: center;
             padding: 40px;
             color: var(--secondary);
         }
-        
+
         .empty-state-icon { font-size: 3rem; margin-bottom: 10px; }
-        
-        /* Settings */
+
         .danger-zone {
             background: #fee2e2;
             border-left: 4px solid var(--danger);
@@ -626,101 +629,166 @@
             border-radius: 12px;
             margin-top: 20px;
         }
-        
-        /* Top Performers */
+
+        [data-theme="dark"] .danger-zone {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 2px solid var(--border);
+        }
+
+        .theme-toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: var(--secondary);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: var(--primary);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(24px);
+        }
+
         .top-performer {
             display: flex;
             justify-content: space-between;
             padding: 12px;
-            background: white;
+            background: var(--card);
             border-radius: 10px;
             margin-bottom: 8px;
             border: 2px solid var(--border);
             transition: all 0.2s;
         }
-        
+
         .top-performer:hover { border-color: var(--primary); }
         .top-performer.first { background: linear-gradient(135deg, #fef3c7, #fde68a); border-color: var(--warning); }
-        
-        /* Form Grid */
+        [data-theme="dark"] .top-performer.first {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.1));
+        }
+
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
         }
-        
+
         .form-grid .form-group.full-width { grid-column: 1 / -1; }
-        
+
         @media (max-width: 768px) {
             .form-grid { grid-template-columns: 1fr; }
         }
-        
-        /* Scrollbar */
+
         ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg); border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        small { color: var(--secondary) !important; }
     </style>
+<base target="_blank">
 </head>
 <body>
     <div class="toast" id="toast"></div>
-    
+
     <!-- Settings Modal -->
     <div class="modal-overlay" id="settingsModal">
         <div class="modal-box" style="max-width: 500px;">
             <button class="modal-close" onclick="app.settings.close()">&times;</button>
-            <h2 style="margin-bottom: 25px; color: var(--dark);">⚙️ <span data-i18n="settings">Settings</span></h2>
-            
+            <h2 style="margin-bottom: 25px; color: var(--text);">⚙️ Configuracoes</h2>
+
             <div style="margin-bottom: 25px;">
-                <label style="display: block; margin-bottom: 10px; font-weight: 600;">🌐 <span data-i18n="language">Language</span></label>
+                <label style="display: block; margin-bottom: 10px; font-weight: 600;">🌐 Idioma</label>
                 <select id="languageSelect" onchange="app.settings.changeLanguage(this.value)" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid var(--border);">
                     <option value="en-US">🇺🇸 English (US)</option>
-                    <option value="pt-BR">🇧🇷 Português (Brasil)</option>
+                    <option value="pt-BR">🇧🇷 Portugues (Brasil)</option>
                 </select>
             </div>
-            
+
+            <div class="theme-toggle">
+                <div class="theme-toggle-label">
+                    <span>🌙</span>
+                    <span>Modo Escuro</span>
+                </div>
+                <div class="toggle-switch" id="themeToggle" onclick="app.settings.toggleTheme()">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+
             <div class="danger-zone">
-                <h4 style="color: var(--danger); margin-bottom: 10px;">🗑️ <span data-i18n="dangerZone">Danger Zone</span></h4>
-                <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px; line-height: 1.5;" data-i18n="clearDataMsg">
-                    Clear all data will permanently remove employees, jobs, and history. This action cannot be undone.
+                <h4 style="color: var(--danger); margin-bottom: 10px;">🗑️ Zona de Perigo</h4>
+                <p style="font-size: 0.9rem; color: var(--secondary); margin-bottom: 15px; line-height: 1.5;">
+                    Limpar todos os dados removera permanentemente funcionarios, trabalhos e historico. Esta acao nao pode ser desfeita.
                 </p>
-                <button class="btn btn-danger" onclick="app.dataManager.clearAll()" style="width: 100%;" data-i18n="clearAllData">
-                    ⚠️ Clear All Data
+                <button class="btn btn-danger" onclick="app.dataManager.clearAll()" style="width: 100%;">
+                    ⚠️ Limpar Todos os Dados
                 </button>
             </div>
-            
-            <div style="text-align: center; padding-top: 20px; margin-top: 20px; border-top: 1px solid var(--border); color: #999; font-size: 0.8rem;">
-                BSOS Cloud Pro v6.0 | Bright & Shine Pro Services
+
+            <div style="text-align: center; padding-top: 20px; margin-top: 20px; border-top: 1px solid var(--border); color: var(--secondary); font-size: 0.8rem;">
+                BSOS Cloud Pro v6.1 | Bright & Shine Pro Services
             </div>
         </div>
     </div>
-    
+
     <!-- Quick Entry Modal -->
     <div class="modal-overlay" id="quickModal">
         <div class="modal-box" style="max-width: 700px;">
             <button class="modal-close" onclick="app.quickEntry.close()">&times;</button>
-            <h2 style="margin-bottom: 20px; color: var(--dark);">⚡ <span data-i18n="quickEntry">Quick Entry - Multiple Houses</span></h2>
-            
+            <h2 style="margin-bottom: 20px; color: var(--text);">⚡ Entrada Rapida - Multiplas Casas</h2>
+
             <div class="form-group" style="margin-bottom: 20px;">
-                <label data-i18n="employee">Employee</label>
+                <label>Funcionario</label>
                 <select id="quickCleaner" class="form-control" style="padding: 12px;">
-                    <option value="" data-i18n="select">Select...</option>
+                    <option value="">Selecione...</option>
                 </select>
             </div>
-            
+
             <div class="form-group" style="margin-bottom: 20px;">
-                <label data-i18n="date">Date</label>
+                <label>Data</label>
                 <input type="date" id="quickDate" class="form-control">
             </div>
-            
+
             <div id="quickHouses">
                 <div class="house-entry" data-index="0">
                     <div class="house-entry-header">
-                        <span class="house-number">🏠 House 1</span>
+                        <span class="house-number">🏠 Casa 1</span>
                     </div>
                     <div class="form-grid">
                         <div class="form-group full-width">
-                            <input type="text" class="form-control quick-address-0" placeholder="House Address...">
+                            <input type="text" class="form-control quick-address-0" placeholder="Endereco da Casa...">
                         </div>
                         <div class="form-group">
                             <input type="time" class="form-control quick-start-0" onchange="app.quickEntry.calculateHouse(0)">
@@ -732,28 +800,28 @@
                             <input type="number" step="0.01" class="form-control quick-rate-0" value="25.00" onchange="app.quickEntry.calculateHouse(0)">
                         </div>
                         <div class="form-group">
-                            <input type="text" class="form-control quick-total-0" placeholder="Total" readonly style="background: #f1f5f9; font-weight: 700; color: var(--success);">
+                            <input type="text" class="form-control quick-total-0" placeholder="Total" readonly style="background: var(--bg); font-weight: 700; color: var(--success);">
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <button class="add-house-btn" onclick="app.quickEntry.addHouse()">
-                <i class="fas fa-plus"></i> <span data-i18n="addAnotherHouse">Add Another House</span>
+                <i class="fas fa-plus"></i> Adicionar Outra Casa
             </button>
-            
+
             <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-secondary" onclick="app.quickEntry.close()" style="flex: 1;" data-i18n="cancel">Cancel</button>
-                <button class="btn btn-success" onclick="app.quickEntry.saveAll()" style="flex: 1;" data-i18n="saveAllHouses">💾 Save All Houses</button>
+                <button class="btn btn-secondary" onclick="app.quickEntry.close()" style="flex: 1;">Cancelar</button>
+                <button class="btn btn-success" onclick="app.quickEntry.saveAll()" style="flex: 1;">💾 Salvar Todas as Casas</button>
             </div>
         </div>
     </div>
-    
+
     <!-- Chart Modal -->
     <div class="modal-overlay" id="chartModal">
         <div class="modal-box" style="max-width: 800px;">
             <button class="modal-close" onclick="app.charts.close()">&times;</button>
-            <h2 style="margin-bottom: 20px; color: var(--dark);">📊 <span data-i18n="performanceChart">Performance Chart</span></h2>
+            <h2 style="margin-bottom: 20px; color: var(--text);">📊 Grafico de Desempenho</h2>
             <div class="chart-container">
                 <canvas id="performanceChart"></canvas>
             </div>
@@ -763,19 +831,19 @@
     <div class="container">
         <div class="header">
             <h1>🏠 Bright & Shine Pro</h1>
-            <p class="subtitle" data-i18n="subtitle">BSOS Cloud Pro - Payment Control System</p>
+            <p class="subtitle">BSOS Cloud Pro - Sistema de Controle de Pagamentos</p>
             <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
                 <div class="sync-status" id="syncStatus" onclick="app.cloud.forceSync()">
                     <span id="statusIcon">☁️</span>
                     <span id="statusText">Connecting...</span>
                 </div>
                 <span style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">☁️ CLOUD PRO</span>
-                <span style="background: linear-gradient(135deg, #f59e0b, #ea580c); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;" id="weekBadge">📅 Current Week</span>
+                <span style="background: linear-gradient(135deg, #f59e0b, #ea580c); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;" id="weekBadge">📅 Semana Atual</span>
                 <button class="btn btn-secondary" onclick="app.settings.open()" style="padding: 8px 16px; font-size: 0.9rem;">
-                    ⚙️ <span data-i18n="settings">Settings</span>
+                    ⚙️ Configuracoes
                 </button>
                 <button class="btn btn-info" onclick="app.charts.show()" style="padding: 8px 16px; font-size: 0.9rem;">
-                    📊 <span data-i18n="charts">Charts</span>
+                    📊 Graficos
                 </button>
             </div>
         </div>
@@ -783,242 +851,248 @@
         <div class="week-info" id="weekInfo">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <div>
-                    <div style="font-weight: 700; font-size: 1.1rem; color: var(--primary);" data-i18n="currentWeek">📅 Current Week</div>
+                    <div style="font-weight: 700; font-size: 1.1rem; color: var(--primary);">📅 Semana Atual</div>
                     <div style="font-size: 0.9rem; color: #666;" id="weekRange">Loading...</div>
                 </div>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn btn-secondary" onclick="app.weeks.showWeekHistory()" data-i18n="history">📚 History</button>
-                    <button class="btn" style="background: linear-gradient(135deg, #f59e0b, #ea580c); color: white;" onclick="app.weeks.closeWeek()" data-i18n="closeWeek">🔒 Close Week</button>
+                    <button class="btn btn-secondary" onclick="app.weeks.showWeekHistory()">📚 Historico</button>
+                    <button class="btn" style="background: linear-gradient(135deg, #f59e0b, #ea580c); color: white;" onclick="app.weeks.closeWeek()">🔒 Fechar Semana</button>
                 </div>
             </div>
         </div>
 
         <div class="week-closed-banner" id="weekClosedBanner">
-            <h3 style="color: #065f46; margin-bottom: 10px;">✅ Week Closed!</h3>
-            <p data-i18n="weekClosedMsg">This week has been closed. Data has been archived.</p>
-            <button class="btn btn-secondary" onclick="app.weeks.showWeekHistory()" style="margin-top: 10px;" data-i18n="viewHistory">View History</button>
+            <h3 style="color: #065f46; margin-bottom: 10px;">✅ Semana Fechada!</h3>
+            <p>Esta semana ja foi fechada. Os dados foram arquivados.</p>
+            <button class="btn btn-secondary" onclick="app.weeks.showWeekHistory()" style="margin-top: 10px;">Ver Historico</button>
         </div>
 
         <div class="grid">
             <!-- Column 1: Team -->
             <div class="card">
-                <div class="section-title" data-i18n="team">👥 Team</div>
+                <div class="section-title">👥 Equipe</div>
                 <div class="tab-buttons">
-                    <button class="tab-btn active" id="tab-list" data-i18n="teamTab" onclick="app.ui.showTab('list')">Team</button>
-                    <button class="tab-btn" id="tab-add" data-i18n="newTab" onclick="app.ui.showTab('add')">+ New</button>
+                    <button class="tab-btn active" id="tab-list" onclick="app.ui.showTab('list')">Time</button>
+                    <button class="tab-btn" id="tab-add" onclick="app.ui.showTab('add')">+ Novo</button>
                 </div>
-                
+
                 <div id="panel-list" class="tab-panel active">
                     <div id="employeeList"></div>
                 </div>
-                
+
                 <div id="panel-add" class="tab-panel">
                     <div class="form-group">
-                        <label data-i18n="fullName">Full Name</label>
+                        <label>Nome Completo</label>
                         <input type="text" id="newName" placeholder="Ex: Maria Silva">
                     </div>
                     <div class="form-group">
-                        <label data-i18n="hourlyRate">Hourly Rate ($)</label>
+                        <label>Valor por Hora ($)</label>
                         <input type="number" id="newRate" placeholder="25.00" step="0.01">
                     </div>
-                    <button class="btn btn-primary" onclick="app.employees.add()" data-i18n="addEmployee">➕ Add Employee</button>
+                    <button class="btn btn-primary" onclick="app.employees.add()">➕ Adicionar Funcionario</button>
                 </div>
             </div>
 
             <!-- Column 2: Job Registration -->
             <div class="card">
-                <div class="section-title" data-i18n="jobRegistration">📋 Job Registration</div>
-                
+                <div class="section-title">📋 Registro de Trabalhos</div>
+
                 <div class="quick-banner" id="quickBanner">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <div style="font-size: 0.85rem; opacity: 0.9;" data-i18n="enteringFor">Entering for</div>
+                            <div style="font-size: 0.85rem; opacity: 0.9;">Registrando para</div>
                             <div style="font-size: 1.2rem; font-weight: 700;" id="quickName"></div>
                         </div>
-                        <button onclick="app.employees.exitQuickMode()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;" data-i18n="exit">✕ Exit</button>
+                        <button onclick="app.employees.exitQuickMode()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;">✕ Sair</button>
                     </div>
                 </div>
-                
+
                 <div class="alert-banner" id="alertBanner">
                     <span style="font-size: 1.2rem;">⚠️</span>
                     <span id="alertMessage"></span>
                 </div>
-                
-                <!-- NEW: Quick Entry Button -->
+
+                <div class="alert-banner error" id="duplicateAlert" style="display: none;">
+                    <span style="font-size: 1.2rem;">⚠️</span>
+                    <span id="duplicateMessage"></span>
+                </div>
+
                 <div style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 2px dashed var(--primary); border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="app.quickEntry.open()">
                     <div style="font-size: 2rem; margin-bottom: 8px;">⚡</div>
-                    <div style="font-weight: 700; color: var(--primary);" data-i18n="quickEntryMode">Quick Entry Mode</div>
-                    <div style="font-size: 0.85rem; color: #666;" data-i18n="quickEntryDesc">Add multiple houses for same employee</div>
+                    <div style="font-weight: 700; color: var(--primary);">Modo Entrada Rapida</div>
+                    <div style="font-size: 0.85rem; color: #666;">Adicione multiplas casas para o mesmo funcionario</div>
                 </div>
-                
+
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group">
-                        <label data-i18n="employee">Employee</label>
+                        <label>Funcionario</label>
                         <select id="selEmployee" onchange="app.employees.onSelect()">
-                            <option value="" data-i18n="select">Select...</option>
+                            <option value="">Selecione...</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label data-i18n="date">Date</label>
+                        <label>Data</label>
                         <input type="date" id="workDate">
                     </div>
                 </div>
-                
+
                 <div class="form-group">
-                    <label data-i18n="houseAddress">House Address</label>
+                    <label>Endereco da Casa</label>
                     <div class="autocomplete-container">
-                        <input type="text" id="houseAddr" placeholder="Type address..." autocomplete="off" oninput="app.addresses.handleInput()">
+                        <input type="text" id="houseAddr" placeholder="Digite o endereco..." autocomplete="off" oninput="app.addresses.handleInput(); app.jobs.checkDuplicate();">
                         <div id="autocompleteList" class="autocomplete-list"></div>
                     </div>
-                    <small style="color: #666; font-size: 0.8rem;" data-i18n="addressHint">💡 Type to see saved address suggestions</small>
+                    <small style="color: #666; font-size: 0.8rem;">💡 Digite para ver sugestoes dos enderecos salvos</small>
                     <div id="quickAddresses" style="margin-top: 8px;"></div>
                     <div style="margin-top: 10px; display: flex; gap: 10px;">
-                        <button class="btn btn-sm btn-secondary" onclick="app.addresses.saveCurrent()" data-i18n="saveAddress">💾 Save Address</button>
-                        <button class="btn btn-sm btn-info" onclick="app.addresses.showManager()" data-i18n="manage">⚙️ Manage</button>
+                        <button class="btn btn-sm btn-secondary" onclick="app.addresses.saveCurrent()">💾 Salvar Endereco</button>
+                        <button class="btn btn-sm btn-info" onclick="app.addresses.showManager()">⚙️ Gerenciar</button>
                     </div>
                 </div>
-                
-                <!-- NEW: Time-based hours calculation -->
+
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                     <div class="form-group">
-                        <label data-i18n="startTime">Start Time</label>
+                        <label>Hora Entrada</label>
                         <input type="time" id="workStart" onchange="app.jobs.calculateFromTime()">
                     </div>
                     <div class="form-group">
-                        <label data-i18n="endTime">End Time</label>
+                        <label>Hora Saida</label>
                         <input type="time" id="workEnd" onchange="app.jobs.calculateFromTime()">
                     </div>
                     <div class="form-group">
-                        <label data-i18n="hours">Hours (or enter directly)</label>
+                        <label>Horas</label>
                         <input type="number" id="workHours" placeholder="3.5" step="0.5" oninput="app.jobs.calcTotal()">
                     </div>
                 </div>
-                
+
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
                     <div class="form-group">
-                        <label data-i18n="rate">Rate ($/h)</label>
+                        <label>Taxa ($/h)</label>
                         <input type="number" id="workRate" step="0.01" value="25.00" oninput="app.jobs.calcTotal()">
                     </div>
                     <div class="form-group">
-                        <label style="color: var(--success); font-weight: 700;" data-i18n="total">Total</label>
+                        <label style="color: var(--success); font-weight: 700;">Total</label>
                         <div style="background: var(--dark); color: #00E676; padding: 12px; border-radius: 12px; font-size: 1.5rem; font-weight: 700; text-align: center; font-family: monospace;" id="totalDisplay">$0.00</div>
+                        <div id="overtimeDisplay" style="margin-top: 5px; text-align: center; display: none;">
+                            <span class="overtime-badge">⚡ Horas Extras: +<span id="overtimeAmount">$0.00</span></span>
+                        </div>
                     </div>
                 </div>
-                
-                <button class="btn btn-success" onclick="app.jobs.validateAndSave()" style="margin-top: 15px;" data-i18n="registerJob">💾 Register Job</button>
-                
-                <!-- Filters -->
+
+                <button class="btn btn-success" onclick="app.jobs.validateAndSave()" style="margin-top: 15px;">💾 Registrar Trabalho</button>
+
                 <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid var(--border);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <strong data-i18n="filterBy">🔍 Filter by:</strong>
+                        <strong>🔍 Filtrar por:</strong>
                     </div>
                     <div class="filter-bar">
-                        <button class="filter-pill active" data-filter="today" onclick="app.filters.set('today', this)" data-i18n="today">Today</button>
-                        <button class="filter-pill" data-filter="week" onclick="app.filters.set('week', this)" data-i18n="week">Week</button>
-                        <button class="filter-pill" data-filter="month" onclick="app.filters.set('month', this)" data-i18n="month">Month</button>
+                        <button class="filter-pill active" data-filter="today" onclick="app.filters.set('today', this)">Hoje</button>
+                        <button class="filter-pill" data-filter="week" onclick="app.filters.set('week', this)">Semana</button>
+                        <button class="filter-pill" data-filter="month" onclick="app.filters.set('month', this)">Mes</button>
                     </div>
-                    
-                    <!-- NEW: Advanced filters -->
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                        <select id="filterEmployee" onchange="app.filters.apply()" style="padding: 8px; border-radius: 8px; border: 2px solid var(--border);">
-                            <option value="" data-i18n="allEmployees">All Employees</option>
+                        <select id="filterEmployee" onchange="app.filters.apply()" style="padding: 8px; border-radius: 8px; border: 2px solid var(--border); background: var(--card); color: var(--text);">
+                            <option value="">Todos Funcionarios</option>
                         </select>
-                        <select id="filterStatus" onchange="app.filters.apply()" style="padding: 8px; border-radius: 8px; border: 2px solid var(--border);">
-                            <option value="" data-i18n="allStatuses">All Statuses</option>
-                            <option value="normal" data-i18n="normal">Normal</option>
-                            <option value="high" data-i18n="highHours">High Hours</option>
-                            <option value="low" data-i18n="lowHours">Low Hours</option>
+                        <select id="filterStatus" onchange="app.filters.apply()" style="padding: 8px; border-radius: 8px; border: 2px solid var(--border); background: var(--card); color: var(--text);">
+                            <option value="">Todos Status</option>
+                            <option value="normal">Normal</option>
+                            <option value="high">Horas Altas</option>
+                            <option value="low">Horas Baixas</option>
                         </select>
                     </div>
-                    
+
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h3 id="jobsTitle" style="font-size: 1.1rem;" data-i18n="jobsTitle">Jobs</h3>
+                        <h3 id="jobsTitle" style="font-size: 1.1rem; color: var(--text);">Trabalhos</h3>
                         <span id="jobsCount" style="background: var(--primary); color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem; font-weight: 600;">0</span>
                     </div>
-                    
+
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>👤 <span data-i18n="employee">Employee</span></th>
-                                    <th>🏠 <span data-i18n="house">House</span></th>
-                                    <th>📅 <span data-i18n="date">Date</span></th>
-                                    <th>⏰ <span data-i18n="hours">Hours</span></th>
-                                    <th>💰 <span data-i18n="amount">Amount</span></th>
-                                    <th>📊 <span data-i18n="status">Status</span></th>
-                                    <th>⚙️</th>
+                                    <th>Funcionario</th>
+                                    <th>Casa</th>
+                                    <th>Data</th>
+                                    <th>Horas</th>
+                                    <th>Valor</th>
+                                    <th>Status</th>
+                                    <th>Acao</th>
                                 </tr>
                             </thead>
                             <tbody id="jobsTable"></tbody>
                         </table>
                     </div>
-                    
+
                     <div class="empty-state" id="noJobs" style="display: none;">
                         <div class="empty-state-icon">📋</div>
-                        <p data-i18n="noJobs">No jobs registered for this period</p>
+                        <p>Nenhum trabalho registrado para este periodo</p>
                     </div>
                 </div>
             </div>
 
             <!-- Column 3: Dashboard -->
             <div class="card">
-                <div class="section-title" data-i18n="dashboard">📊 Dashboard</div>
-                
+                <div class="section-title">📊 Dashboard</div>
+
                 <div class="stat-grid">
                     <div class="stat-box">
                         <div class="stat-value" id="statHours">0</div>
-                        <div class="stat-label" data-i18n="hoursStat">Hours</div>
+                        <div class="stat-label">Horas</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-value" id="statJobs">0</div>
-                        <div class="stat-label" data-i18n="housesStat">Houses</div>
+                        <div class="stat-label">Casas</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-value" id="statTotal">$0</div>
-                        <div class="stat-label" data-i18n="totalStat">Total</div>
+                        <div class="stat-label">Total</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-value" id="statAvgRate">$0</div>
-                        <div class="stat-label" data-i18n="avgRate">Avg Rate</div>
+                        <div class="stat-label">Media/Hora</div>
                     </div>
                 </div>
-                
-                <!-- Chart Preview -->
-                <div style="background: #f8fafc; border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 2px solid var(--border);">
+
+                <div style="background: var(--bg); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 2px solid var(--border);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <span style="font-weight: 600; font-size: 0.9rem;" data-i18n="weeklyTrend">Weekly Trend</span>
-                        <button class="btn btn-sm btn-secondary" onclick="app.charts.show()">📊 <span data-i18n="viewFull">View Full</span></button>
+                        <span style="font-weight: 600; font-size: 0.9rem; color: var(--text);">Tendencia Semanal</span>
+                        <button class="btn btn-sm btn-secondary" onclick="app.charts.show()">Ver Completo</button>
                     </div>
                     <div class="chart-container" style="height: 150px;">
                         <canvas id="miniChart"></canvas>
                     </div>
                 </div>
-                
+
                 <div style="margin-top: 20px;">
-                    <div class="section-title" style="font-size: 1rem;" data-i18n="export">📤 Export</div>
+                    <div class="section-title" style="font-size: 1rem;">📤 Exportar</div>
                     <button class="btn btn-secondary" onclick="app.export.whatsapp()" style="width: 100%; margin-bottom: 10px;">
-                        <i class="fab fa-whatsapp"></i> <span data-i18n="whatsapp">WhatsApp</span>
+                        <i class="fab fa-whatsapp"></i> WhatsApp
                     </button>
                     <button class="btn btn-secondary" onclick="app.export.csv()" style="width: 100%; margin-bottom: 10px;">
-                        <i class="fas fa-file-csv"></i> <span data-i18n="csv">Excel CSV</span>
+                        <i class="fas fa-file-csv"></i> Excel CSV
                     </button>
                     <button class="btn btn-secondary" onclick="app.export.pdf()" style="width: 100%; margin-bottom: 10px;">
-                        <i class="fas fa-file-pdf"></i> <span data-i18n="pdf">Professional PDF</span>
+                        <i class="fas fa-file-pdf"></i> PDF Profissional
                     </button>
-                    <button class="btn btn-secondary" onclick="app.export.report()" style="width: 100%;">
-                        <i class="fas fa-file-alt"></i> <span data-i18n="report">Full Report</span>
+                    <button class="btn btn-secondary" onclick="app.export.report()" style="width: 100%; margin-bottom: 10px;">
+                        <i class="fas fa-file-alt"></i> Relatorio Completo
+                    </button>
+                    <button class="btn btn-secondary" onclick="app.export.email()" style="width: 100%;">
+                        <i class="fas fa-envelope"></i> Email
                     </button>
                 </div>
-                
+
                 <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid var(--border);">
-                    <div class="section-title" style="font-size: 1rem;" data-i18n="topPerformers">🏆 Top Performers</div>
+                    <div class="section-title" style="font-size: 1rem;">🏆 Top Performers</div>
                     <div id="topList"></div>
                 </div>
             </div>
         </div>
-        
+
         <div style="text-align: center; margin-top: 30px; color: rgba(255,255,255,0.7); font-size: 0.9rem;">
-            <p>Bright & Shine Pro Services | BSOS Cloud Pro v6.0 | Firebase Powered</p>
+            <p>Bright & Shine Pro Services | BSOS Cloud Pro v6.1 | Firebase Powered</p>
         </div>
     </div>
 
@@ -1026,12 +1100,13 @@
     <div class="modal-overlay" id="modal">
         <div class="modal-box">
             <button class="modal-close" onclick="app.modals.closeAll()">&times;</button>
-            <h2 id="modalTitle" style="margin-bottom: 20px;"></h2>
+            <h2 id="modalTitle" style="margin-bottom: 20px; color: var(--text);"></h2>
             <div id="modalContent"></div>
         </div>
     </div>
 
     <script>
+
         // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBFQYLksijKV8dYa-djdn04AUsd13zzta4",
@@ -1046,7 +1121,7 @@
         const db = firebase.firestore();
 
         const app = {
-            config: { storageKey: 'bsos_cloud_pro_v6', version: 6.0 },
+            config: { storageKey: 'bsos_cloud_pro_v6', version: 6.1 },
             data: {
                 employees: [
                     { id: 1, name: "Isabel Farias", rate: 25 },
@@ -1061,147 +1136,39 @@
                 editingJobId: null,
                 isOnline: navigator.onLine,
                 chartInstance: null,
-                miniChartInstance: null
-            },
-
-            i18n: {
-                texts: {
-                    'en-US': {
-                        settings: 'Settings', language: 'Language', dangerZone: 'Danger Zone',
-                        clearDataMsg: 'Clear all data will permanently remove employees, jobs, and history. This action cannot be undone.',
-                        clearAllData: '⚠️ Clear All Data', subtitle: 'BSOS Cloud Pro - Payment Control System',
-                        currentWeek: '📅 Current Week', weekClosed: '🔒 Week Closed', closeWeek: '🔒 Close Week',
-                        history: '📚 History', weekClosedMsg: 'This week has been closed. Data has been archived.',
-                        viewHistory: 'View History', team: '👥 Team', teamTab: 'Team', newTab: '+ New',
-                        fullName: 'Full Name', hourlyRate: 'Hourly Rate ($)', addEmployee: '➕ Add Employee',
-                        jobRegistration: '📋 Job Registration', enteringFor: 'Entering for', exit: '✕ Exit',
-                        employee: 'Employee', select: 'Select...', date: 'Date', houseAddress: 'House Address',
-                        addressHint: '💡 Type to see saved address suggestions', saveAddress: '💾 Save Address',
-                        manage: '⚙️ Manage', startTime: 'Start Time', endTime: 'End Time', hours: 'Hours',
-                        rate: 'Rate ($/h)', total: 'Total', registerJob: '💾 Register Job',
-                        filterBy: '🔍 Filter by:', today: 'Today', week: 'Week', month: 'Month',
-                        allEmployees: 'All Employees', allStatuses: 'All Statuses', normal: 'Normal',
-                        highHours: 'High Hours', lowHours: 'Low Hours', jobsTitle: 'Jobs',
-                        house: 'House', amount: 'Amount', status: 'Status', noJobs: 'No jobs registered for this period',
-                        dashboard: '📊 Dashboard', hoursStat: 'Hours', housesStat: 'Houses', totalStat: 'Total',
-                        avgRate: 'Avg Rate', weeklyTrend: 'Weekly Trend', viewFull: 'View Full',
-                        export: '📤 Export', whatsapp: 'WhatsApp', csv: 'Excel CSV', pdf: 'Professional PDF',
-                        report: 'Full Report', topPerformers: '🏆 Top Performers', quickEntry: 'Quick Entry',
-                        quickEntryMode: 'Quick Entry Mode', quickEntryDesc: 'Add multiple houses for same employee',
-                        addAnotherHouse: 'Add Another House', saveAllHouses: '💾 Save All Houses',
-                        cancel: 'Cancel', charts: 'Charts', performanceChart: 'Performance Chart',
-                        // Alerts & Validations
-                        fillAllFields: 'Please fill all fields!', fillNameRate: 'Please fill name and hourly rate!',
-                        weekAlreadyClosed: 'This week has been closed! Cannot add more jobs.',
-                        closedJobEdit: 'Closed job cannot be edited!', closedJobDelete: 'Closed job cannot be deleted!',
-                        dailyLimit: 'Daily limit of 12 hours exceeded!', houseRegistered: 'House already registered for this date!',
-                        onlyHours: 'Only', hoursCorrect: 'hours. Is this correct?',
-                        hoursUnusual: 'hours is unusual. Confirm?', jobRegistered: 'registered!',
-                        jobUpdated: 'Job updated!', deleteConfirm: 'Delete this job?',
-                        removed: 'Removed!', updated: 'Updated!', added: 'added!',
-                        noJobsWeek: 'No jobs in current week', attention: 'Attention',
-                        weekCloseMsg: 'When closing the week, jobs can no longer be edited. Continue?',
-                        closedSuccess: 'Week closed successfully!', newWeekStarted: 'New week started!',
-                        paymentSummary: 'Payment Summary', noDataExport: 'No data to export',
-                        copied: 'Copied!', syncing: 'Syncing...', synced: 'Cloud synced',
-                        offline: 'Offline mode', connecting: 'Connecting...', to: 'to',
-                        weekHistory: 'Week History', exportPDF: 'Export PDF', totalWeek: 'Week Total',
-                        saveError: 'Save error', loadError: 'Load error'
-                    },
-                    'pt-BR': {
-                        settings: 'Configurações', language: 'Idioma', dangerZone: 'Zona de Perigo',
-                        clearDataMsg: 'Limpar todos os dados removerá permanentemente funcionários, trabalhos e histórico. Esta ação não pode ser desfeita.',
-                        clearAllData: '⚠️ Limpar Todos os Dados', subtitle: 'BSOS Cloud Pro - Sistema de Controle de Pagamentos',
-                        currentWeek: '📅 Semana Atual', weekClosed: '🔒 Semana Fechada', closeWeek: '🔒 Fechar Semana',
-                        history: '📚 Histórico', weekClosedMsg: 'Esta semana já foi fechada. Os dados foram arquivados.',
-                        viewHistory: 'Ver Histórico', team: '👥 Equipe', teamTab: 'Time', newTab: '+ Novo',
-                        fullName: 'Nome Completo', hourlyRate: 'Valor por Hora ($)', addEmployee: '➕ Adicionar Funcionário',
-                        jobRegistration: '📋 Registro de Trabalhos', enteringFor: 'Registrando para', exit: '✕ Sair',
-                        employee: 'Funcionário', select: 'Selecione...', date: 'Data', houseAddress: 'Endereço da Casa',
-                        addressHint: '💡 Digite para ver sugestões dos endereços salvos', saveAddress: '💾 Salvar Endereço',
-                        manage: '⚙️ Gerenciar', startTime: 'Hora Entrada', endTime: 'Hora Saída', hours: 'Horas',
-                        rate: 'Taxa ($/h)', total: 'Total', registerJob: '💾 Registrar Trabalho',
-                        filterBy: '🔍 Filtrar por:', today: 'Hoje', week: 'Semana', month: 'Mês',
-                        allEmployees: 'Todos Funcionários', allStatuses: 'Todos Status', normal: 'Normal',
-                        highHours: 'Horas Altas', lowHours: 'Horas Baixas', jobsTitle: 'Trabalhos',
-                        house: 'Casa', amount: 'Valor', status: 'Status', noJobs: 'Nenhum trabalho registrado neste período',
-                        dashboard: '📊 Dashboard', hoursStat: 'Horas', housesStat: 'Casas', totalStat: 'Total',
-                        avgRate: 'Média/Hora', weeklyTrend: 'Tendência Semanal', viewFull: 'Ver Completo',
-                        export: '📤 Exportar', whatsapp: 'WhatsApp', csv: 'Excel CSV', pdf: 'PDF Profissional',
-                        report: 'Relatório Completo', topPerformers: '🏆 Top Performers', quickEntry: 'Entrada Rápida',
-                        quickEntryMode: 'Modo Entrada Rápida', quickEntryDesc: 'Adicione múltiplas casas para o mesmo funcionário',
-                        addAnotherHouse: 'Adicionar Outra Casa', saveAllHouses: '💾 Salvar Todas as Casas',
-                        cancel: 'Cancelar', charts: 'Gráficos', performanceChart: 'Gráfico de Desempenho',
-                        // Alerts
-                        fillAllFields: 'Preencha todos os campos!', fillNameRate: 'Preencha nome e valor por hora!',
-                        weekAlreadyClosed: 'Esta semana já foi fechada! Não é possível adicionar mais trabalhos.',
-                        closedJobEdit: 'Trabalho fechado não pode ser editado!', closedJobDelete: 'Trabalho fechado não pode ser excluído!',
-                        dailyLimit: 'Limite diário de 12h excedido!', houseRegistered: 'Casa já registrada nesta data!',
-                        onlyHours: 'Apenas', hoursCorrect: 'horas. Está correto?',
-                        hoursUnusual: 'horas é incomum. Confirmar?', jobRegistered: 'registrado!',
-                        jobUpdated: 'Trabalho atualizado!', deleteConfirm: 'Excluir este trabalho?',
-                        removed: 'Removido!', updated: 'Atualizado!', added: 'adicionado!',
-                        noJobsWeek: 'Nenhum trabalho na semana atual', attention: 'Atenção',
-                        weekCloseMsg: 'Ao fechar a semana, os trabalhos não poderão mais ser editados. Continuar?',
-                        closedSuccess: 'Semana fechada com sucesso!', newWeekStarted: 'Nova semana iniciada!',
-                        paymentSummary: 'Resumo de Pagamento', noDataExport: 'Sem dados para exportar',
-                        copied: 'Copiado!', syncing: 'Sincronizando...', synced: 'Sincronizado na nuvem',
-                        offline: 'Modo offline', connecting: 'Conectando...', to: 'até',
-                        weekHistory: 'Histórico de Semanas', exportPDF: 'Exportar PDF', totalWeek: 'Total da Semana',
-                        saveError: 'Erro ao salvar', loadError: 'Erro ao carregar'
-                    }
-                },
-                
-                currentLang: 'en-US',
-                
-                t: function(key) {
-                    return this.texts[this.currentLang][key] || key;
-                },
-                
-                setLanguage: function(lang) {
-                    this.currentLang = lang;
-                    localStorage.setItem('bsos_language', lang);
-                    this.applyTranslations();
-                },
-                
-                applyTranslations: function() {
-                    const elements = document.querySelectorAll('[data-i18n]');
-                    elements.forEach(el => {
-                        const key = el.getAttribute('data-i18n');
-                        if (this.texts[this.currentLang][key]) {
-                            el.textContent = this.texts[this.currentLang][key];
-                        }
-                    });
-                    
-                    document.getElementById('newName').placeholder = this.currentLang === 'pt-BR' ? 'Ex: Maria Silva' : 'Ex: John Doe';
-                    document.getElementById('houseAddr').placeholder = this.t('houseAddress') + '...';
-                    
-                    app.renderAll();
-                }
+                miniChartInstance: null,
+                darkMode: false
             },
 
             init: function() {
-                console.log('🚀 BSOS Cloud Pro v6.0 - Initializing...');
-                
-                const savedLang = localStorage.getItem('bsos_language');
-                if (savedLang && this.i18n.texts[savedLang]) {
-                    this.i18n.currentLang = savedLang;
+                console.log('BSOS Cloud Pro v6.1 - Initializing...');
+
+                const savedLang = localStorage.getItem('bsos_language') || 'pt-BR';
+                if (savedLang) {
                     document.getElementById('languageSelect').value = savedLang;
                 }
-                
+
+                const savedTheme = localStorage.getItem('bsos_theme');
+                if (savedTheme === 'dark') {
+                    this.data.darkMode = true;
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.getElementById('themeToggle').classList.add('active');
+                }
+
                 this.setupNetworkListeners();
                 this.loadData();
                 this.setupEventListeners();
                 document.getElementById('workDate').valueAsDate = new Date();
                 document.getElementById('quickDate').valueAsDate = new Date();
-                
-                this.i18n.applyTranslations();
+
                 this.renderAll();
                 this.cloud.init();
                 this.charts.initMini();
-                
+
+                setInterval(() => this.cloud.autoBackup(), 30 * 60 * 1000);
                 setInterval(() => this.weeks.checkAutoClose(), 60000);
-                console.log('✅ BSOS Cloud Pro Ready! Language: ' + this.i18n.currentLang);
+
+                console.log('BSOS Cloud Pro Ready!');
             },
 
             setupNetworkListeners: function() {
@@ -1222,7 +1189,7 @@
                         document.getElementById('autocompleteList').classList.remove('show');
                     }
                 });
-                
+
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape') {
                         this.modals.closeAll();
@@ -1234,14 +1201,14 @@
                 const el = document.getElementById('syncStatus');
                 const icon = document.getElementById('statusIcon');
                 const text = document.getElementById('statusText');
-                
+
                 const configs = {
-                    online: { icon: '☁️', text: this.i18n.t('synced'), class: '' },
-                    offline: { icon: '📴', text: this.i18n.t('offline'), class: 'offline' },
-                    syncing: { icon: '🔄', text: this.i18n.t('syncing'), class: 'pending' },
-                    error: { icon: '❌', text: 'Error', class: 'error' }
+                    online: { icon: '☁️', text: 'Sincronizado', class: '' },
+                    offline: { icon: '📴', text: 'Modo Offline', class: 'offline' },
+                    syncing: { icon: '🔄', text: 'Sincronizando...', class: 'pending' },
+                    error: { icon: '❌', text: 'Erro', class: 'error' }
                 };
-                
+
                 const config = configs[status] || configs.online;
                 icon.textContent = config.icon;
                 text.textContent = config.text;
@@ -1257,8 +1224,9 @@
                         if (data.jobs) this.data.jobs = data.jobs;
                         if (data.savedAddresses) this.data.savedAddresses = data.savedAddresses;
                         if (data.currentFilter) this.data.currentFilter = data.currentFilter;
+                        if (data.darkMode !== undefined) this.data.darkMode = data.darkMode;
                     }
-                } catch (e) { console.error(this.i18n.t('loadError'), e); }
+                } catch (e) { console.error('Erro ao carregar:', e); }
             },
 
             saveData: function() {
@@ -1267,10 +1235,11 @@
                         employees: this.data.employees,
                         jobs: this.data.jobs,
                         savedAddresses: this.data.savedAddresses,
-                        currentFilter: this.data.currentFilter
+                        currentFilter: this.data.currentFilter,
+                        darkMode: this.data.darkMode
                     };
                     localStorage.setItem(this.config.storageKey, JSON.stringify(data));
-                } catch (e) { console.error(this.i18n.t('saveError'), e); }
+                } catch (e) { console.error('Erro ao salvar:', e); }
             },
 
             renderAll: function() {
@@ -1288,12 +1257,9 @@
                 const range = this.weeks.getWeekRange(weekId);
                 const weekJobs = this.weeks.getCurrentWeekJobs();
                 const isClosed = weekJobs.length > 0 && weekJobs[0].status === 'closed';
-                
-                const lang = this.i18n.currentLang;
-                const dateFormat = lang === 'pt-BR' ? 'pt-BR' : 'en-US';
-                
+
                 document.getElementById('weekRange').textContent = 
-                    `${range.start.toLocaleDateString(dateFormat)} - ${range.end.toLocaleDateString(dateFormat)} | ${weekJobs.length} ${lang === 'pt-BR' ? 'trabalhos' : 'jobs'}`;
+                    `${range.start.toLocaleDateString('pt-BR')} - ${range.end.toLocaleDateString('pt-BR')} | ${weekJobs.length} trabalhos`;
 
                 if (isClosed) {
                     document.getElementById('weekInfo').style.display = 'none';
@@ -1312,84 +1278,713 @@
             }
         };
 
-        // Cloud Functions
-        app.cloud = {
-            init: function() {
-                if (app.data.isOnline) {
-                    app.updateSyncStatus('syncing');
-                    this.sync();
-                } else {
-                    app.updateSyncStatus('offline');
-                }
+        // CORRECAO PRINCIPAL: Funcoes de semana ajustadas para evitar bugs de timezone
+        app.weeks = {
+            // CORRIGIDO: Garante que o domingo seja calculado corretamente no timezone local
+            getWeekId: function(date = new Date()) {
+                // Cria uma nova data usando apenas ano, mes e dia (evita problemas de hora/timezone)
+                const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                const day = d.getDay(); // 0 = Domingo, 1 = Segunda, etc.
+
+                // Calcula a diferenca para o domingo (inicio da semana)
+                const diff = d.getDate() - day;
+
+                // Cria a data do domingo usando o construtor de ano, mes, dia (sem hora)
+                const sunday = new Date(d.getFullYear(), d.getMonth(), diff);
+
+                // Formata como YYYY-MM-DD
+                const year = sunday.getFullYear();
+                const month = String(sunday.getMonth() + 1).padStart(2, '0');
+                const dayNum = String(sunday.getDate()).padStart(2, '0');
+
+                return `${year}-${month}-${dayNum}`;
             },
 
-            sync: async function() {
-                if (!app.data.isOnline) return;
-                app.updateSyncStatus('syncing');
+            getWeekRange: function(weekId) {
+                const parts = weekId.split('-');
+                // Cria a data usando ano, mes (0-indexed), dia para evitar timezone issues
+                const start = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                const end = new Date(start);
+                end.setDate(end.getDate() + 6);
+                // Ajusta para o final do dia
+                end.setHours(23, 59, 59, 999);
+                return { start, end };
+            },
+
+            getCurrentWeekJobs: function() {
+                const weekId = this.getWeekId();
+                return app.data.jobs.filter(j => {
+                    // Se o job ja tem weekId definido, usa ele
+                    if (j.weekId) return j.weekId === weekId;
+                    // Senao, verifica se a data esta na semana atual
+                    return this.isInCurrentWeek(j.date);
+                });
+            },
+
+            isInCurrentWeek: function(dateStr) {
+                // Adiciona T12:00:00 para garantir que estamos no meio do dia (evitar problemas de timezone)
+                const date = new Date(dateStr + 'T12:00:00');
+                const weekId = this.getWeekId();
+                const range = this.getWeekRange(weekId);
+                return date >= range.start && date <= range.end;
+            },
+
+            closeWeek: function() {
+                const weekId = this.getWeekId();
+                const weekJobs = this.getCurrentWeekJobs();
+
+                if (weekJobs.length === 0) {
+                    app.showToast('Nenhum trabalho na semana atual', 'warning');
+                    return;
+                }
+
+                const totals = {};
+                weekJobs.forEach(j => {
+                    if (!totals[j.employeeId]) {
+                        totals[j.employeeId] = { name: j.employeeName, hours: 0, total: 0 };
+                    }
+                    totals[j.employeeId].hours += j.hours;
+                    totals[j.employeeId].total += j.total;
+                });
+
+                const range = this.getWeekRange(weekId);
+
+                let html = `<h3>🔒 Fechar Semana - ${weekId}</h3>`;
+                html += `<div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px; border-radius: 12px; margin: 15px 0; text-align: center;">`;
+                html += `<div style="font-size: 2rem; font-weight: 700;">${weekJobs.length} Casas</div>`;
+                html += `<div>${weekJobs.reduce((s, j) => s + j.hours, 0).toFixed(1)}h | $${weekJobs.reduce((s, j) => s + j.total, 0).toFixed(2)}</div>`;
+                html += `</div>`;
+
+                html += `<h4>💰 Resumo de Pagamento:</h4>`;
+                Object.values(totals).forEach(emp => {
+                    html += `<div style="display: flex; justify-content: space-between; padding: 12px; background: var(--bg); border-radius: 8px; margin-bottom: 8px;">`;
+                    html += `<div><strong>${emp.name}</strong><br><small>${emp.hours.toFixed(1)}h</small></div>`;
+                    html += `<div style="font-size: 1.2rem; font-weight: 700; color: var(--success);">$${emp.total.toFixed(2)}</div>`;
+                    html += `</div>`;
+                });
+
+                html += `<div style="background: #FFF3E0; border-left: 4px solid #FF9800; padding: 15px; margin: 20px 0; border-radius: 8px;">`;
+                html += `<p>⚠️ <strong>Atencao:</strong> Ao fechar a semana, os trabalhos nao poderao mais ser editados. Continuar?</p>`;
+                html += `</div>`;
+
+                html += `<div style="display: flex; gap: 10px;">`;
+                html += `<button class="btn btn-secondary" onclick="app.modals.closeAll()" style="flex: 1;">Cancelar</button>`;
+                html += `<button class="btn btn-success" onclick="app.weeks.confirmClose()" style="flex: 1;">✅ Fechar Semana</button>`;
+                html += `</div>`;
+
+                app.modals.show('Fechar Semana', html);
+            },
+
+            confirmClose: async function() {
+                const weekId = this.getWeekId();
+                const weekJobs = this.getCurrentWeekJobs();
+
+                weekJobs.forEach(j => {
+                    j.weekId = weekId;
+                    j.status = 'closed';
+                    j.closedAt = new Date().toISOString();
+                    app.cloud.saveJob(j);
+                });
+
+                if (app.data.isOnline) {
+                    const totals = {};
+                    weekJobs.forEach(j => {
+                        if (!totals[j.employeeId]) {
+                            totals[j.employeeId] = { name: j.employeeName, hours: 0, total: 0 };
+                        }
+                        totals[j.employeeId].hours += j.hours;
+                        totals[j.employeeId].total += j.total;
+                    });
+
+                    await db.collection('weeks').doc(weekId).set({
+                        weekId: weekId,
+                        closedAt: new Date().toISOString(),
+                        totalJobs: weekJobs.length,
+                        totalHours: weekJobs.reduce((s, j) => s + j.hours, 0),
+                        totalAmount: weekJobs.reduce((s, j) => s + j.total, 0),
+                        employeeTotals: totals,
+                        jobs: weekJobs.map(j => j.id)
+                    });
+                }
+
+                app.saveData();
+                app.modals.closeAll();
+                app.showToast('✅ Semana fechada com sucesso!');
+                app.renderAll();
+
+                setTimeout(() => {
+                    app.showToast('📅 Nova semana iniciada!', 'success');
+                }, 2000);
+            },
+
+            showWeekHistory: async function() {
+                app.modals.show('Historico de Semanas', '<div>Carregando...</div>');
 
                 try {
-                    const empSnapshot = await db.collection('employees').get();
-                    if (!empSnapshot.empty) {
-                        app.data.employees = empSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    let weeks = [];
+                    if (app.data.isOnline) {
+                        const snapshot = await db.collection('weeks').orderBy('closedAt', 'desc').get();
+                        weeks = snapshot.docs.map(doc => doc.data());
                     } else {
-                        await this.pushEmployees();
+                        const closedJobs = app.data.jobs.filter(j => j.status === 'closed' && j.weekId);
+                        const weekMap = {};
+                        closedJobs.forEach(j => {
+                            if (!weekMap[j.weekId]) {
+                                weekMap[j.weekId] = {
+                                    weekId: j.weekId,
+                                    jobs: [],
+                                    totalHours: 0,
+                                    totalAmount: 0
+                                };
+                            }
+                            weekMap[j.weekId].jobs.push(j);
+                            weekMap[j.weekId].totalHours += j.hours;
+                            weekMap[j.weekId].totalAmount += j.total;
+                        });
+                        weeks = Object.values(weekMap);
                     }
 
-                    const jobsSnapshot = await db.collection('jobs').get();
-                    if (!jobsSnapshot.empty) {
-                        app.data.jobs = jobsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    if (weeks.length === 0) {
+                        document.getElementById('modalContent').innerHTML = `<p style="text-align: center; color: #999; padding: 40px;">Nenhuma semana fechada ainda.</p>`;
+                        return;
                     }
 
-                    const addrDoc = await db.collection('config').doc('addresses').get();
-                    if (addrDoc.exists) {
-                        app.data.savedAddresses = addrDoc.data().list || [];
-                    }
+                    let html = '<div style="max-height: 60vh; overflow-y: auto;">';
 
-                    app.renderAll();
-                    app.saveData();
-                    app.updateSyncStatus('online');
-                    app.showToast('☁️ ' + (app.i18n.currentLang === 'pt-BR' ? 'Dados sincronizados!' : 'Data synced!'));
+                    weeks.forEach(w => {
+                        const range = this.getWeekRange(w.weekId);
+                        html += `<div style="background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 1px solid var(--border);">`;
+                        html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">`;
+                        html += `<div><div style="font-weight: 700; color: var(--text);">Semana: ${w.weekId}</div>`;
+                        html += `<div style="font-size: 0.8rem; color: var(--secondary);">${range.start.toLocaleDateString('pt-BR')} - ${range.end.toLocaleDateString('pt-BR')}</div></div>`;
+                        html += `<div style="background: var(--success); color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem;">Fechada ✓</div>`;
+                        html += `</div>`;
+                        html += `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">`;
+                        html += `<div><div style="font-weight: 700; color: var(--text);">${w.totalJobs || w.jobs?.length || 0}</div><div style="font-size: 0.75rem; color: var(--secondary);">Casas</div></div>`;
+                        html += `<div><div style="font-weight: 700; color: var(--text);">${(w.totalHours || 0).toFixed(1)}h</div><div style="font-size: 0.75rem; color: var(--secondary);">Horas</div></div>`;
+                        html += `<div><div style="font-weight: 700; color: var(--success);">$${(w.totalAmount || 0).toFixed(0)}</div><div style="font-size: 0.75rem; color: var(--secondary);">Total</div></div>`;
+                        html += `</div>`;
+                        html += `</div>`;
+                    });
+
+                    html += '</div>';
+                    document.getElementById('modalContent').innerHTML = html;
+
                 } catch (error) {
-                    console.error('Sync error:', error);
-                    app.updateSyncStatus('error');
+                    document.getElementById('modalContent').innerHTML = '<p style="color: red; text-align: center;">Erro ao carregar historico.</p>';
                 }
             },
 
-            pushEmployees: async function() {
-                const batch = db.batch();
-                app.data.employees.forEach(emp => {
-                    const ref = db.collection('employees').doc(String(emp.id));
-                    batch.set(ref, emp);
-                });
-                await batch.commit();
-            },
-
-            saveJob: async function(job) {
-                if (!app.data.isOnline) return;
-                try { await db.collection('jobs').doc(String(job.id)).set(job); } catch (e) {}
-            },
-
-            deleteJob: async function(jobId) {
-                if (!app.data.isOnline) return;
-                try { await db.collection('jobs').doc(String(jobId)).delete(); } catch (e) {}
-            },
-
-            saveAddresses: async function() {
-                if (!app.data.isOnline) return;
-                try { await db.collection('config').doc('addresses').update({ list: app.data.savedAddresses }); } catch (e) {}
-            },
-
-            forceSync: function() {
-                if (app.data.isOnline) {
-                    this.sync();
-                    app.showToast('🔄 ' + app.i18n.t('syncing'));
-                } else {
-                    app.showToast('📴 ' + app.i18n.t('offline'), 'warning');
+            checkAutoClose: function() {
+                const now = new Date();
+                if (now.getDay() === 6 && now.getHours() === 23 && now.getMinutes() >= 59) {
+                    const weekJobs = this.getCurrentWeekJobs();
+                    if (weekJobs.length > 0 && weekJobs[0].status !== 'closed') {
+                        this.closeWeek();
+                    }
                 }
             }
         };
 
-        // Employees
+        // CORRECAO: Exportacoes sem emojis nos PDFs para evitar simbolos estranhos
+        app.export = {
+            // Funcao auxiliar para limpar texto de emojis e caracteres problematicos para PDF
+            cleanForPDF: function(text) {
+                if (!text) return '';
+                // Remove emojis (range unicode aproximado)
+                return text
+                    .replace(/[\u{1F600}-\u{1F64F}]/gu, '')
+                    .replace(/[\u{1F300}-\u{1F5FF}]/gu, '')
+                    .replace(/[\u{1F680}-\u{1F6FF}]/gu, '')
+                    .replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '')
+                    .replace(/[\u{2600}-\u{26FF}]/gu, '')
+                    .replace(/[\u{2700}-\u{27BF}]/gu, '')
+                    .replace(/[🚀✅📄💾⚠️🔒📅📚👥📋✕🏠📍💡⚡🥇🥈🥉•◆◇▪▫]/g, '')
+                    .trim();
+            },
+
+            pdf: function() {
+                const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
+                if (!weekJobs.length) { app.showToast('Sem dados para exportar', 'error'); return; }
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const weekId = app.weeks.getWeekId();
+                const currentDate = new Date().toLocaleDateString('pt-BR');
+
+                // Configurar fonte
+                doc.setFont("helvetica");
+
+                // Cabecalho limpo (sem emojis)
+                doc.setFontSize(20); 
+                doc.setTextColor(37, 99, 235); 
+                doc.text('Bright & Shine Pro Services', 14, 20);
+
+                doc.setFontSize(12); 
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Semana Atual: ${weekId}`, 14, 28);
+                doc.text(`Data: ${currentDate}`, 14, 34);
+
+                const grouped = {};
+                weekJobs.forEach(j => {
+                    if (!grouped[j.employeeId]) {
+                        const emp = app.data.employees.find(e => e.id === j.employeeId);
+                        grouped[j.employeeId] = { 
+                            employee: emp || { name: this.cleanForPDF(j.employeeName), rate: j.rate }, 
+                            jobs: [],
+                            subtotal: 0,
+                            subhours: 0,
+                            overtimeTotal: 0
+                        };
+                    }
+                    grouped[j.employeeId].jobs.push(j);
+                    grouped[j.employeeId].subtotal += j.total;
+                    grouped[j.employeeId].subhours += j.hours;
+                    if (j.overtimeHours > 0) {
+                        grouped[j.employeeId].overtimeTotal += (j.overtimeHours * j.rate * 1.5);
+                    }
+                });
+
+                let startY = 45;
+
+                Object.values(grouped).forEach((data, index) => {
+                    if (startY > 250) {
+                        doc.addPage();
+                        startY = 20;
+                    }
+
+                    // Nome do funcionario (limpo)
+                    const cleanName = this.cleanForPDF(data.employee.name);
+                    doc.setFontSize(11); 
+                    doc.setTextColor(30, 41, 59); 
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`${cleanName} ($${data.employee.rate}/h)`, 14, startY);
+
+                    // Subtotal
+                    doc.setFontSize(10);
+                    doc.setTextColor(16, 185, 129);
+                    const otText = data.overtimeTotal > 0 ? ` (+$${data.overtimeTotal.toFixed(0)} OT)` : '';
+                    doc.text(`${data.subhours.toFixed(1)}h = $${data.subtotal.toFixed(2)}${otText}`, 150, startY, { align: 'right' });
+
+                    doc.setFont("helvetica", "normal");
+                    doc.setTextColor(60, 60, 60);
+
+                    // Tabela de jobs (sem emojis nos headers)
+                    const body = data.jobs.map(j => {
+                        const ot = j.overtimeHours > 0 ? ` (+${j.overtimeHours}h OT)` : '';
+                        return [
+                            new Date(j.date).toLocaleDateString('pt-BR'), 
+                            this.cleanForPDF(j.house.length > 35 ? j.house.substring(0, 35) + '...' : j.house), 
+                            `${j.hours}h${ot}`, 
+                            `$${j.total.toFixed(2)}`
+                        ];
+                    });
+
+                    doc.autoTable({ 
+                        head: [['Data', 'Casa', 'Horas', 'Valor']], 
+                        body: body, 
+                        startY: startY + 5, 
+                        theme: 'grid',
+                        headStyles: { 
+                            fillColor: [37, 99, 235], 
+                            textColor: 255,
+                            fontSize: 9
+                        },
+                        bodyStyles: {
+                            fontSize: 9,
+                            cellPadding: 2
+                        },
+                        margin: { left: 14, right: 14 },
+                        columnStyles: {
+                            0: { cellWidth: 25 },
+                            1: { cellWidth: 'auto' },
+                            2: { cellWidth: 25, halign: 'center' },
+                            3: { cellWidth: 30, halign: 'right' }
+                        }
+                    });
+
+                    // Linha de subtotal do funcionario
+                    const finalY = doc.lastAutoTable.finalY;
+                    doc.setFillColor(240, 253, 244);
+                    doc.rect(14, finalY, 182, 8, 'F');
+                    doc.setFontSize(10);
+                    doc.setTextColor(6, 95, 70);
+                    doc.setFont("helvetica", "bold");
+                    const otLine = data.overtimeTotal > 0 ? ` (inclui $${data.overtimeTotal.toFixed(2)} OT)` : '';
+                    doc.text(`${cleanName} Total: ${data.subhours.toFixed(1)}h = $${data.subtotal.toFixed(2)}${otLine}`, 105, finalY + 5.5, { align: 'center' });
+
+                    startY = finalY + 18;
+                });
+
+                // Total geral
+                const grandTotal = weekJobs.reduce((s, j) => s + j.total, 0);
+                const grandHours = weekJobs.reduce((s, j) => s + j.hours, 0);
+                const grandOvertime = weekJobs.reduce((s, j) => s + (j.overtimeHours || 0), 0);
+
+                if (startY > 260) {
+                    doc.addPage();
+                    startY = 20;
+                }
+
+                // Box do total geral
+                doc.setFillColor(30, 41, 59); 
+                doc.rect(14, startY, 182, 14, 'F');
+                doc.setTextColor(16, 185, 129); 
+                doc.setFontSize(14); 
+                doc.setFont("helvetica", "bold");
+                const grandOtText = grandOvertime > 0 ? ` (${grandOvertime.toFixed(1)}h OT)` : '';
+                doc.text(`Total da Semana: ${grandHours.toFixed(1)}h${grandOtText} = $${grandTotal.toFixed(2)}`, 105, startY + 9.5, { align: 'center' });
+
+                // Rodape
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+                doc.setFont("helvetica", "normal");
+                doc.text('BSOS Cloud Pro v6.1 | Bright & Shine Pro Services', 105, 290, { align: 'center' });
+
+                doc.save(`BSOS_Semana_${weekId}.pdf`);
+                app.showToast('PDF Baixado!');
+            },
+
+            csv: function() {
+                const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
+                if (!weekJobs.length) { app.showToast('Sem dados para exportar', 'error'); return; }
+
+                const weekId = app.weeks.getWeekId();
+
+                let csv = 'FUNCIONARIO,CASA,DATA,HORAS,HORAS_REGULARES,HORAS_EXTRAS,TAXA,TOTAL,SUBTOTAL_FUNCIONARIO\n';
+
+                const grouped = {};
+                weekJobs.forEach(j => {
+                    if (!grouped[j.employeeId]) grouped[j.employeeId] = [];
+                    grouped[j.employeeId].push(j);
+                });
+
+                Object.values(grouped).forEach(jobs => {
+                    const subtotal = jobs.reduce((s, j) => s + j.total, 0);
+                    const subhours = jobs.reduce((s, j) => s + j.hours, 0);
+                    const subregular = jobs.reduce((s, j) => s + (j.regularHours || j.hours), 0);
+                    const subovertime = jobs.reduce((s, j) => s + (j.overtimeHours || 0), 0);
+
+                    jobs.forEach((j, idx) => {
+                        const isLast = idx === jobs.length - 1;
+                        const regular = j.regularHours || j.hours;
+                        const overtime = j.overtimeHours || 0;
+
+                        csv += `"${j.employeeName}","${j.house.replace(/"/g, '""')}","${new Date(j.date).toLocaleDateString('pt-BR')}",${j.hours},${regular},${overtime},${j.rate},${j.total.toFixed(2)}`;
+
+                        if (isLast) {
+                            const otText = subovertime > 0 ? ` (OT: ${subovertime.toFixed(1)}h)` : '';
+                            csv += `,"${subhours.toFixed(1)}h${otText} = $${subtotal.toFixed(2)}"`;
+                        } else {
+                            csv += `,""`;
+                        }
+                        csv += '\n';
+                    });
+                });
+
+                const grandTotal = weekJobs.reduce((s, j) => s + j.total, 0);
+                const grandHours = weekJobs.reduce((s, j) => s + j.hours, 0);
+                const grandOvertime = weekJobs.reduce((s, j) => s + (j.overtimeHours || 0), 0);
+
+                csv += `\n"TOTAL GERAL","","","${grandHours.toFixed(1)}h","${(grandHours - grandOvertime).toFixed(1)}h","${grandOvertime.toFixed(1)}h","","$${grandTotal.toFixed(2)}",""\n`;
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); 
+                a.href = url; 
+                a.download = `BSOS_Semana_${weekId}.csv`; 
+                document.body.appendChild(a); 
+                a.click(); 
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+
+                app.showToast('CSV Baixado!');
+            },
+
+            whatsapp: function() {
+                const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
+                if (!weekJobs.length) { app.showToast('Sem dados para exportar', 'error'); return; }
+
+                const weekId = app.weeks.getWeekId();
+                const grouped = {};
+
+                weekJobs.forEach(j => {
+                    if (!grouped[j.employeeId]) {
+                        grouped[j.employeeId] = { 
+                            name: j.employeeName, 
+                            jobs: [], 
+                            total: 0, 
+                            hours: 0,
+                            overtime: 0
+                        };
+                    }
+                    grouped[j.employeeId].jobs.push(j); 
+                    grouped[j.employeeId].total += j.total; 
+                    grouped[j.employeeId].hours += j.hours;
+                    if (j.overtimeHours > 0) grouped[j.employeeId].overtime += j.overtimeHours;
+                });
+
+                let message = `*Bright & Shine Pro - Semana Atual*\n`;
+                message += `*Semana:* ${weekId}\n`;
+                message += `*Gerado em:* ${new Date().toLocaleDateString('pt-BR')}\n\n`;
+
+                Object.values(grouped).forEach(g => {
+                    message += `*${g.name}*\n`;
+                    const otText = g.overtime > 0 ? ` (+${g.overtime.toFixed(1)}h OT)` : '';
+                    message += `${g.hours.toFixed(1)}h${otText} | $${g.total.toFixed(2)}\n`;
+
+                    g.jobs.slice(0, 8).forEach(j => {
+                        const shortHouse = j.house.length > 22 ? j.house.substring(0, 22) + '...' : j.house;
+                        const ot = j.overtimeHours > 0 ? ` [+${j.overtimeHours}h OT]` : '';
+                        message += `- ${shortHouse} (${j.hours}h${ot})\n`;
+                    });
+
+                    if (g.jobs.length > 8) {
+                        message += `- ... e mais ${g.jobs.length - 8} casas\n`;
+                    }
+
+                    message += `\n`;
+                });
+
+                const total = weekJobs.reduce((s, j) => s + j.total, 0);
+                const totalHours = weekJobs.reduce((s, j) => s + j.hours, 0);
+                const totalOvertime = weekJobs.reduce((s, j) => s + (j.overtimeHours || 0), 0);
+
+                message += `----------------\n`;
+                message += `*TOTAL GERAL*\n`;
+                const grandOt = totalOvertime > 0 ? ` (+${totalOvertime.toFixed(1)}h OT)` : '';
+                message += `*${totalHours.toFixed(1)}h${grandOt} | $${total.toFixed(2)}*\n`;
+                message += `_BSOS Cloud Pro v6.1_`;
+
+                const encodedMsg = encodeURIComponent(message);
+                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedMsg}`;
+
+                window.open(whatsappUrl, '_blank');
+            },
+
+            email: function() {
+                const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
+                if (!weekJobs.length) { app.showToast('Sem dados para exportar', 'error'); return; }
+
+                const weekId = app.weeks.getWeekId();
+                const grouped = {};
+
+                weekJobs.forEach(j => {
+                    if (!grouped[j.employeeId]) {
+                        grouped[j.employeeId] = { 
+                            name: j.employeeName, 
+                            jobs: [], 
+                            total: 0, 
+                            hours: 0 
+                        };
+                    }
+                    grouped[j.employeeId].jobs.push(j); 
+                    grouped[j.employeeId].total += j.total; 
+                    grouped[j.employeeId].hours += j.hours;
+                });
+
+                let subject = `BSOS Relatorio - Semana ${weekId}`;
+                let body = `Bright & Shine Pro Services - Relatorio de Pagamento\n`;
+                body += `Semana: ${weekId}\n`;
+                body += `Gerado: ${new Date().toLocaleDateString('pt-BR')}\n\n`;
+
+                Object.values(grouped).forEach(g => {
+                    body += `${g.name}:\n`;
+                    body += `Horas: ${g.hours.toFixed(1)} | Total: $${g.total.toFixed(2)}\n`;
+                    g.jobs.forEach(j => {
+                        body += `- ${j.house}: ${j.hours}h = $${j.total.toFixed(2)}\n`;
+                    });
+                    body += `\n`;
+                });
+
+                const grandTotal = weekJobs.reduce((s, j) => s + j.total, 0);
+                const grandHours = weekJobs.reduce((s, j) => s + j.hours, 0);
+                body += `----------------\n`;
+                body += `TOTAL SEMANA: ${grandHours.toFixed(1)}h = $${grandTotal.toFixed(2)}\n`;
+                body += `Enviado via BSOS Cloud Pro`;
+
+                window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                app.showToast('Cliente de email aberto!');
+            },
+
+            report: function() {
+                this.pdfDetailed();
+            },
+
+            pdfDetailed: function() {
+                const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
+                if (!weekJobs.length) { app.showToast('Sem dados para exportar', 'error'); return; }
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const weekId = app.weeks.getWeekId();
+
+                doc.setFont("helvetica");
+
+                // PAGINA 1: RESUMO EXECUTIVO
+                doc.setFontSize(22); 
+                doc.setTextColor(37, 99, 235); 
+                doc.text('Bright & Shine Pro Services', 14, 20);
+
+                doc.setFontSize(16);
+                doc.setTextColor(30, 41, 59);
+                doc.text('Relatorio Completo', 14, 30);
+
+                doc.setFontSize(11);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Semana Atual: ${weekId}`, 14, 38);
+                doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 44);
+
+                const grandTotal = weekJobs.reduce((s, j) => s + j.total, 0);
+                const grandHours = weekJobs.reduce((s, j) => s + j.hours, 0);
+                const grandOvertime = weekJobs.reduce((s, j) => s + (j.overtimeHours || 0), 0);
+                const totalEmployees = new Set(weekJobs.map(j => j.employeeId)).size;
+
+                const stats = [
+                    { label: 'Casas', value: weekJobs.length, color: [37, 99, 235], x: 14, y: 55 },
+                    { label: 'Horas', value: grandHours.toFixed(1), color: [245, 158, 11], x: 65, y: 55 },
+                    { label: 'Total', value: `$${grandTotal.toFixed(0)}`, color: [16, 185, 129], x: 116, y: 55 },
+                    { label: 'Equipe', value: totalEmployees, color: [139, 92, 246], x: 167, y: 55 }
+                ];
+
+                stats.forEach(stat => {
+                    doc.setFillColor(stat.color[0], stat.color[1], stat.color[2]);
+                    doc.roundedRect(stat.x, stat.y, 40, 25, 3, 3, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(14);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(String(stat.value), stat.x + 20, stat.y + 12, { align: 'center' });
+                    doc.setFontSize(9);
+                    doc.setFont("helvetica", "normal");
+                    doc.text(stat.label, stat.x + 20, stat.y + 20, { align: 'center' });
+                });
+
+                // Ranking
+                let startY = 90;
+                doc.setFontSize(14);
+                doc.setTextColor(30, 41, 59);
+                doc.setFont("helvetica", "bold");
+                doc.text('Top Performers', 14, startY);
+
+                const empStats = {};
+                weekJobs.forEach(j => {
+                    if (!empStats[j.employeeId]) {
+                        empStats[j.employeeId] = { 
+                            name: this.cleanForPDF(j.employeeName), 
+                            hours: 0, 
+                            total: 0,
+                            houses: 0,
+                            overtime: 0
+                        };
+                    }
+                    empStats[j.employeeId].hours += j.hours;
+                    empStats[j.employeeId].total += j.total;
+                    empStats[j.employeeId].houses += 1;
+                    if (j.overtimeHours > 0) empStats[j.employeeId].overtime += j.overtimeHours;
+                });
+
+                const ranking = Object.values(empStats).sort((a, b) => b.hours - a.hours);
+
+                startY += 10;
+                ranking.forEach((emp, idx) => {
+                    const medal = idx === 0 ? '1.' : idx === 1 ? '2.' : idx === 2 ? '3.' : '-';
+                    const ot = emp.overtime > 0 ? ` (+${emp.overtime.toFixed(1)}h OT)` : '';
+                    doc.setFontSize(11);
+                    doc.setTextColor(60, 60, 60);
+                    doc.setFont("helvetica", "normal");
+                    doc.text(`${medal} ${emp.name}`, 20, startY);
+                    doc.text(`${emp.hours.toFixed(1)}h${ot}`, 100, startY);
+                    doc.setTextColor(16, 185, 129);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(`$${emp.total.toFixed(2)}`, 150, startY);
+                    startY += 8;
+                });
+
+                // PAGINA 2+: DETALHAMENTO
+                doc.addPage();
+                this.generatePdfDetailPage(doc, weekJobs, weekId);
+
+                doc.save(`BSOS_Relatorio_${weekId}.pdf`);
+                app.showToast('Relatorio Baixado!');
+            },
+
+            generatePdfDetailPage: function(doc, weekJobs, weekId) {
+                doc.setFontSize(16);
+                doc.setTextColor(37, 99, 235);
+                doc.text('Registro de Trabalhos', 14, 20);
+
+                const grouped = {};
+                weekJobs.forEach(j => {
+                    if (!grouped[j.employeeId]) {
+                        grouped[j.employeeId] = { 
+                            employee: app.data.employees.find(e => e.id === j.employeeId) || { name: this.cleanForPDF(j.employeeName), rate: j.rate }, 
+                            jobs: [],
+                            subtotal: 0,
+                            subhours: 0,
+                            subovertime: 0
+                        };
+                    }
+                    grouped[j.employeeId].jobs.push(j);
+                    grouped[j.employeeId].subtotal += j.total;
+                    grouped[j.employeeId].subhours += j.hours;
+                    if (j.overtimeHours > 0) grouped[j.employeeId].subovertime += j.overtimeHours;
+                });
+
+                let startY = 30;
+
+                Object.values(grouped).forEach(data => {
+                    if (startY > 250) {
+                        doc.addPage();
+                        startY = 20;
+                    }
+
+                    const cleanName = this.cleanForPDF(data.employee.name);
+                    doc.setFontSize(11);
+                    doc.setTextColor(30, 41, 59);
+                    doc.setFont("helvetica", "bold");
+                    doc.text(cleanName, 14, startY);
+
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 100, 100);
+                    doc.setFont("helvetica", "normal");
+                    const ot = data.subovertime > 0 ? ` (+${data.subovertime.toFixed(1)}h OT)` : '';
+                    doc.text(`$${data.employee.rate}/h | ${data.subhours.toFixed(1)}h${ot} = $${data.subtotal.toFixed(2)}`, 14, startY + 5);
+
+                    const body = data.jobs.map(j => {
+                        const otBadge = j.overtimeHours > 0 ? ` (+${j.overtimeHours}h OT)` : '';
+                        return [
+                            new Date(j.date).toLocaleDateString('pt-BR'), 
+                            this.cleanForPDF(j.house.length > 40 ? j.house.substring(0, 40) + '...' : j.house), 
+                            `${j.hours}h${otBadge}`, 
+                            `$${j.total.toFixed(2)}`
+                        ];
+                    });
+
+                    doc.autoTable({
+                        head: [['Data', 'Casa', 'Horas', 'Valor']],
+                        body: body,
+                        startY: startY + 10,
+                        theme: 'striped',
+                        headStyles: { fillColor: [241, 245, 249], textColor: [30, 41, 59], fontSize: 9 },
+                        bodyStyles: { fontSize: 9 },
+                        columnStyles: {
+                            0: { cellWidth: 25 },
+                            1: { cellWidth: 'auto' },
+                            2: { cellWidth: 25, halign: 'center' },
+                            3: { cellWidth: 25, halign: 'right' }
+                        },
+                        margin: { left: 14, right: 14 },
+                        alternateRowStyles: { fillColor: [250, 250, 250] }
+                    });
+
+                    startY = doc.lastAutoTable.finalY + 15;
+                });
+            }
+        };
+
+        // Funcoes de funcionarios
         app.employees = {
             render: function() {
                 const container = document.getElementById('employeeList');
@@ -1399,7 +1994,7 @@
                         <div class="employee-card ${isSelected ? 'selected' : ''}" onclick="app.employees.select(${emp.id})">
                             <div style="flex: 1;">
                                 <div class="employee-name">${emp.name}</div>
-                                <div class="employee-rate">$${emp.rate.toFixed(2)}/${app.i18n.t('hoursStat')}</div>
+                                <div class="employee-rate">$${emp.rate.toFixed(2)}/h</div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <span class="rate-tag">$${emp.rate}</span>
@@ -1413,24 +2008,23 @@
             add: function() {
                 const name = document.getElementById('newName').value.trim();
                 const rate = parseFloat(document.getElementById('newRate').value);
-                if (!name || !rate) { app.showToast(app.i18n.t('fillNameRate'), 'error'); return; }
-                
+                if (!name || !rate) { app.showToast('Preencha nome e valor por hora!', 'error'); return; }
+
                 const newEmployee = { id: Date.now(), name, rate };
                 app.data.employees.push(newEmployee);
-                app.cloud.saveEmployee(newEmployee);
-                
+
                 document.getElementById('newName').value = '';
                 document.getElementById('newRate').value = '';
                 this.render();
                 app.ui.updateSelects();
                 app.saveData();
-                app.showToast(`${name} ${app.i18n.t('added')}`);
+                app.showToast(`${name} adicionado!`);
                 app.ui.showTab('list');
             },
 
             remove: function(id) {
                 const emp = app.data.employees.find(e => e.id === id);
-                if (!confirm(`Delete ${emp.name}?`)) return;
+                if (!confirm(`Excluir ${emp.name}?`)) return;
                 if (app.data.quickEmployeeId === id) this.exitQuickMode();
                 app.data.employees = app.data.employees.filter(e => e.id !== id);
                 app.data.jobs = app.data.jobs.filter(j => j.employeeId !== id);
@@ -1439,7 +2033,7 @@
                 app.ui.updateSelects();
                 app.jobs.render();
                 app.dashboard.update();
-                app.showToast(app.i18n.t('removed'));
+                app.showToast('Removido!');
             },
 
             select: function(id) {
@@ -1471,40 +2065,39 @@
             }
         };
 
-        // Addresses
+        // Funcoes de enderecos
         app.addresses = {
             handleInput: function() {
                 const input = document.getElementById('houseAddr');
                 const list = document.getElementById('autocompleteList');
                 const query = input.value.toLowerCase().trim();
-                
+
                 if (query.length < 2) { list.classList.remove('show'); return; }
-                
+
                 const matches = app.data.savedAddresses.filter(addr => 
                     addr.toLowerCase().includes(query)
                 ).slice(0, 5);
-                
+
                 if (matches.length === 0) { list.classList.remove('show'); return; }
-                
+
                 list.innerHTML = matches.map(addr => {
                     const highlighted = addr.replace(new RegExp(`(${query})`, 'gi'), '<strong>$1</strong>');
-                    return `<div class="autocomplete-item" onclick="document.getElementById('houseAddr').value = '${addr.replace(/'/g, "\\'")}'; document.getElementById('autocompleteList').classList.remove('show');">${highlighted}</div>`;
+                    return `<div class="autocomplete-item" onclick="document.getElementById('houseAddr').value = '${addr.replace(/'/g, "\'")}'; document.getElementById('autocompleteList').classList.remove('show'); app.jobs.checkDuplicate();">${highlighted}</div>`;
                 }).join('');
                 list.classList.add('show');
             },
 
             saveCurrent: function() {
                 const address = document.getElementById('houseAddr').value.trim();
-                if (!address) { app.showToast(app.i18n.t('fillAllFields'), 'error'); return; }
+                if (!address) { app.showToast('Preencha o endereco!', 'error'); return; }
                 if (app.data.savedAddresses.includes(address)) { 
-                    app.showToast('Address already saved!'); return; 
+                    app.showToast('Endereco ja salvo!'); return; 
                 }
                 app.data.savedAddresses.push(address);
                 app.data.savedAddresses.sort();
-                app.cloud.saveAddresses();
                 app.saveData();
                 this.renderQuick();
-                app.showToast('✅ Address saved!');
+                app.showToast('✅ Endereco salvo!');
             },
 
             renderQuick: function() {
@@ -1513,79 +2106,111 @@
                 const combined = [...new Set([...recent, ...app.data.savedAddresses])].slice(0, 8);
                 container.innerHTML = combined.map(addr => {
                     const short = addr.length > 30 ? addr.substring(0, 30) + '...' : addr;
-                    return `<span class="address-tag" onclick="document.getElementById('houseAddr').value = '${addr.replace(/'/g, "\\'")}'">📍 ${short}</span>`;
+                    return `<span class="address-tag" onclick="document.getElementById('houseAddr').value = '${addr.replace(/'/g, "\'")}'; app.jobs.checkDuplicate();">📍 ${short}</span>`;
                 }).join('');
             },
 
             showManager: function() {
-                const t = app.i18n;
-                let html = `<h3>📍 ${t.t('manage')} (${app.data.savedAddresses.length})</h3>`;
+                let html = `<h3>Gerenciar Enderecos (${app.data.savedAddresses.length})</h3>`;
                 html += `<div style="margin: 20px 0;">`;
                 if (app.data.savedAddresses.length === 0) {
-                    html += `<p style="text-align: center; color: #999;">${t.t('noData')}</p>`;
+                    html += `<p style="text-align: center; color: #999;">Nenhum endereco salvo</p>`;
                 } else {
-                    html += `<div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px;">`;
+                    html += `<div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">`;
                     app.data.savedAddresses.forEach((addr, idx) => {
-                        html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #f0f0f0;">`;
+                        html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border);">`;
                         html += `<span>${addr}</span>`;
                         html += `<button class="btn btn-sm btn-danger" onclick="app.addresses.remove(${idx})">🗑️</button></div>`;
                     });
                     html += `</div>`;
                 }
                 html += `</div>`;
-                app.modals.show(t.t('manage'), html);
+                app.modals.show('Gerenciar Enderecos', html);
             },
 
             remove: function(index) {
                 app.data.savedAddresses.splice(index, 1);
-                app.cloud.saveAddresses();
                 app.saveData();
                 this.showManager();
                 this.renderQuick();
-                app.showToast(app.i18n.t('removed'));
+                app.showToast('Removido!');
             }
         };
 
-        // Jobs with Time Calculation
+        // Funcoes de jobs
         app.jobs = {
             calculateFromTime: function() {
                 const start = document.getElementById('workStart').value;
                 const end = document.getElementById('workEnd').value;
-                
+
                 if (start && end) {
                     const startDate = new Date('2000-01-01T' + start);
                     const endDate = new Date('2000-01-01T' + end);
                     let hours = (endDate - startDate) / (1000 * 60 * 60);
-                    if (hours < 0) hours += 24; // Overnight
-                    
+                    if (hours < 0) hours += 24;
+
                     document.getElementById('workHours').value = hours.toFixed(2);
                     this.calcTotal();
                 }
             },
 
             calcTotal: function() {
-                const empId = document.getElementById('selEmployee').value;
                 const hours = parseFloat(document.getElementById('workHours').value) || 0;
                 const rate = parseFloat(document.getElementById('workRate').value) || 0;
-                document.getElementById('totalDisplay').textContent = `$${(hours * rate).toFixed(2)}`;
-                
-                // Visual alerts
+
+                const regularHours = Math.min(hours, 8);
+                const overtimeHours = Math.max(hours - 8, 0);
+                const total = (regularHours * rate) + (overtimeHours * rate * 1.5);
+
+                document.getElementById('totalDisplay').textContent = `$${total.toFixed(2)}`;
+
+                const overtimeDiv = document.getElementById('overtimeDisplay');
+                if (overtimeHours > 0) {
+                    overtimeDiv.style.display = 'block';
+                    document.getElementById('overtimeAmount').textContent = `$${(overtimeHours * rate * 1.5).toFixed(2)}`;
+                } else {
+                    overtimeDiv.style.display = 'none';
+                }
+
                 const alertDiv = document.getElementById('alertBanner');
                 const alertMsg = document.getElementById('alertMessage');
-                
+
                 if (hours > 8) {
                     alertDiv.className = 'alert-banner show';
-                    alertMsg.textContent = `${hours}h - ${app.i18n.t('hoursUnusual')}`;
+                    alertMsg.textContent = `${hours}h - Horas incomuns (Horas Extras aplicadas)`;
                 } else if (hours < 1 && hours > 0) {
                     alertDiv.className = 'alert-banner show';
-                    alertMsg.textContent = `${app.i18n.t('onlyHours')} ${hours}h - ${app.i18n.t('hoursCorrect')}`;
+                    alertMsg.textContent = `Apenas ${hours}h - Esta correto?`;
                 } else {
                     alertDiv.className = 'alert-banner';
                 }
             },
 
+            checkDuplicate: function() {
+                const empId = document.getElementById('selEmployee').value;
+                const house = document.getElementById('houseAddr').value.trim();
+                const date = document.getElementById('workDate').value;
+
+                if (!empId || !house || !date) return;
+
+                const duplicate = app.data.jobs.find(j => {
+                    if (j.employeeId !== parseInt(empId)) return false;
+                    if (j.house.toLowerCase() !== house.toLowerCase()) return false;
+                    const jobDate = new Date(j.date + 'T12:00:00');
+                    const currentDate = new Date(date + 'T12:00:00');
+                    return jobDate.getTime() === currentDate.getTime();
+                });
+
+                const alertDiv = document.getElementById('duplicateAlert');
+                if (duplicate) {
+                    alertDiv.style.display = 'flex';
+                    document.getElementById('duplicateMessage').textContent = 'Possivel duplicata! Mesma casa registrada recentemente.';
+                } else {
+                    alertDiv.style.display = 'none';
+                }
+            },
+
             validateAndSave: function() {
-                const t = app.i18n;
                 const empId = document.getElementById('selEmployee').value;
                 const house = document.getElementById('houseAddr').value.trim();
                 const hours = parseFloat(document.getElementById('workHours').value);
@@ -1593,24 +2218,22 @@
                 const rate = parseFloat(document.getElementById('workRate').value);
 
                 if (!empId || !house || !hours || !date) { 
-                    app.showToast(t.t('fillAllFields'), 'error'); 
+                    app.showToast('Preencha todos os campos!', 'error'); 
                     return; 
                 }
 
-                // Check week closed
                 const weekJobs = app.weeks.getCurrentWeekJobs();
                 if (weekJobs.length > 0 && weekJobs[0].status === 'closed') {
-                    app.showToast('⚠️ ' + t.t('weekAlreadyClosed'), 'error');
+                    app.showToast('Esta semana ja foi fechada!', 'error');
                     return;
                 }
 
-                // Validations
                 const dailyHours = app.data.jobs.filter(j => 
                     j.employeeId === parseInt(empId) && j.date === date
                 ).reduce((sum, j) => sum + j.hours, 0);
-                
+
                 if (dailyHours + hours > 12) {
-                    app.showToast('⚠️ ' + t.t('dailyLimit'), 'error');
+                    app.showToast('Limite diario de 12h excedido!', 'error');
                     return;
                 }
 
@@ -1619,12 +2242,17 @@
                     j.date === date && 
                     j.employeeId === parseInt(empId)
                 );
-                
+
                 if (duplicate) {
-                    app.showToast('⚠️ ' + t.t('houseRegistered'), 'warning');
+                    if (!confirm('Casa ja registrada nesta data! Continuar?')) return;
                 }
 
                 const emp = app.data.employees.find(e => e.id == empId);
+
+                const regularHours = Math.min(hours, 8);
+                const overtimeHours = Math.max(hours - 8, 0);
+                const total = (regularHours * rate) + (overtimeHours * rate * 1.5);
+
                 const job = {
                     id: Date.now(),
                     employeeId: parseInt(empId),
@@ -1633,7 +2261,9 @@
                     hours,
                     rate,
                     date,
-                    total: hours * rate,
+                    total: total,
+                    regularHours,
+                    overtimeHours,
                     status: hours > 8 ? 'high' : hours < 1 ? 'low' : 'normal',
                     weekId: app.weeks.getWeekId()
                 };
@@ -1641,7 +2271,7 @@
                 app.data.jobs.push(job);
                 app.cloud.saveJob(job);
                 this.afterSave();
-                app.showToast(`✅ ${emp.name}: ${job.hours}h ${t.t('jobRegistered')}`);
+                app.showToast(`${emp.name}: ${job.hours}h registrado!`);
             },
 
             afterSave: function() {
@@ -1651,6 +2281,8 @@
                 document.getElementById('workEnd').value = '';
                 document.getElementById('totalDisplay').textContent = '$0.00';
                 document.getElementById('alertBanner').className = 'alert-banner';
+                document.getElementById('duplicateAlert').style.display = 'none';
+                document.getElementById('overtimeDisplay').style.display = 'none';
                 document.getElementById('autocompleteList').classList.remove('show');
                 this.render();
                 app.dashboard.update();
@@ -1664,12 +2296,10 @@
                 const weekJobs = app.weeks.getCurrentWeekJobs();
                 const filtered = app.data.currentFilter === 'all' ? weekJobs : app.filters.getFiltered();
 
-                const t = app.i18n;
                 document.getElementById('jobsCount').textContent = filtered.length;
 
                 const tbody = document.getElementById('jobsTable');
                 const empty = document.getElementById('noJobs');
-                const dateFormat = t.currentLang === 'pt-BR' ? 'pt-BR' : 'en-US';
 
                 if (filtered.length === 0) {
                     tbody.innerHTML = '';
@@ -1677,19 +2307,24 @@
                     return;
                 }
                 empty.style.display = 'none';
-                
+
                 tbody.innerHTML = filtered.sort((a, b) => new Date(b.date) - new Date(a.date)).map(j => {
                     let statusBadge = '';
-                    if (j.status === 'normal') statusBadge = '<span class="badge badge-green">✓ Normal</span>';
-                    else if (j.status === 'high') statusBadge = '<span class="badge badge-yellow">⚠️ High</span>';
-                    else if (j.status === 'low') statusBadge = '<span class="badge badge-red">⚠️ Low</span>';
-                    
+                    if (j.status === 'normal') statusBadge = '<span class="badge badge-green">Normal</span>';
+                    else if (j.status === 'high') statusBadge = '<span class="badge badge-yellow">Alto</span>';
+                    else if (j.status === 'low') statusBadge = '<span class="badge badge-red">Baixo</span>';
+
+                    let overtimeIndicator = '';
+                    if (j.overtimeHours > 0) {
+                        overtimeIndicator = `<br><small style="color: var(--warning);">+${j.overtimeHours}h OT</small>`;
+                    }
+
                     return `
                         <tr>
                             <td><strong>${j.employeeName}</strong></td>
                             <td>${j.house}</td>
-                            <td>${new Date(j.date).toLocaleDateString(dateFormat)}</td>
-                            <td>${j.hours}h</td>
+                            <td>${new Date(j.date).toLocaleDateString('pt-BR')}</td>
+                            <td>${j.hours}h${overtimeIndicator}</td>
                             <td><strong>$${j.total.toFixed(2)}</strong></td>
                             <td>${statusBadge}</td>
                             <td>
@@ -1703,10 +2338,10 @@
             remove: function(id) {
                 const job = app.data.jobs.find(j => j.id === id);
                 if (job && job.status === 'closed') { 
-                    app.showToast('⚠️ ' + app.i18n.t('closedJobDelete'), 'error'); 
+                    app.showToast('Trabalho fechado nao pode ser excluido!', 'error'); 
                     return; 
                 }
-                if (!confirm(app.i18n.t('deleteConfirm'))) return;
+                if (!confirm('Excluir este trabalho?')) return;
                 app.data.jobs = app.data.jobs.filter(j => j.id !== id);
                 app.cloud.deleteJob(id);
                 this.render();
@@ -1716,28 +2351,26 @@
             }
         };
 
-        // Quick Entry - Multiple Houses
+        // Quick Entry
         app.quickEntry = {
             houseCount: 1,
 
             open: function() {
                 if (app.data.employees.length === 0) {
-                    app.showToast('Add employees first!', 'error');
+                    app.showToast('Adicione funcionarios primeiro!', 'error');
                     return;
                 }
-                
-                // Populate select
+
                 const select = document.getElementById('quickCleaner');
-                select.innerHTML = '<option value="">' + app.i18n.t('select') + '</option>';
+                select.innerHTML = '<option value="">Selecione...</option>';
                 app.data.employees.forEach(e => {
                     select.innerHTML += `<option value="${e.id}">${e.name}</option>`;
                 });
-                
-                // Reset houses
+
                 this.houseCount = 1;
                 document.getElementById('quickDate').valueAsDate = new Date();
                 document.getElementById('quickHouses').innerHTML = this.getHouseHTML(0);
-                
+
                 document.getElementById('quickModal').classList.add('show');
             },
 
@@ -1749,12 +2382,12 @@
                 return `
                     <div class="house-entry" data-index="${index}">
                         <div class="house-entry-header">
-                            <span class="house-number">🏠 House ${index + 1}</span>
-                            ${index > 0 ? `<span class="remove-house" onclick="app.quickEntry.removeHouse(${index})"><i class="fas fa-times"></i> Remove</span>` : ''}
+                            <span class="house-number">🏠 Casa ${index + 1}</span>
+                            ${index > 0 ? `<span class="remove-house" onclick="app.quickEntry.removeHouse(${index})"><i class="fas fa-times"></i> Remover</span>` : ''}
                         </div>
                         <div class="form-grid">
                             <div class="form-group full-width">
-                                <input type="text" class="form-control quick-address-${index}" placeholder="House Address...">
+                                <input type="text" class="form-control quick-address-${index}" placeholder="Endereco da Casa...">
                             </div>
                             <div class="form-group">
                                 <input type="time" class="form-control quick-start-${index}" onchange="app.quickEntry.calculateHouse(${index})">
@@ -1766,7 +2399,7 @@
                                 <input type="number" step="0.01" class="form-control quick-rate-${index}" value="25.00" onchange="app.quickEntry.calculateHouse(${index})">
                             </div>
                             <div class="form-group">
-                                <input type="text" class="form-control quick-total-${index}" placeholder="Total" readonly style="background: #f1f5f9; font-weight: 700; color: var(--success);">
+                                <input type="text" class="form-control quick-total-${index}" placeholder="Total" readonly style="background: var(--bg); font-weight: 700; color: var(--success);">
                             </div>
                         </div>
                     </div>
@@ -1784,9 +2417,8 @@
                 const houses = document.querySelectorAll('.house-entry');
                 if (houses[index]) {
                     houses[index].remove();
-                    // Reindex
                     document.querySelectorAll('.house-entry').forEach((el, idx) => {
-                        el.querySelector('.house-number').textContent = `🏠 House ${idx + 1}`;
+                        el.querySelector('.house-number').textContent = `🏠 Casa ${idx + 1}`;
                     });
                 }
             },
@@ -1795,41 +2427,49 @@
                 const start = document.querySelector(`.quick-start-${index}`).value;
                 const end = document.querySelector(`.quick-end-${index}`).value;
                 const rate = parseFloat(document.querySelector(`.quick-rate-${index}`).value) || 0;
-                
+
                 if (start && end) {
                     const startDate = new Date('2000-01-01T' + start);
                     const endDate = new Date('2000-01-01T' + end);
                     let hours = (endDate - startDate) / (1000 * 60 * 60);
                     if (hours < 0) hours += 24;
-                    
-                    document.querySelector(`.quick-total-${index}`).value = `$${(hours * rate).toFixed(2)}`;
+
+                    const regularHours = Math.min(hours, 8);
+                    const overtimeHours = Math.max(hours - 8, 0);
+                    const total = (regularHours * rate) + (overtimeHours * rate * 1.5);
+
+                    document.querySelector(`.quick-total-${index}`).value = `$${total.toFixed(2)}`;
                 }
             },
 
             saveAll: function() {
                 const cleanerId = document.getElementById('quickCleaner').value;
                 const date = document.getElementById('quickDate').value;
-                
+
                 if (!cleanerId) {
-                    app.showToast(app.i18n.t('select') + ' ' + app.i18n.t('employee').toLowerCase(), 'error');
+                    app.showToast('Selecione um funcionario!', 'error');
                     return;
                 }
 
                 const emp = app.data.employees.find(e => e.id == cleanerId);
                 const houses = [];
-                
+
                 document.querySelectorAll('.house-entry').forEach((el, idx) => {
                     const address = el.querySelector(`.quick-address-${idx}`).value;
                     const start = el.querySelector(`.quick-start-${idx}`).value;
                     const end = el.querySelector(`.quick-end-${idx}`).value;
                     const rate = parseFloat(el.querySelector(`.quick-rate-${idx}`).value) || emp.rate;
-                    
+
                     if (address && start && end) {
                         const startDate = new Date('2000-01-01T' + start);
                         const endDate = new Date('2000-01-01T' + end);
                         let hours = (endDate - startDate) / (1000 * 60 * 60);
                         if (hours < 0) hours += 24;
-                        
+
+                        const regularHours = Math.min(hours, 8);
+                        const overtimeHours = Math.max(hours - 8, 0);
+                        const total = (regularHours * rate) + (overtimeHours * rate * 1.5);
+
                         houses.push({
                             id: Date.now() + idx,
                             employeeId: parseInt(cleanerId),
@@ -1837,8 +2477,10 @@
                             house: address,
                             date,
                             hours: Math.round(hours * 100) / 100,
+                            regularHours,
+                            overtimeHours,
                             rate,
-                            total: Math.round(hours * rate * 100) / 100,
+                            total: Math.round(total * 100) / 100,
                             status: hours > 8 ? 'high' : hours < 1 ? 'low' : 'normal',
                             weekId: app.weeks.getWeekId()
                         });
@@ -1846,23 +2488,23 @@
                 });
 
                 if (houses.length === 0) {
-                    app.showToast('Fill at least one house completely', 'error');
+                    app.showToast('Preencha pelo menos uma casa completamente', 'error');
                     return;
                 }
 
                 app.data.jobs = app.data.jobs.concat(houses);
                 houses.forEach(h => app.cloud.saveJob(h));
-                
+
                 app.saveData();
                 this.close();
                 app.jobs.render();
                 app.dashboard.update();
                 app.charts.update();
-                app.showToast(`✅ ${houses.length} houses saved!`);
+                app.showToast(`${houses.length} casas salvas!`);
             }
         };
 
-        // Filters
+        // Filtros
         app.filters = {
             set: function(filter, btn) {
                 app.data.currentFilter = filter;
@@ -1883,10 +2525,9 @@
                 const now = new Date();
                 const empFilter = document.getElementById('filterEmployee').value;
                 const statusFilter = document.getElementById('filterStatus').value;
-                
+
                 let jobs = app.data.jobs;
-                
-                // Time filter
+
                 if (app.data.currentFilter === 'today') {
                     jobs = jobs.filter(j => j.date === today);
                 } else if (app.data.currentFilter === 'week') {
@@ -1896,17 +2537,15 @@
                     const monthAgo = new Date(now.getTime() - 30*24*60*60*1000).toISOString().split('T')[0];
                     jobs = jobs.filter(j => j.date >= monthAgo);
                 }
-                
-                // Employee filter
+
                 if (empFilter) {
                     jobs = jobs.filter(j => j.employeeId == empFilter);
                 }
-                
-                // Status filter
+
                 if (statusFilter) {
                     jobs = jobs.filter(j => j.status === statusFilter);
                 }
-                
+
                 return jobs.filter(j => !j.status || j.status !== 'closed');
             }
         };
@@ -1915,7 +2554,7 @@
         app.dashboard = {
             update: function() {
                 const jobs = app.filters.getFiltered();
-                
+
                 const hours = jobs.reduce((s, j) => s + j.hours, 0);
                 const total = jobs.reduce((s, j) => s + j.total, 0);
                 const avgRate = hours > 0 ? total / hours : 0;
@@ -1925,7 +2564,6 @@
                 document.getElementById('statTotal').textContent = `$${total.toFixed(0)}`;
                 document.getElementById('statAvgRate').textContent = `$${avgRate.toFixed(2)}`;
 
-                // Top performers
                 const stats = {};
                 jobs.forEach(j => {
                     if (!stats[j.employeeId]) stats[j.employeeId] = { name: j.employeeName, hours: 0, total: 0 };
@@ -1937,12 +2575,12 @@
                 document.getElementById('topList').innerHTML = top.map((t, i) => `
                     <div class="top-performer ${i===0 ? 'first' : ''}">
                         <div>
-                            <div style="font-weight: 700;">${i===0?'🥇 ':''}${t.name}</div>
-                            <div style="font-size: 0.8rem; color: #666;">${t.hours.toFixed(1)}h</div>
+                            <div style="font-weight: 700;">${i===0?'1º ':''}${t.name}</div>
+                            <div style="font-size: 0.8rem; color: var(--secondary);">${t.hours.toFixed(1)}h</div>
                         </div>
-                        <div style="font-weight: 700; color: #00C853;">$${t.total.toFixed(0)}</div>
+                        <div style="font-weight: 700; color: var(--success);">$${t.total.toFixed(0)}</div>
                     </div>
-                `).join('') || `<p style="color: #999; text-align: center;">${app.i18n.t('noData')}</p>`;
+                `).join('') || `<p style="color: var(--secondary); text-align: center;">Sem dados</p>`;
             }
         };
 
@@ -1955,7 +2593,7 @@
                     data: {
                         labels: [],
                         datasets: [{
-                            label: 'Hours',
+                            label: 'Horas',
                             data: [],
                             borderColor: '#2563eb',
                             backgroundColor: 'rgba(37, 99, 235, 0.1)',
@@ -1968,7 +2606,7 @@
                         maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
                         scales: {
-                            y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.1)' } },
                             x: { grid: { display: false } }
                         }
                     }
@@ -1979,7 +2617,7 @@
             update: function() {
                 const jobs = app.weeks.getCurrentWeekJobs();
                 const dailyHours = {};
-                
+
                 jobs.forEach(j => {
                     if (!dailyHours[j.date]) dailyHours[j.date] = 0;
                     dailyHours[j.date] += j.hours;
@@ -1991,7 +2629,7 @@
                     const d = new Date();
                     d.setDate(d.getDate() - i);
                     const dateStr = d.toISOString().split('T')[0];
-                    const label = d.toLocaleDateString(app.i18n.currentLang, { weekday: 'short' });
+                    const label = d.toLocaleDateString('pt-BR', { weekday: 'short' });
                     labels.push(label);
                     data.push(dailyHours[dateStr] || 0);
                 }
@@ -2027,7 +2665,7 @@
                 const datasets = Object.keys(employees).map((name, idx) => {
                     const colors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
                     const color = colors[idx % colors.length];
-                    
+
                     const byDate = {};
                     employees[name].forEach(j => {
                         if (!byDate[j.date]) byDate[j.date] = 0;
@@ -2050,7 +2688,7 @@
                 app.data.chartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: datasets[0]?.data.map((_, i) => `Day ${i+1}`) || [],
+                        labels: datasets[0]?.data.map((_, i) => `Dia ${i+1}`) || [],
                         datasets
                     },
                     options: {
@@ -2058,303 +2696,112 @@
                         maintainAspectRatio: false,
                         plugins: {
                             legend: { position: 'top' },
-                            title: { display: true, text: app.i18n.t('performanceChart') }
+                            title: { display: true, text: 'Grafico de Desempenho' }
                         },
                         scales: {
-                            y: { beginAtZero: true, title: { display: true, text: 'Hours' } },
-                            x: { title: { display: true, text: 'Date' } }
+                            y: { beginAtZero: true, title: { display: true, text: 'Horas' } },
+                            x: { title: { display: true, text: 'Data' } }
                         }
                     }
                 });
             }
         };
 
-        // Weeks (Week Closing)
-        app.weeks = {
-            getWeekId: function(date = new Date()) {
-                const d = new Date(date);
-                d.setHours(0, 0, 0, 0);
-                const day = d.getDay();
-                const diff = d.getDate() - day;
-                const sunday = new Date(d.setDate(diff));
-                return `${sunday.getFullYear()}-${String(sunday.getMonth() + 1).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
-            },
-
-            getWeekRange: function(weekId) {
-                const start = new Date(weekId);
-                const end = new Date(start);
-                end.setDate(end.getDate() + 6);
-                end.setHours(23, 59, 59, 999);
-                return { start, end };
-            },
-
-            getCurrentWeekJobs: function() {
-                const weekId = this.getWeekId();
-                return app.data.jobs.filter(j => j.weekId === weekId || (!j.weekId && this.isInCurrentWeek(j.date)));
-            },
-
-            isInCurrentWeek: function(dateStr) {
-                const date = new Date(dateStr);
-                const weekId = this.getWeekId();
-                const range = this.getWeekRange(weekId);
-                return date >= range.start && date <= range.end;
-            },
-
-            closeWeek: function() {
-                const t = app.i18n;
-                const weekId = this.getWeekId();
-                const weekJobs = this.getCurrentWeekJobs();
-
-                if (weekJobs.length === 0) {
-                    app.showToast('⚠️ ' + t.t('noJobsWeek'), 'warning');
-                    return;
-                }
-
-                const totals = {};
-                weekJobs.forEach(j => {
-                    if (!totals[j.employeeId]) {
-                        totals[j.employeeId] = { name: j.employeeName, hours: 0, total: 0 };
-                    }
-                    totals[j.employeeId].hours += j.hours;
-                    totals[j.employeeId].total += j.total;
-                });
-
-                const range = this.getWeekRange(weekId);
-                const dateFormat = t.currentLang === 'pt-BR' ? 'pt-BR' : 'en-US';
-                
-                let html = `<h3>🔒 ${t.t('closeWeek')} - ${weekId}</h3>`;
-                html += `<div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px; border-radius: 12px; margin: 15px 0; text-align: center;">`;
-                html += `<div style="font-size: 2rem; font-weight: 700;">${weekJobs.length} ${t.t('housesStat')}</div>`;
-                html += `<div>${weekJobs.reduce((s, j) => s + j.hours, 0).toFixed(1)}h | $${weekJobs.reduce((s, j) => s + j.total, 0).toFixed(2)}</div>`;
-                html += `</div>`;
-
-                html += `<h4>💰 ${t.t('paymentSummary')}:</h4>`;
-                Object.values(totals).forEach(emp => {
-                    html += `<div style="display: flex; justify-content: space-between; padding: 12px; background: #f0f0f0; border-radius: 8px; margin-bottom: 8px;">`;
-                    html += `<div><strong>${emp.name}</strong><br><small>${emp.hours.toFixed(1)}h</small></div>`;
-                    html += `<div style="font-size: 1.2rem; font-weight: 700; color: #00C853;">$${emp.total.toFixed(2)}</div>`;
-                    html += `</div>`;
-                });
-
-                html += `<div style="background: #FFF3E0; border-left: 4px solid #FF9800; padding: 15px; margin: 20px 0; border-radius: 8px;">`;
-                html += `<p>⚠️ <strong>${t.t('attention')}:</strong> ${t.t('weekCloseMsg')}</p>`;
-                html += `</div>`;
-
-                html += `<div style="display: flex; gap: 10px;">`;
-                html += `<button class="btn btn-secondary" onclick="app.modals.closeAll()" style="flex: 1;">${t.t('cancel')}</button>`;
-                html += `<button class="btn btn-success" onclick="app.weeks.confirmClose()" style="flex: 1;">✅ ${t.t('closeWeek')}</button>`;
-                html += `</div>`;
-
-                app.modals.show(t.t('closeWeek'), html);
-            },
-
-            confirmClose: async function() {
-                const t = app.i18n;
-                const weekId = this.getWeekId();
-                const weekJobs = this.getCurrentWeekJobs();
-
-                weekJobs.forEach(j => {
-                    j.weekId = weekId;
-                    j.status = 'closed';
-                    j.closedAt = new Date().toISOString();
-                    app.cloud.saveJob(j);
-                });
-
+        // Cloud
+        app.cloud = {
+            init: function() {
                 if (app.data.isOnline) {
-                    const totals = {};
-                    weekJobs.forEach(j => {
-                        if (!totals[j.employeeId]) {
-                            totals[j.employeeId] = { name: j.employeeName, hours: 0, total: 0 };
-                        }
-                        totals[j.employeeId].hours += j.hours;
-                        totals[j.employeeId].total += j.total;
-                    });
-
-                    await db.collection('weeks').doc(weekId).set({
-                        weekId: weekId,
-                        closedAt: new Date().toISOString(),
-                        totalJobs: weekJobs.length,
-                        totalHours: weekJobs.reduce((s, j) => s + j.hours, 0),
-                        totalAmount: weekJobs.reduce((s, j) => s + j.total, 0),
-                        employeeTotals: totals,
-                        jobs: weekJobs.map(j => j.id)
-                    });
+                    app.updateSyncStatus('syncing');
+                    this.sync();
+                } else {
+                    app.updateSyncStatus('offline');
                 }
-
-                app.saveData();
-                app.modals.closeAll();
-                app.showToast('✅ ' + t.t('closedSuccess'));
-                app.renderAll();
-
-                setTimeout(() => {
-                    app.showToast('📅 ' + t.t('newWeekStarted'), 'success');
-                }, 2000);
             },
 
-            showWeekHistory: async function() {
-                const t = app.i18n;
-                app.modals.show(t.t('weekHistory'), '<div class="loader"></div>');
+            sync: async function() {
+                if (!app.data.isOnline) return;
+                app.updateSyncStatus('syncing');
 
                 try {
-                    let weeks = [];
-                    if (app.data.isOnline) {
-                        const snapshot = await db.collection('weeks').orderBy('closedAt', 'desc').get();
-                        weeks = snapshot.docs.map(doc => doc.data());
+                    const empSnapshot = await db.collection('employees').get();
+                    if (!empSnapshot.empty) {
+                        app.data.employees = empSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     } else {
-                        const closedJobs = app.data.jobs.filter(j => j.status === 'closed' && j.weekId);
-                        const weekMap = {};
-                        closedJobs.forEach(j => {
-                            if (!weekMap[j.weekId]) {
-                                weekMap[j.weekId] = {
-                                    weekId: j.weekId,
-                                    jobs: [],
-                                    totalHours: 0,
-                                    totalAmount: 0
-                                };
-                            }
-                            weekMap[j.weekId].jobs.push(j);
-                            weekMap[j.weekId].totalHours += j.hours;
-                            weekMap[j.weekId].totalAmount += j.total;
-                        });
-                        weeks = Object.values(weekMap);
+                        await this.pushEmployees();
                     }
 
-                    if (weeks.length === 0) {
-                        document.getElementById('modalContent').innerHTML = `<p style="text-align: center; color: #999; padding: 40px;">No closed weeks yet.</p>`;
-                        return;
+                    const jobsSnapshot = await db.collection('jobs').get();
+                    if (!jobsSnapshot.empty) {
+                        app.data.jobs = jobsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     }
 
-                    const dateFormat = t.currentLang === 'pt-BR' ? 'pt-BR' : 'en-US';
-                    let html = '<div style="max-height: 60vh; overflow-y: auto;">';
-                    
-                    weeks.forEach(w => {
-                        const range = this.getWeekRange(w.weekId);
-                        html += `<div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">`;
-                        html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">`;
-                        html += `<div><div style="font-weight: 700;">Week: ${w.weekId}</div>`;
-                        html += `<div style="font-size: 0.8rem; color: #666;">${range.start.toLocaleDateString(dateFormat)} - ${range.end.toLocaleDateString(dateFormat)}</div></div>`;
-                        html += `<div style="background: #00C853; color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem;">Closed ✓</div>`;
-                        html += `</div>`;
-                        html += `<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">`;
-                        html += `<div><div style="font-weight: 700;">${w.totalJobs || w.jobs?.length || 0}</div><div style="font-size: 0.75rem; color: #666;">${t.t('housesStat')}</div></div>`;
-                        html += `<div><div style="font-weight: 700;">${(w.totalHours || 0).toFixed(1)}h</div><div style="font-size: 0.75rem; color: #666;">${t.t('hoursStat')}</div></div>`;
-                        html += `<div><div style="font-weight: 700; color: #00C853;">$${(w.totalAmount || 0).toFixed(0)}</div><div style="font-size: 0.75rem; color: #666;">${t.t('totalStat')}</div></div>`;
-                        html += `</div>`;
-                        html += `</div>`;
-                    });
-                    
-                    html += '</div>';
-                    document.getElementById('modalContent').innerHTML = html;
+                    const addrDoc = await db.collection('config').doc('addresses').get();
+                    if (addrDoc.exists) {
+                        app.data.savedAddresses = addrDoc.data().list || [];
+                    }
 
+                    app.renderAll();
+                    app.saveData();
+                    app.updateSyncStatus('online');
+                    app.showToast('Dados sincronizados!');
                 } catch (error) {
-                    document.getElementById('modalContent').innerHTML = '<p style="color: red; text-align: center;">Error loading history.</p>';
+                    console.error('Sync error:', error);
+                    app.updateSyncStatus('error');
                 }
             },
 
-            checkAutoClose: function() {
-                const now = new Date();
-                if (now.getDay() === 6 && now.getHours() === 23 && now.getMinutes() >= 59) {
-                    const weekJobs = this.getCurrentWeekJobs();
-                    if (weekJobs.length > 0 && weekJobs[0].status !== 'closed') {
-                        this.closeWeek();
-                    }
+            pushEmployees: async function() {
+                const batch = db.batch();
+                app.data.employees.forEach(emp => {
+                    const ref = db.collection('employees').doc(String(emp.id));
+                    batch.set(ref, emp);
+                });
+                await batch.commit();
+            },
+
+            saveJob: async function(job) {
+                if (!app.data.isOnline) return;
+                try { await db.collection('jobs').doc(String(job.id)).set(job); } catch (e) {}
+            },
+
+            deleteJob: async function(jobId) {
+                if (!app.data.isOnline) return;
+                try { await db.collection('jobs').doc(String(jobId)).delete(); } catch (e) {}
+            },
+
+            saveAddresses: async function() {
+                if (!app.data.isOnline) return;
+                try { await db.collection('config').doc('addresses').update({ list: app.data.savedAddresses }); } catch (e) {}
+            },
+
+            forceSync: function() {
+                if (app.data.isOnline) {
+                    this.sync();
+                    app.showToast('Sincronizando...');
+                } else {
+                    app.showToast('Modo offline', 'warning');
+                }
+            },
+
+            autoBackup: async function() {
+                if (!app.data.isOnline) return;
+                try {
+                    const backup = {
+                        timestamp: new Date().toISOString(),
+                        employees: app.data.employees,
+                        jobs: app.data.jobs,
+                        savedAddresses: app.data.savedAddresses,
+                        version: app.config.version
+                    };
+                    await db.collection('backups').add(backup);
+                    console.log('Backup automatico realizado');
+                } catch (e) {
+                    console.error('Backup error:', e);
                 }
             }
         };
 
-        // Export
-        app.export = {
-            pdf: function() {
-                const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
-                if (!weekJobs.length) { app.showToast(app.i18n.t('noDataExport'), 'error'); return; }
-                
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                const weekId = app.weeks.getWeekId();
-                const t = app.i18n;
-                const dateFormat = t.currentLang === 'pt-BR' ? 'pt-BR' : 'en-US';
-
-                doc.setFontSize(20); doc.setTextColor(37, 99, 235); doc.text('Bright & Shine Pro', 14, 20);
-                doc.setFontSize(14); doc.text(`${t.t('currentWeek')} - ${weekId}`, 14, 30);
-
-                const grouped = {};
-                weekJobs.forEach(j => {
-                    if (!grouped[j.employeeId]) grouped[j.employeeId] = { employee: app.data.employees.find(e => e.id === j.employeeId) || { name: j.employeeName, rate: j.rate }, jobs: [] };
-                    grouped[j.employeeId].jobs.push(j);
-                });
-
-                let startY = 50;
-                Object.values(grouped).forEach(data => {
-                    doc.setFontSize(11); doc.setTextColor(30, 41, 59); doc.text(`${data.employee.name} - $${data.employee.rate}/h`, 14, startY);
-                    const body = data.jobs.map(j => [new Date(j.date).toLocaleDateString(dateFormat), j.house.substring(0, 40), `${j.hours}h`, `$${j.total.toFixed(2)}`]);
-                    doc.autoTable({ 
-                        head: [[t.t('date'), t.t('house'), t.t('hours'), t.t('amount')]], 
-                        body, 
-                        startY: startY + 5, 
-                        theme: 'grid',
-                        headStyles: { fillColor: [37, 99, 235], textColor: 255 },
-                        margin: { left: 14, right: 14 }
-                    });
-                    startY = doc.lastAutoTable.finalY + 15;
-                });
-
-                const grandTotal = weekJobs.reduce((s, j) => s + j.total, 0);
-                doc.setFillColor(30, 41, 59); doc.rect(14, startY, 182, 12, 'F');
-                doc.setTextColor(16, 185, 129); doc.setFontSize(12); doc.text(`${t.t('totalWeek')}: $${grandTotal.toFixed(2)}`, 105, startY + 8, { align: 'center' });
-
-                doc.save(`BSOS_Week_${weekId}.pdf`);
-                app.showToast('📄 PDF Downloaded!');
-            },
-
-            csv: function() {
-                const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
-                if (!weekJobs.length) { app.showToast(app.i18n.t('noDataExport'), 'error'); return; }
-                
-                let csv = 'EMPLOYEE,HOUSE,DATE,HOURS,RATE,TOTAL\\n';
-                weekJobs.forEach(j => { csv += `"${j.employeeName}","${j.house}",${j.date},${j.hours},${j.rate},${j.total.toFixed(2)}\\n`; });
-                
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = url; a.download = `BSOS_Week_${app.weeks.getWeekId()}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                app.showToast('📊 CSV Downloaded!');
-            },
-
-            whatsapp: function() {
-                const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
-                if (!weekJobs.length) { app.showToast(app.i18n.t('noDataExport'), 'error'); return; }
-                
-                const t = app.i18n;
-                const grouped = {};
-                weekJobs.forEach(j => {
-                    if (!grouped[j.employeeId]) grouped[j.employeeId] = { name: j.employeeName, jobs: [], total: 0, hours: 0 };
-                    grouped[j.employeeId].jobs.push(j); grouped[j.employeeId].total += j.total; grouped[j.employeeId].hours += j.hours;
-                });
-
-                let message = `*Bright & Shine Pro - ${t.t('currentWeek')}*\\\\n`;
-                message += `Week: ${app.weeks.getWeekId()}\\\\n\\\\n`;
-                
-                Object.values(grouped).forEach(g => {
-                    message += `*${g.name}*\\\\n`;
-                    message += `⏰ ${g.hours.toFixed(1)}h | 💰 $${g.total.toFixed(2)}\\\\n`;
-                    g.jobs.forEach(j => {
-                        message += `• ${j.house} (${j.hours}h)\\\\n`;
-                    });
-                    message += `\\\\n`;
-                });
-
-                const total = weekJobs.reduce((s, j) => s + j.total, 0);
-                message += `*${t.t('totalWeek')}: $${total.toFixed(2)}*\\\\n`;
-                message += `_BSOS Cloud Pro_`;
-
-                window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
-            },
-
-            report: function() {
-                app.export.pdf();
-            }
-        };
-
-        // UI Functions
+        // UI
         app.ui = {
             showTab: function(tabName) {
                 document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -2366,7 +2813,7 @@
             updateSelects: function() {
                 const sel = document.getElementById('selEmployee');
                 const val = sel.value;
-                let html = `<option value="">${app.i18n.t('select')}</option>`;
+                let html = `<option value="">Selecione...</option>`;
                 app.data.employees.forEach(e => {
                     html += `<option value="${e.id}" ${val == e.id ? 'selected' : ''}>${e.name}</option>`;
                 });
@@ -2374,7 +2821,7 @@
 
                 const filterSel = document.getElementById('filterEmployee');
                 const filterVal = filterSel.value;
-                html = `<option value="">${app.i18n.t('allEmployees')}</option>`;
+                html = `<option value="">Todos Funcionarios</option>`;
                 app.data.employees.forEach(e => {
                     html += `<option value="${e.id}" ${filterVal == e.id ? 'selected' : ''}>${e.name}</option>`;
                 });
@@ -2399,7 +2846,7 @@
         app.settings = {
             open: function() {
                 document.getElementById('settingsModal').classList.add('show');
-                document.getElementById('languageSelect').value = app.i18n.currentLang;
+                document.getElementById('languageSelect').value = 'pt-BR';
             },
 
             close: function() {
@@ -2407,21 +2854,36 @@
             },
 
             changeLanguage: function(lang) {
-                if (app.i18n.texts[lang]) {
-                    app.i18n.setLanguage(lang);
-                    app.showToast(lang === 'pt-BR' ? '🇧🇷 Idioma alterado' : '🇺🇸 Language changed');
+                // Simplificado para PT-BR apenas
+                localStorage.setItem('bsos_language', lang);
+                app.showToast('Idioma alterado');
+            },
+
+            toggleTheme: function() {
+                app.data.darkMode = !app.data.darkMode;
+                const toggle = document.getElementById('themeToggle');
+
+                if (app.data.darkMode) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    toggle.classList.add('active');
+                    localStorage.setItem('bsos_theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                    toggle.classList.remove('active');
+                    localStorage.setItem('bsos_theme', 'light');
                 }
+
+                app.showToast(app.data.darkMode ? 'Modo Escuro ON' : 'Modo Claro ON');
             }
         };
 
         // Data Manager
         app.dataManager = {
             clearAll: function() {
-                const t = app.i18n;
-                if (confirm('⚠️ ' + t.t('clearDataMsg'))) {
-                    if (confirm('Final confirmation: This cannot be undone!')) {
+                if (confirm('Limpar todos os dados removera permanentemente funcionarios, trabalhos e historico. Esta acao nao pode ser desfeita.')) {
+                    if (confirm('Confirmacao final: Isto nao pode ser desfeito!')) {
                         localStorage.removeItem(app.config.storageKey);
-                        if (app.data.isOnline && confirm('Also delete cloud data?')) {
+                        if (app.data.isOnline && confirm('Tambem excluir dados da nuvem?')) {
                             db.collection('employees').get().then(snap => { snap.docs.forEach(doc => doc.ref.delete()); });
                             db.collection('jobs').get().then(snap => { snap.docs.forEach(doc => doc.ref.delete()); });
                             db.collection('weeks').get().then(snap => { snap.docs.forEach(doc => doc.ref.delete()); });
