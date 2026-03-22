@@ -1052,6 +1052,1060 @@ ${g.jobs.map(j => `• ${j.house} (${j.hours}h)`).join('
             },
 
             // NOVO: Controle de Semanas
+     <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bright & Shine Pro - BSOS Cloud</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --primary: #FF6B35; --secondary: #004E89; --success: #00C853; --danger: #FF1744; --info: #2196F3; --warning: #FF9800; --dark: #1a1a2e; }
+        body { font-family: 'Space Grotesk', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; color: #333; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: white; padding: 30px; border-radius: 20px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        h1 { font-size: 2.5rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+        .subtitle { color: #666; font-size: 1.1rem; }
+        .grid { display: grid; grid-template-columns: 320px 1fr 380px; gap: 20px; }
+        @media (max-width: 1200px) { .grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { body { padding: 10px; } h1 { font-size: 1.8rem; } }
+        .card { background: rgba(255,255,255,0.98); border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .section-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; color: var(--dark); }
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
+        .tab-btn { padding: 12px 24px; border: none; background: none; font-family: inherit; font-size: 1rem; font-weight: 600; color: #666; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; }
+        .tab-btn:hover { color: var(--primary); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #555; font-size: 0.9rem; }
+        input, select, textarea { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-family: inherit; font-size: 1rem; transition: all 0.3s; }
+        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,107,53,0.1); }
+        .btn { padding: 12px 24px; border: none; border-radius: 12px; font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), #FF8E53); color: white; width: 100%; }
+        .btn-secondary { background: linear-gradient(135deg, var(--secondary), #1A659E); color: white; }
+        .btn-success { background: linear-gradient(135deg, var(--success), #00E676); color: white; width: 100%; }
+        .btn-danger { background: linear-gradient(135deg, var(--danger), #FF5252); color: white; padding: 8px 12px; font-size: 0.85rem; }
+        .btn-info { background: linear-gradient(135deg, var(--info), #42A5F5); color: white; padding: 8px 12px; font-size: 0.85rem; }
+        .btn-sm { padding: 8px 16px; font-size: 0.85rem; }
+        .btn-warning { background: linear-gradient(135deg, var(--warning), #FFB74D); color: white; }
+        .btn-purple { background: linear-gradient(135deg, #9C27B0, #E1BEE7); color: white; }
+        .employee-card { background: white; border: 2px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .employee-card:hover { border-color: var(--primary); }
+        .employee-card.selected { border-color: var(--success); background: linear-gradient(135deg, #f0fff4, #e8f5e9); }
+        .employee-name { font-weight: 700; font-size: 1rem; color: var(--dark); }
+        .employee-rate { font-size: 0.85rem; color: #666; }
+        .rate-tag { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 5px 10px; border-radius: 15px; font-weight: 600; font-size: 0.85rem; }
+        .edit-form { background: linear-gradient(135deg, #f0f7ff, #e3f2fd); border: 2px solid var(--info); border-radius: 12px; padding: 15px; margin-top: 10px; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: white; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .stat-value { font-size: 1.8rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .stat-label { font-size: 0.85rem; color: #666; margin-top: 5px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
+        th { background: linear-gradient(135deg, var(--dark), #16213e); color: white; padding: 12px; text-align: left; font-weight: 600; }
+        td { padding: 12px; border-bottom: 1px solid #e0e0e0; background: white; }
+        tr:hover td { background: #f8f9fa; }
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-pill { padding: 8px 16px; border: 2px solid #e0e0e0; background: white; border-radius: 20px; cursor: pointer; font-weight: 500; font-size: 0.9rem; transition: all 0.3s; }
+        .filter-pill:hover { border-color: var(--primary); color: var(--primary); }
+        .filter-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .quick-banner { background: linear-gradient(135deg, var(--success), #00E676); color: white; padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; display: none; }
+        .quick-banner.show { display: block; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-overlay.show { display: flex; }
+        .modal-box { background: white; border-radius: 20px; padding: 30px; max-width: 900px; width: 90%; max-height: 85vh; overflow-y: auto; position: relative; }
+        .toast { position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); display: none; z-index: 2000; font-weight: 600; }
+        .toast.show { display: block; }
+        .toast.error { background: var(--danger); }
+        .empty-state { text-align: center; padding: 40px; color: #999; }
+        .sync-status { display: inline-flex; align-items: center; gap: 5px; font-size: 0.85rem; color: var(--success); margin-top: 10px; cursor: pointer; padding: 5px 10px; border-radius: 8px; transition: all 0.3s; }
+        .sync-status:hover { background: rgba(0,200,83,0.1); }
+        .sync-status.pending { color: var(--warning); }
+        .sync-status.error { color: var(--danger); }
+        .sync-status.offline { color: #999; }
+        .cloud-badge { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-left: 10px; }
+        .week-badge { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #FF9800, #FF5722); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-left: 10px; }
+        .week-info { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); border: 2px solid #FF9800; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+        .autocomplete-container { position: relative; width: 100%; }
+        .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid var(--primary); border-top: none; border-radius: 0 0 12px 12px; max-height: 200px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .autocomplete-list.show { display: block; }
+        .autocomplete-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f0f0f0; font-size: 0.95rem; }
+        .autocomplete-item:hover { background: #FFF3E0; }
+        .address-tag { display: inline-flex; align-items: center; gap: 5px; background: #E3F2FD; color: var(--secondary); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; margin: 2px; cursor: pointer; }
+        .address-tag:hover { background: var(--primary); color: white; }
+        .alert-banner { background: #FFF3E0; border-left: 4px solid var(--warning); padding: 12px 15px; border-radius: 8px; margin-bottom: 15px; display: none; align-items: center; gap: 10px; }
+        .alert-banner.show { display: flex; }
+        .sync-indicator { position: fixed; bottom: 20px; right: 20px; background: white; padding: 10px 15px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); display: none; align-items: center; gap: 8px; font-size: 0.85rem; z-index: 1000; }
+        .week-closed-banner { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); border: 2px solid #4CAF50; border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; }
+        .week-closed-banner h3 { color: #2E7D32; margin-bottom: 10px; }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="toast" id="toast"></div>
+    <div class="sync-indicator" id="syncIndicator" style="display: none;">
+        <span id="syncIcon">☁️</span>
+        <span id="syncText">Sincronizando...</span>
+    </div>
+    <div class="modal-overlay" id="modal">
+        <div class="modal-box">
+            <button onclick="app.modals.close()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">&times;</button>
+            <h2 id="modalTitle" style="margin-bottom: 20px; color: var(--dark);">Relatório</h2>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="alertModal">
+        <div class="modal-box" style="max-width: 500px;">
+            <h2 style="margin-bottom: 20px; color: var(--dark);">⚠️ Atenção</h2>
+            <div id="alertModalContent"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="app.alerts.close()" style="flex: 1;">Cancelar</button>
+                <button class="btn btn-success" onclick="app.jobs.confirmSave()" style="flex: 1;">Confirmar e Salvar</button>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Bright & Shine Pro</h1>
+            <p class="subtitle">BSOS Cloud - Sistema de Controle de Pagamentos</p>
+            <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                <div class="sync-status" id="syncStatus" onclick="app.cloud.forceSync()">
+                    <span id="statusIcon">☁️</span>
+                    <span id="statusText">Conectando...</span>
+                </div>
+                <span class="cloud-badge">☁️ CLOUD</span>
+                <span class="week-badge" id="weekBadge">📅 Semana Atual</span>
+            </div>
+        </div>
+
+        <!-- NOVO: Info da Semana -->
+        <div class="week-info" id="weekInfo">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <div style="font-weight: 700; font-size: 1.1rem; color: #E65100;">📅 Semana Atual</div>
+                    <div style="font-size: 0.9rem; color: #666;" id="weekRange">Carregando...</div>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-purple" onclick="app.weeks.showWeekHistory()">📚 Histórico</button>
+                    <button class="btn btn-warning" onclick="app.weeks.closeWeek()">🔒 Fechar Semana</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Banner quando semana está fechada -->
+        <div class="week-closed-banner" id="weekClosedBanner" style="display: none;">
+            <h3>✅ Semana Fechada!</h3>
+            <p>Esta semana já foi fechada. Os dados foram arquivados.</p>
+            <button class="btn btn-secondary" onclick="app.weeks.showWeekHistory()" style="margin-top: 10px;">Ver Histórico</button>
+        </div>
+
+        <div class="grid">
+            <!-- COLUNA 1: EQUIPE -->
+            <div class="card">
+                <div class="section-title">👥 Equipe</div>
+                <div class="tab-buttons">
+                    <button class="tab-btn active" id="tab-list">Time</button>
+                    <button class="tab-btn" id="tab-add">+ Novo</button>
+                </div>
+                <div id="panel-list" class="tab-panel active">
+                    <div id="employeeList"></div>
+                </div>
+                <div id="panel-add" class="tab-panel">
+                    <div class="form-group">
+                        <label>Nome Completo</label>
+                        <input type="text" id="newName" placeholder="Ex: Maria Silva">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor por Hora ($)</label>
+                        <input type="number" id="newRate" placeholder="25.00" step="0.01">
+                    </div>
+                    <button class="btn btn-primary" id="btnAddEmployee">➕ Adicionar Funcionário</button>
+                </div>
+            </div>
+
+            <!-- COLUNA 2: REGISTROS -->
+            <div class="card">
+                <div class="section-title">📋 Registro de Trabalhos</div>
+                <div class="quick-banner" id="quickBanner">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 0.85rem; opacity: 0.9;">Registrando para</div>
+                            <div style="font-size: 1.2rem; font-weight: 700;" id="quickName"></div>
+                        </div>
+                        <button onclick="app.employees.exitQuickMode()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;">✕ Sair</button>
+                    </div>
+                </div>
+                <div class="alert-banner" id="alertBanner">
+                    <span style="font-size: 1.2rem;">⚠️</span>
+                    <span id="alertMessage"></span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Funcionário</label>
+                        <select id="selEmployee"><option value="">Selecione...</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input type="date" id="workDate">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Endereço da Casa</label>
+                    <div class="autocomplete-container">
+                        <input type="text" id="houseAddr" placeholder="Digite o endereço..." autocomplete="off">
+                        <div id="autocompleteList" class="autocomplete-list"></div>
+                    </div>
+                    <small style="color: #666; font-size: 0.8rem;">💡 Digite para ver sugestões dos endereços salvos</small>
+                    <div class="quick-addresses" id="quickAddresses"></div>
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <button class="btn btn-sm btn-secondary" id="btnSaveAddress">💾 Salvar Endereço</button>
+                        <button class="btn btn-sm btn-info" id="btnManageAddresses">⚙️ Gerenciar</button>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Horas</label>
+                        <input type="number" id="workHours" placeholder="3.5" step="0.5">
+                    </div>
+                    <div class="form-group">
+                        <label style="color: var(--success);">Total</label>
+                        <div style="background: var(--dark); color: #00E676; padding: 12px; border-radius: 12px; font-size: 1.4rem; font-weight: 700; text-align: center; font-family: monospace;" id="totalDisplay">$0.00</div>
+                    </div>
+                </div>
+                <button class="btn btn-success" id="btnSaveJob" style="margin-top: 10px;">💾 Registrar Trabalho</button>
+                <div style="margin-top: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <strong>📅 Período:</strong>
+                        <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;" id="btnShowAll">Ver Tudo</button>
+                    </div>
+                    <div class="filter-bar">
+                        <button class="filter-pill active" data-filter="today">Hoje</button>
+                        <button class="filter-pill" data-filter="week">Semana</button>
+                        <button class="filter-pill" data-filter="month">Mês</button>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 id="jobsTitle">Trabalhos de Hoje</h3>
+                        <span id="jobsCount" style="background: var(--primary); color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem; font-weight: 600;">0</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead><tr><th>Funcionário</th><th>Casa</th><th>Data</th><th>Horas</th><th>Total</th><th>Ações</th></tr></thead>
+                            <tbody id="jobsTable"></tbody>
+                        </table>
+                    </div>
+                    <div class="empty-state" id="noJobs" style="display: none;">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">📋</div>
+                        <p>Nenhum trabalho registrado neste período</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUNA 3: DASHBOARD -->
+            <div class="card">
+                <div class="section-title">📊 Dashboard</div>
+                <div class="stat-grid">
+                    <div class="stat-box"><div class="stat-value" id="statHours">0</div><div class="stat-label">Horas</div></div>
+                    <div class="stat-box"><div class="stat-value" id="statJobs">0</div><div class="stat-label">Casas</div></div>
+                    <div class="stat-box"><div class="stat-value" id="statTotal">$0</div><div class="stat-label">Total</div></div>
+                    <div class="stat-box"><div class="stat-value" id="statPending">$0</div><div class="stat-label">A Pagar</div></div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <div class="section-title" style="font-size: 1rem;">📤 Exportar</div>
+                    <button class="btn btn-secondary" id="btnWhatsApp" style="width: 100%; margin-bottom: 10px;">📱 WhatsApp</button>
+                    <button class="btn btn-secondary" id="btnCSV" style="width: 100%; margin-bottom: 10px;">📊 Excel CSV Detalhado</button>
+                    <button class="btn btn-secondary" id="btnPDF" style="width: 100%; margin-bottom: 10px;">📄 PDF Profissional</button>
+                    <button class="btn btn-secondary" id="btnReport" style="width: 100%; margin-bottom: 10px;">📄 Relatório Completo</button>
+                </div>
+                <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                    <div class="section-title" style="font-size: 1rem;">🏆 Top Performers</div>
+                    <div id="topList"></div>
+                </div>
+                <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                    <button class="btn btn-danger" id="btnClearAll" style="width: 100%; font-size: 0.9rem;">🗑️ Limpar Todos os Dados</button>
+                </div>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 30px; color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+            <p>Bright & Shine Pro Services | BSOS Cloud v5.1 | Fechamento Semanal</p>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBFQYLksijKV8dYa-djdn04AUsd13zzta4",
+            authDomain: "bright-shine-bsos.firebaseapp.com",
+            projectId: "bright-shine-bsos",
+            storageBucket: "bright-shine-bsos.firebasestorage.app",
+            messagingSenderId: "417623608191",
+            appId: "1:417623608191:web:34f8bdbaa0eeec378fe84a"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const app = {
+            config: { storageKey: 'bsos_cloud_v5_1', version: 5.1 },
+            data: {
+                employees: [
+                    { id: 1, name: "Isabel Farias", rate: 25 },
+                    { id: 2, name: "Liliane Barbosa", rate: 25 },
+                    { id: 3, name: "Leoni Gaspar", rate: 20 },
+                    { id: 4, name: "Akyla Ferreira", rate: 20 }
+                ],
+                jobs: [],
+                savedAddresses: ["123 Main St, Manchester, NH", "456 Elm St, Nashua, NH", "789 Maple Ave, Concord, NH"],
+                currentFilter: 'today',
+                quickEmployeeId: null,
+                editingEmployeeId: null,
+                editingJobId: null,
+                pendingJobData: null,
+                pendingWeekClose: null,
+                isOnline: navigator.onLine
+            },
+
+
+            init: function() {
+                console.log('🚀 BSOS Cloud v5.1 - Fechamento Semanal Initializing...');
+                this.setupNetworkListeners();
+                this.loadData();
+                this.setupEventListeners();
+                this.setupKeyboardShortcuts();
+                document.getElementById('workDate').valueAsDate = new Date();
+
+                // NOVO: Inicializa controle de semanas
+                this.weeks.currentWeekId = this.weeks.getWeekId();
+                this.updateWeekDisplay();
+
+                this.renderAll();
+                this.cloud.init();
+
+                // NOVO: Verifica fechamento automático a cada minuto
+                setInterval(() => this.weeks.checkAutoClose(), 60000);
+
+                console.log('✅ BSOS Cloud v5.1 Ready!');
+            },
+
+            updateWeekDisplay: function() {
+                const weekId = this.weeks.getWeekId();
+                const range = this.weeks.getWeekRange(weekId);
+                const weekJobs = this.weeks.getCurrentWeekJobs();
+                const isClosed = weekJobs.length > 0 && weekJobs[0].status === 'closed';
+
+                document.getElementById('weekRange').textContent = 
+                    `${range.start.toLocaleDateString('pt-BR')} - ${range.end.toLocaleDateString('pt-BR')} | ${weekJobs.length} trabalhos`;
+
+                if (isClosed) {
+                    document.getElementById('weekInfo').style.display = 'none';
+                    document.getElementById('weekClosedBanner').style.display = 'block';
+                    document.getElementById('weekBadge').textContent = '🔒 Semana Fechada';
+                    document.getElementById('weekBadge').style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
+                } else {
+                    document.getElementById('weekInfo').style.display = 'block';
+                    document.getElementById('weekClosedBanner').style.display = 'none';
+                    document.getElementById('weekBadge').textContent = '📅 Semana Atual';
+                }
+            },
+
+            setupNetworkListeners: function() {
+                window.addEventListener('online', () => {
+                    this.data.isOnline = true;
+                    this.updateSyncStatus('online');
+                    this.cloud.sync();
+                });
+                window.addEventListener('offline', () => {
+                    this.data.isOnline = false;
+                    this.updateSyncStatus('offline');
+                });
+            },
+
+            setupEventListeners: function() {
+                document.getElementById('tab-list').addEventListener('click', () => this.ui.showTab('list'));
+                document.getElementById('tab-add').addEventListener('click', () => this.ui.showTab('add'));
+                document.getElementById('btnAddEmployee').addEventListener('click', () => this.employees.add());
+                document.getElementById('selEmployee').addEventListener('change', () => this.employees.onSelect());
+                document.getElementById('workHours').addEventListener('input', () => this.jobs.calcTotal());
+                document.getElementById('btnSaveJob').addEventListener('click', () => this.jobs.validateAndSave());
+                document.getElementById('houseAddr').addEventListener('input', () => this.addresses.handleInput());
+                document.getElementById('btnSaveAddress').addEventListener('click', () => this.addresses.saveCurrent());
+                document.getElementById('btnManageAddresses').addEventListener('click', () => this.addresses.showManager());
+                document.querySelectorAll('.filter-pill').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.filters.set(e.target.dataset.filter, e.target));
+                });
+                document.getElementById('btnShowAll').addEventListener('click', () => this.filters.showAll());
+                document.getElementById('btnWhatsApp').addEventListener('click', () => this.export.whatsapp());
+                document.getElementById('btnCSV').addEventListener('click', () => this.export.csv());
+                document.getElementById('btnPDF').addEventListener('click', () => this.export.pdf());
+                document.getElementById('btnReport').addEventListener('click', () => this.export.report());
+                document.getElementById('btnClearAll').addEventListener('click', () => this.dataManager.clearAll());
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.autocomplete-container')) {
+                        document.getElementById('autocompleteList').classList.remove('show');
+                    }
+                });
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.modals.close();
+                        this.alerts.close();
+                        document.getElementById('autocompleteList').classList.remove('show');
+                    }
+                });
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'hidden') this.dataManager.save();
+                });
+            },
+
+            setupKeyboardShortcuts: function() {
+                // Atalhos adicionais podem ser adicionados aqui
+            },
+
+            renderAll: function() {
+                this.employees.render();
+                this.ui.updateSelect();
+                this.jobs.render();
+                this.dashboard.update();
+                this.addresses.renderQuick();
+                this.updateWeekDisplay();
+            },
+
+            loadData: function() {
+                try {
+                    const saved = localStorage.getItem(this.config.storageKey);
+                    if (saved) {
+                        const data = JSON.parse(saved);
+                        if (data.employees) this.data.employees = data.employees;
+                        if (data.jobs) this.data.jobs = data.jobs;
+                        if (data.savedAddresses) this.data.savedAddresses = data.savedAddresses;
+                        if (data.currentFilter) this.data.currentFilter = data.currentFilter;
+                    }
+                } catch (e) { console.error('Load error:', e); }
+            },
+
+            updateSyncStatus: function(status) {
+                const el = document.getElementById('syncStatus');
+                const icon = document.getElementById('statusIcon');
+                const text = document.getElementById('statusText');
+                const configs = {
+                    online: { icon: '☁️', text: 'Sincronizado na nuvem', class: '' },
+                    offline: { icon: '📴', text: 'Modo offline', class: 'offline' },
+                    syncing: { icon: '🔄', text: 'Sincronizando...', class: 'pending' },
+                    error: { icon: '❌', text: 'Erro de conexão', class: 'error' }
+                };
+                const config = configs[status] || configs.online;
+                icon.textContent = config.icon;
+                text.textContent = config.text;
+                el.className = 'sync-status ' + config.class;
+            },
+
+            cloud: {
+                init: function() {
+                    if (app.data.isOnline) {
+                        app.updateSyncStatus('syncing');
+                        this.sync();
+                    } else {
+                        app.updateSyncStatus('offline');
+                    }
+                },
+
+                sync: async function() {
+                    if (!app.data.isOnline) return;
+                    app.updateSyncStatus('syncing');
+                    document.getElementById('syncIndicator').style.display = 'flex';
+
+                    try {
+                        const empSnapshot = await db.collection('employees').get();
+                        if (!empSnapshot.empty) {
+                            app.data.employees = empSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        } else {
+                            await this.pushEmployees();
+                        }
+
+                        const jobsSnapshot = await db.collection('jobs').get();
+                        if (!jobsSnapshot.empty) {
+                            app.data.jobs = jobsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        } else {
+                            await this.pushJobs();
+                        }
+
+                        const addrDoc = await db.collection('config').doc('addresses').get();
+                        if (addrDoc.exists) {
+                            app.data.savedAddresses = addrDoc.data().list || app.data.savedAddresses;
+                        } else {
+                            await db.collection('config').doc('addresses').set({ list: app.data.savedAddresses });
+                        }
+
+                        // Sincroniza semanas fechadas
+                        const weeksSnapshot = await db.collection('weeks').get();
+                        if (!weeksSnapshot.empty) {
+                            // Atualiza status dos jobs locais
+                            weeksSnapshot.docs.forEach(doc => {
+                                const weekData = doc.data();
+                                if (weekData.jobs) {
+                                    weekData.jobs.forEach(jobId => {
+                                        const job = app.data.jobs.find(j => j.id == jobId);
+                                        if (job) {
+                                            job.status = 'closed';
+                                            job.weekId = weekData.weekId;
+                                        }
+                                    });
+                                }
+                            });
+                        }
+
+                        app.renderAll();
+                        app.dataManager.save();
+                        app.updateSyncStatus('online');
+                        app.ui.showToast('☁️ Dados sincronizados!');
+                    } catch (error) {
+                        console.error('Sync error:', error);
+                        app.updateSyncStatus('error');
+                    } finally {
+                        setTimeout(() => { document.getElementById('syncIndicator').style.display = 'none'; }, 2000);
+                    }
+                },
+
+                pushEmployees: async function() {
+                    const batch = db.batch();
+                    app.data.employees.forEach(emp => {
+                        const ref = db.collection('employees').doc(String(emp.id));
+                        batch.set(ref, emp);
+                    });
+                    await batch.commit();
+                },
+
+                pushJobs: async function() {
+                    const batch = db.batch();
+                    app.data.jobs.forEach(job => {
+                        const ref = db.collection('jobs').doc(String(job.id));
+                        batch.set(ref, job);
+                    });
+                    await batch.commit();
+                },
+
+                saveEmployee: async function(employee) {
+                    if (!app.data.isOnline) return;
+                    try { await db.collection('employees').doc(String(employee.id)).set(employee); } catch (e) {}
+                },
+
+                saveJob: async function(job) {
+                    if (!app.data.isOnline) return;
+                    try { 
+                        await db.collection('jobs').doc(String(job.id)).set(job); 
+                    } catch (e) {}
+                },
+
+                deleteJob: async function(jobId) {
+                    if (!app.data.isOnline) return;
+                    try { await db.collection('jobs').doc(String(jobId)).delete(); } catch (e) {}
+                },
+
+                saveAddresses: async function() {
+                    if (!app.data.isOnline) return;
+                    try { await db.collection('config').doc('addresses').update({ list: app.data.savedAddresses }); } catch (e) {}
+                },
+
+                forceSync: function() {
+                    if (app.data.isOnline) {
+                        this.sync();
+                        app.ui.showToast('🔄 Sincronizando...');
+                    } else {
+                        app.ui.showToast('📴 Sem conexão', 'warning');
+                    }
+                }
+            },
+
+            ui: {
+                showTab: function(tabName) {
+                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.getElementById('panel-' + tabName).classList.add('active');
+                    document.getElementById('tab-' + tabName).classList.add('active');
+                },
+                updateSelect: function() {
+                    const sel = document.getElementById('selEmployee');
+                    const val = sel.value;
+                    let html = '<option value="">Selecione...</option>';
+                    app.data.employees.forEach(e => {
+                        html += `<option value="${e.id}" ${val == e.id ? 'selected' : ''}>${e.name}</option>`;
+                    });
+                    sel.innerHTML = html;
+                },
+                showToast: function(msg, type = 'success') {
+                    const t = document.getElementById('toast');
+                    t.textContent = msg;
+                    t.className = 'toast show' + (type ? ' ' + type : '');
+                    setTimeout(() => t.classList.remove('show'), 3000);
+                }
+            },
+
+            employees: {
+                render: function() {
+                    const container = document.getElementById('employeeList');
+                    container.innerHTML = app.data.employees.map(emp => {
+                        const isEditing = app.data.editingEmployeeId === emp.id;
+                        const isSelected = app.data.quickEmployeeId === emp.id;
+                        let html = `<div class="employee-card ${isSelected ? 'selected' : ''}">`;
+                        html += `<div style="flex: 1;"><div class="employee-name">${emp.name}</div>`;
+                        html += `<div class="employee-rate">$${emp.rate.toFixed(2)}/hora</div></div>`;
+                        html += `<div style="display: flex; align-items: center; gap: 8px;">`;
+                        html += `<span class="rate-tag">$${emp.rate}</span>`;
+                        html += `<button class="btn btn-info" onclick="app.employees.edit(${emp.id})">✏️</button>`;
+                        html += `<button class="btn btn-danger" onclick="app.employees.remove(${emp.id})">🗑️</button>`;
+                        html += `</div></div>`;
+                        if (isEditing) {
+                            html += `<div class="edit-form">`;
+                            html += `<input type="text" id="edit-name-${emp.id}" value="${emp.name}" style="width: 58%; margin-right: 5px;">`;
+                            html += `<input type="number" id="edit-rate-${emp.id}" value="${emp.rate}" step="0.01" style="width: 20%;">`;
+                            html += `<button class="btn btn-info" onclick="app.employees.save(${emp.id})" style="margin-left: 5px;">💾</button>`;
+                            html += `<button class="btn btn-secondary" onclick="app.employees.cancelEdit()" style="margin-left: 5px;">❌</button>`;
+                            html += `</div>`;
+                        }
+                        return html;
+                    }).join('');
+                },
+                add: function() {
+                    const name = document.getElementById('newName').value.trim();
+                    const rate = parseFloat(document.getElementById('newRate').value);
+                    if (!name || !rate) { app.ui.showToast('Preencha nome e valor!', 'error'); return; }
+                    const newEmployee = { id: Date.now(), name, rate };
+                    app.data.employees.push(newEmployee);
+                    app.cloud.saveEmployee(newEmployee);
+                    document.getElementById('newName').value = '';
+                    document.getElementById('newRate').value = '';
+                    this.render();
+                    app.ui.updateSelect();
+                    app.dataManager.save();
+                    app.ui.showToast(`${name} adicionada!`);
+                    app.ui.showTab('list');
+                },
+                edit: function(id) { app.data.editingEmployeeId = id; this.render(); },
+                save: function(id) {
+                    const name = document.getElementById(`edit-name-${id}`).value.trim();
+                    const rate = parseFloat(document.getElementById(`edit-rate-${id}`).value);
+                    if (!name || !rate) { app.ui.showToast('Preencha todos os campos!', 'error'); return; }
+                    const emp = app.data.employees.find(e => e.id === id);
+                    emp.name = name; emp.rate = rate;
+                    app.data.jobs.forEach(j => { if (j.employeeId === id) { j.employeeName = name; j.rate = rate; j.total = j.hours * rate; } });
+                    app.cloud.saveEmployee(emp);
+                    app.data.editingEmployeeId = null;
+                    this.render();
+                    app.jobs.render();
+                    app.ui.updateSelect();
+                    app.dashboard.update();
+                    app.dataManager.save();
+                    app.ui.showToast('Atualizado!');
+                },
+                cancelEdit: function() { app.data.editingEmployeeId = null; this.render(); },
+                remove: function(id) {
+                    const emp = app.data.employees.find(e => e.id === id);
+                    if (!confirm(`Excluir ${emp.name}?`)) return;
+                    if (app.data.quickEmployeeId === id) this.exitQuickMode();
+                    app.data.employees = app.data.employees.filter(e => e.id !== id);
+                    if (app.data.isOnline) db.collection('employees').doc(String(id)).delete();
+                    this.render();
+                    app.ui.updateSelect();
+                    app.dataManager.save();
+                    app.ui.showToast('Removido!');
+                },
+                onSelect: function() {
+                    const id = document.getElementById('selEmployee').value;
+                    if (id) {
+                        app.data.quickEmployeeId = parseInt(id);
+                        const emp = app.data.employees.find(e => e.id === app.data.quickEmployeeId);
+                        document.getElementById('quickBanner').classList.add('show');
+                        document.getElementById('quickName').textContent = emp.name;
+                        this.render();
+                        app.jobs.calcTotal();
+                    }
+                },
+                exitQuickMode: function() {
+                    app.data.quickEmployeeId = null;
+                    document.getElementById('quickBanner').classList.remove('show');
+                    document.getElementById('selEmployee').value = '';
+                    document.getElementById('totalDisplay').textContent = '$0.00';
+                    this.render();
+                }
+            },
+
+            addresses: {
+                handleInput: function() {
+                    const input = document.getElementById('houseAddr');
+                    const list = document.getElementById('autocompleteList');
+                    const query = input.value.toLowerCase().trim();
+                    if (query.length < 2) { list.classList.remove('show'); return; }
+                    const matches = app.data.savedAddresses.filter(addr => addr.toLowerCase().includes(query)).slice(0, 5);
+                    if (matches.length === 0) { list.classList.remove('show'); return; }
+                    list.innerHTML = matches.map(addr => {
+                        const highlighted = addr.replace(new RegExp(`(${query})`, 'gi'), '<strong>$1</strong>');
+                        return `<div class="autocomplete-item" onclick="document.getElementById('houseAddr').value = '${addr.replace(/'/g, "\'")}'; document.getElementById('autocompleteList').classList.remove('show');">${highlighted}</div>`;
+                    }).join('');
+                    list.classList.add('show');
+                },
+                saveCurrent: function() {
+                    const address = document.getElementById('houseAddr').value.trim();
+                    if (!address) { app.ui.showToast('Digite um endereço primeiro!', 'error'); return; }
+                    if (app.data.savedAddresses.includes(address)) { app.ui.showToast('Endereço já está salvo!'); return; }
+                    app.data.savedAddresses.push(address);
+                    app.data.savedAddresses.sort();
+                    app.cloud.saveAddresses();
+                    app.dataManager.save();
+                    this.renderQuick();
+                    app.ui.showToast('✅ Endereço salvo!');
+                },
+                renderQuick: function() {
+                    const container = document.getElementById('quickAddresses');
+                    const recent = [...new Set(app.data.jobs.slice(-20).map(j => j.house).reverse())];
+                    const combined = [...new Set([...recent, ...app.data.savedAddresses])].slice(0, 8);
+                    container.innerHTML = combined.map(addr => {
+                        const short = addr.length > 30 ? addr.substring(0, 30) + '...' : addr;
+                        return `<span class="address-tag" onclick="document.getElementById('houseAddr').value = '${addr.replace(/'/g, "\'")}'">📍 ${short}</span>`;
+                    }).join('');
+                },
+                showManager: function() {
+                    let html = `<h3>📍 Gerenciar Endereços (${app.data.savedAddresses.length})</h3>`;
+                    html += `<div style="margin: 20px 0;"><div style="display: flex; gap: 10px; margin-bottom: 15px;">`;
+                    html += `<input type="text" id="newAddrInput" placeholder="Novo endereço..." style="flex: 1; padding: 8px;">`;
+                    html += `<button class="btn btn-success" onclick="app.addresses.addNew()">➕ Adicionar</button></div>`;
+                    if (app.data.savedAddresses.length === 0) {
+                        html += `<p style="text-align: center; color: #999;">Nenhum endereço salvo</p>`;
+                    } else {
+                        html += `<div style="max-height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px;">`;
+                        app.data.savedAddresses.forEach((addr, idx) => {
+                            html += `<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #f0f0f0;">`;
+                            html += `<span>${addr}</span><div><button class="btn btn-sm btn-info" onclick="document.getElementById('houseAddr').value = '${addr.replace(/'/g, "\'")}'; app.modals.close();" style="margin-right: 5px;">Usar</button>`;
+                            html += `<button class="btn btn-sm btn-danger" onclick="app.addresses.remove(${idx})">🗑️</button></div></div>`;
+                        });
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                    app.modals.show('Gerenciar Endereços', html);
+                },
+                addNew: function() {
+                    const input = document.getElementById('newAddrInput');
+                    const addr = input.value.trim();
+                    if (!addr) return;
+                    if (app.data.savedAddresses.includes(addr)) { app.ui.showToast('Endereço já existe!', 'error'); return; }
+                    app.data.savedAddresses.push(addr);
+                    app.data.savedAddresses.sort();
+                    app.cloud.saveAddresses();
+                    app.dataManager.save();
+                    this.showManager();
+                    this.renderQuick();
+                    app.ui.showToast('✅ Adicionado!');
+                },
+                remove: function(index) {
+                    if (!confirm('Remover este endereço?')) return;
+                    app.data.savedAddresses.splice(index, 1);
+                    app.cloud.saveAddresses();
+                    app.dataManager.save();
+                    this.showManager();
+                    this.renderQuick();
+                    app.ui.showToast('Removido!');
+                }
+            },
+
+            jobs: {
+                calcTotal: function() {
+                    const empId = document.getElementById('selEmployee').value;
+                    const hours = parseFloat(document.getElementById('workHours').value) || 0;
+                    const emp = app.data.employees.find(e => e.id == empId);
+                    document.getElementById('totalDisplay').textContent = emp ? `$${(hours * emp.rate).toFixed(2)}` : '$0.00';
+                },
+                validateAndSave: function() {
+                    const empId = document.getElementById('selEmployee').value;
+                    const house = document.getElementById('houseAddr').value.trim();
+                    const hours = parseFloat(document.getElementById('workHours').value);
+                    const date = document.getElementById('workDate').value;
+
+                    if (!empId || !house || !hours || !date) { app.ui.showToast('Preencha todos os campos!', 'error'); return; }
+
+                    // Verifica se a semana está fechada
+                    const weekJobs = app.weeks.getCurrentWeekJobs();
+                    if (weekJobs.length > 0 && weekJobs[0].status === 'closed') {
+                        app.ui.showToast('⚠️ Esta semana já foi fechada! Não é possível adicionar mais trabalhos.', 'error');
+                        return;
+                    }
+
+                    const emp = app.data.employees.find(e => e.id == empId);
+                    const alerts = [];
+                    if (hours < 1) alerts.push({ type: 'warning', msg: `Apenas ${hours}h. Correto?` });
+                    if (hours > 8) alerts.push({ type: 'warning', msg: `${hours}h é incomum. Confirmar?` });
+                    const dailyHours = app.data.jobs.filter(j => j.employeeId === parseInt(empId) && j.date === date && j.id !== app.data.editingJobId).reduce((sum, j) => sum + j.hours, 0);
+                    if (dailyHours + hours > 12) alerts.push({ type: 'error', msg: 'Limite diário de 12h excedido!' });
+                    const duplicate = app.data.jobs.find(j => j.house.toLowerCase() === house.toLowerCase() && j.date === date && j.employeeId === parseInt(empId) && j.id !== app.data.editingJobId);
+                    if (duplicate) alerts.push({ type: 'warning', msg: 'Casa já registrada nesta data!' });
+
+                    app.data.pendingJobData = { employeeId: parseInt(empId), employeeName: emp.name, house, hours, rate: emp.rate, date, total: hours * emp.rate, status: 'pending', weekId: app.weeks.getWeekId() };
+
+                    if (alerts.some(a => a.type === 'error') || alerts.some(a => a.type === 'warning')) {
+                        app.alerts.show(alerts);
+                    } else {
+                        this.save();
+                    }
+                },
+                confirmSave: function() {
+                    if (app.data.pendingJobData) {
+                        if (app.data.editingJobId) {
+                            this.update(app.data.editingJobId, app.data.pendingJobData);
+                        } else {
+                            this.save();
+                        }
+                        app.alerts.close();
+                    }
+                },
+                save: function() {
+                    const data = app.data.pendingJobData;
+                    data.id = Date.now();
+                    app.data.jobs.push(data);
+                    app.cloud.saveJob(data);
+                    this.afterSave();
+                    app.ui.showToast(`✅ ${data.employeeName}: registrado!`);
+                },
+                update: function(id, data) {
+                    const index = app.data.jobs.findIndex(j => j.id === id);
+                    if (index !== -1) {
+                        data.id = id;
+                        app.data.jobs[index] = data;
+                        app.cloud.saveJob(data);
+                        this.afterSave();
+                        app.ui.showToast('✅ Trabalho atualizado!');
+                    }
+                },
+                afterSave: function() {
+                    document.getElementById('houseAddr').value = '';
+                    document.getElementById('workHours').value = '';
+                    document.getElementById('totalDisplay').textContent = '$0.00';
+                    document.getElementById('autocompleteList').classList.remove('show');
+                    app.data.editingJobId = null;
+                    this.render();
+                    app.dashboard.update();
+                    app.dataManager.save();
+                    app.addresses.renderQuick();
+                    app.updateWeekDisplay();
+                },
+                render: function() {
+                    // Mostra apenas trabalhos da semana atual (não fechados)
+                    const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => j.status !== 'closed');
+                    const filtered = app.data.currentFilter === 'all' ? weekJobs : app.filters.getFiltered().filter(j => !j.status || j.status !== 'closed');
+
+                    const titles = { today: 'Hoje', week: 'Semana', month: 'Mês', all: 'Todos' };
+                    document.getElementById('jobsTitle').textContent = 'Trabalhos: ' + (titles[app.data.currentFilter] || 'Todos');
+                    document.getElementById('jobsCount').textContent = filtered.length;
+
+                    const tbody = document.getElementById('jobsTable');
+                    const empty = document.getElementById('noJobs');
+
+                    if (filtered.length === 0) {
+                        tbody.innerHTML = '';
+                        empty.style.display = 'block';
+                        return;
+                    }
+                    empty.style.display = 'none';
+                    tbody.innerHTML = filtered.sort((a, b) => new Date(b.date) - new Date(a.date)).map(j => `
+                        <tr>
+                            <td><strong>${j.employeeName}</strong></td>
+                            <td>${j.house}</td>
+                            <td>${new Date(j.date).toLocaleDateString('pt-BR')}</td>
+                            <td>${j.hours}h</td>
+                            <td><strong>$${j.total.toFixed(2)}</strong></td>
+                            <td>
+                                <button class="btn btn-info" onclick="app.jobs.edit(${j.id})" style="margin-right: 5px;">✏️</button>
+                                <button class="btn btn-danger" onclick="app.jobs.remove(${j.id})">🗑️</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                },
+                edit: function(id) {
+                    const job = app.data.jobs.find(j => j.id === id);
+                    if (!job || job.status === 'closed') { app.ui.showToast('⚠️ Trabalho fechado não pode ser editado!', 'error'); return; }
+                    app.data.editingJobId = id;
+                    document.getElementById('selEmployee').value = job.employeeId;
+                    document.getElementById('workDate').value = job.date;
+                    document.getElementById('houseAddr').value = job.house;
+                    document.getElementById('workHours').value = job.hours;
+                    document.getElementById('totalDisplay').textContent = `$${job.total.toFixed(2)}`;
+                    app.data.quickEmployeeId = job.employeeId;
+                    document.getElementById('quickBanner').classList.add('show');
+                    document.getElementById('quickName').textContent = job.employeeName;
+                    app.employees.render();
+                },
+                remove: function(id) {
+                    const job = app.data.jobs.find(j => j.id === id);
+                    if (job && job.status === 'closed') { app.ui.showToast('⚠️ Trabalho fechado não pode ser excluído!', 'error'); return; }
+                    if (!confirm('Excluir este trabalho?')) return;
+                    app.data.jobs = app.data.jobs.filter(j => j.id !== id);
+                    app.cloud.deleteJob(id);
+                    this.render();
+                    app.dashboard.update();
+                    app.dataManager.save();
+                }
+            },
+
+            filters: {
+                set: function(filter, btn) {
+                    app.data.currentFilter = filter;
+                    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    app.jobs.render();
+                    app.dashboard.update();
+                    app.dataManager.save();
+                },
+                showAll: function() {
+                    app.data.currentFilter = 'all';
+                    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+                    app.jobs.render();
+                    app.dashboard.update();
+                },
+                getFiltered: function() {
+                    const today = new Date().toISOString().split('T')[0];
+                    const now = new Date();
+                    switch(app.data.currentFilter) {
+                        case 'today': return app.data.jobs.filter(j => j.date === today && (!j.status || j.status !== 'closed'));
+                        case 'week': 
+                            const weekAgo = new Date(now.getTime() - 7*24*60*60*1000).toISOString().split('T')[0];
+                            return app.data.jobs.filter(j => j.date >= weekAgo && (!j.status || j.status !== 'closed'));
+                        case 'month':
+                            const monthAgo = new Date(now.getTime() - 30*24*60*60*1000).toISOString().split('T')[0];
+                            return app.data.jobs.filter(j => j.date >= monthAgo && (!j.status || j.status !== 'closed'));
+                        default: return app.data.jobs.filter(j => !j.status || j.status !== 'closed');
+                    }
+                }
+            },
+
+            dashboard: {
+                update: function() {
+                    // Usa apenas trabalhos da semana atual (não fechados)
+                    const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
+                    const filtered = app.data.currentFilter === 'all' ? weekJobs : app.filters.getFiltered();
+
+                    const hours = filtered.reduce((s, j) => s + j.hours, 0);
+                    const total = filtered.reduce((s, j) => s + j.total, 0);
+                    const pending = filtered.filter(j => j.status === 'pending').reduce((s, j) => s + j.total, 0);
+
+                    document.getElementById('statHours').textContent = hours.toFixed(1);
+                    document.getElementById('statJobs').textContent = filtered.length;
+                    document.getElementById('statTotal').textContent = `$${total.toFixed(0)}`;
+                    document.getElementById('statPending').textContent = `$${pending.toFixed(0)}`;
+
+                    const stats = {};
+                    filtered.forEach(j => {
+                        if (!stats[j.employeeId]) stats[j.employeeId] = { name: j.employeeName, hours: 0, total: 0 };
+                        stats[j.employeeId].hours += j.hours;
+                        stats[j.employeeId].total += j.total;
+                    });
+
+                    const top = Object.values(stats).sort((a, b) => b.hours - a.hours).slice(0, 3);
+                    document.getElementById('topList').innerHTML = top.map((t, i) => `
+                        <div style="display: flex; justify-content: space-between; padding: 10px; background: ${i===0?'#FFF8E1':'white'}; border-radius: 8px; margin-bottom: 8px; border: 2px solid ${i===0?'#FFD600':'#e0e0e0'};">
+                            <div><div style="font-weight: 700;">${i===0?'🥇 ':''}${t.name}</div><div style="font-size: 0.8rem; color: #666;">${t.hours.toFixed(1)}h</div></div>
+                            <div style="font-weight: 700; color: #00C853;">$${t.total.toFixed(0)}</div>
+                        </div>
+                    `).join('') || '<p style="color: #999; text-align: center;">Sem dados</p>';
+                }
+            },
+
+            export: {
+                pdf: function() {
+                    const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
+                    if (!weekJobs.length) { app.ui.showToast('Sem dados para exportar!', 'error'); return; }
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    const weekId = app.weeks.getWeekId();
+                    const range = app.weeks.getWeekRange(weekId);
+
+                    doc.setFontSize(20); doc.setTextColor(255, 107, 53); doc.text('Bright & Shine Pro', 14, 20);
+                    doc.setFontSize(14); doc.text(`Semana Atual - ${weekId}`, 14, 30);
+                    doc.setFontSize(10); doc.text(`${range.start.toLocaleDateString('pt-BR')} a ${range.end.toLocaleDateString('pt-BR')}`, 14, 38);
+
+                    const grouped = {};
+                    weekJobs.forEach(j => {
+                        if (!grouped[j.employeeId]) grouped[j.employeeId] = { employee: app.data.employees.find(e => e.id === j.employeeId) || { name: j.employeeName, rate: j.rate }, jobs: [], totalHours: 0, totalAmount: 0 };
+                        grouped[j.employeeId].jobs.push(j);
+                        grouped[j.employeeId].totalHours += j.hours;
+                        grouped[j.employeeId].totalAmount += j.total;
+                    });
+
+                    let startY = 50; let grandTotal = 0;
+                    Object.values(grouped).sort((a, b) => a.employee.name.localeCompare(b.employee.name)).forEach(data => {
+                        grandTotal += data.totalAmount;
+                        doc.setFontSize(11); doc.setTextColor(0, 78, 137); doc.text(`${data.employee.name} - $${data.employee.rate.toFixed(2)}/h`, 14, startY);
+                        const body = data.jobs.sort((a, b) => new Date(a.date) - new Date(b.date)).map(j => [
+                            new Date(j.date).toLocaleDateString('pt-BR'), j.house.substring(0, 40), `${j.hours}h`, `$${j.total.toFixed(2)}`
+                        ]);
+                        doc.autoTable({ head: [['Data', 'Casa', 'Horas', 'Valor']], body: body, startY: startY + 5, theme: 'grid', headStyles: { fillColor: [255, 107, 53], textColor: 255, fontSize: 9 }, bodyStyles: { fontSize: 9 }, margin: { left: 14, right: 14 } });
+                        startY = doc.lastAutoTable.finalY + 15;
+                    });
+
+                    doc.setFillColor(26, 26, 46); doc.rect(14, startY, 182, 15, 'F');
+                    doc.setTextColor(0, 230, 118); doc.setFontSize(14); doc.text(`TOTAL: $${grandTotal.toFixed(2)}`, 105, startY + 10, { align: 'center' });
+
+                    doc.save(`BSOS_Semana_${weekId}.pdf`);
+                    app.ui.showToast('📄 PDF baixado!');
+                },
+                csv: function() {
+                    const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
+                    if (!weekJobs.length) { app.ui.showToast('Sem dados!', 'error'); return; }
+                    let csv = 'FUNCIONARIO,CASA,DATA,HORAS,VALOR_HORA,TOTAL
+';
+                    weekJobs.forEach(j => { csv += `"${j.employeeName}","${j.house}",${j.date},${j.hours},${j.rate},${j.total.toFixed(2)}
+`; });
+                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url; a.download = `BSOS_Semana_${app.weeks.getWeekId()}.csv`; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    app.ui.showToast('📊 CSV baixado!');
+                },
+                whatsapp: function() {
+                    const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
+                    if (!weekJobs.length) { app.ui.showToast('Sem dados!', 'error'); return; }
+                    const grouped = {};
+                    weekJobs.forEach(j => {
+                        if (!grouped[j.employeeId]) grouped[j.employeeId] = { name: j.employeeName, jobs: [], total: 0, hours: 0 };
+                        grouped[j.employeeId].jobs.push(j); grouped[j.employeeId].total += j.total; grouped[j.employeeId].hours += j.hours;
+                    });
+                    let html = '<h3>📱 WhatsApp - Semana Atual</h3>';
+                    Object.values(grouped).forEach(g => {
+                        const text = `*${g.name}*
+⏰ ${g.hours.toFixed(1)}h | 💰 $${g.total.toFixed(2)}
+
+${g.jobs.map(j => `• ${j.house} (${j.hours}h)`).join('
+')}`;
+                        html += `<div style="background: #f5f5f5; padding: 15px; border-radius: 12px; margin-bottom: 15px;"><div style="font-weight: 700; margin-bottom: 10px;">${g.name}</div><pre style="background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; white-space: pre-wrap;">${text}</pre><button class="btn btn-success" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent); app.ui.showToast('Copiado!')">📋 Copiar</button></div>`;
+                    });
+                    app.modals.show('Exportar WhatsApp', html);
+                },
+                report: function() {
+                    const weekJobs = app.weeks.getCurrentWeekJobs().filter(j => !j.status || j.status !== 'closed');
+                    if (!weekJobs.length) { app.ui.showToast('Sem dados!', 'error'); return; }
+                    const grouped = {};
+                    weekJobs.forEach(j => {
+                        if (!grouped[j.employeeId]) {
+                            grouped[j.employeeId] = { employee: app.data.employees.find(e => e.id === j.employeeId) || { name: j.employeeName, rate: j.rate }, jobs: [], totalHours: 0, totalAmount: 0 };
+                        }
+                        grouped[j.employeeId].jobs.push(j); grouped[j.employeeId].totalHours += j.hours; grouped[j.employeeId].totalAmount += j.total;
+                    });
+                    let html = ''; let grandTotal = 0;
+                    Object.values(grouped).sort((a, b) => a.employee.name.localeCompare(b.employee.name)).forEach(data => {
+                        grandTotal += data.totalAmount;
+                        html += `<div style="background: white; border-radius: 16px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1);"><div style="background: linear-gradient(135deg, #004E89, #1A659E); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;"><div><div style="font-size: 1.2rem; font-weight: 700;">${data.employee.name}</div><div style="opacity: 0.9; font-size: 0.9rem;">$${data.employee.rate.toFixed(2)}/hora</div></div><div style="background: #00C853; color: white; padding: 8px 16px; border-radius: 20px; font-weight: 700;">$${data.totalAmount.toFixed(2)}</div></div><div style="padding: 20px;"><table style="width: 100%; font-size: 0.9rem;"><tr style="background: #f0f0f0;"><th style="padding: 10px; text-align: left;">Data</th><th style="padding: 10px; text-align: left;">Casa</th><th style="padding: 10px; text-align: center;">Horas</th><th style="padding: 10px; text-align: right;">Valor</th></tr>`;
+                        data.jobs.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(j => {
+                            html += `<tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 10px;">${new Date(j.date).toLocaleDateString('pt-BR')}</td><td style="padding: 10px;">${j.house}</td><td style="padding: 10px; text-align: center;">${j.hours}h</td><td style="padding: 10px; text-align: right; font-weight: 700;">$${j.total.toFixed(2)}</td></tr>`;
+                        });
+                        html += `</table><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #e0e0e0; text-align: center;"><div><div style="font-size: 1.2rem; font-weight: 700; color: #004E89;">${data.jobs.length}</div><div style="font-size: 0.8rem; color: #666;">Casas</div></div><div><div style="font-size: 1.2rem; font-weight: 700; color: #004E89;">${data.totalHours.toFixed(1)}h</div><div style="font-size: 0.8rem; color: #666;">Horas</div></div><div><div style="font-size: 1.2rem; font-weight: 700; color: #00C853;">$${data.totalAmount.toFixed(2)}</div><div style="font-size: 0.8rem; color: #666;">Total</div></div></div></div></div>`;
+                    });
+                    html += `<div style="background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 25px; border-radius: 16px; text-align: center;"><div style="font-size: 2.5rem; font-weight: 700; color: #00E676;">$${grandTotal.toFixed(2)}</div><div style="font-size: 1rem; opacity: 0.8; margin-top: 10px;">TOTAL SEMANA • ${weekJobs.length} trabalhos</div></div>`;
+                    app.modals.show('📊 Relatório da Semana', html);
+                }
+            },
+
+            // NOVO: Controle de Semanas
       weeks: {
     currentWeekId: null,
 
@@ -1317,6 +2371,73 @@ ${g.jobs.map(j => `• ${j.house} (${j.hours}h)`).join('
         }
     }
 }
+
+            modals: {
+                show: function(title, content) {
+                    document.getElementById('modalTitle').textContent = title;
+                    document.getElementById('modalContent').innerHTML = content;
+                    document.getElementById('modal').classList.add('show');
+                },
+                close: function() { document.getElementById('modal').classList.remove('show'); }
+            },
+
+            alerts: {
+                show: function(alerts) {
+                    const icons = { error: '❌', warning: '⚠️', info: 'ℹ️' };
+                    let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+                    alerts.forEach(alert => {
+                        html += `<div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px; background: ${alert.type === 'error' ? '#FFEBEE' : '#FFF3E0'}; border-radius: 8px;"><span style="font-size: 1.2rem;">${icons[alert.type]}</span><span>${alert.msg}</span></div>`;
+                    });
+                    html += '</div>';
+                    document.getElementById('alertModalContent').innerHTML = html;
+                    document.getElementById('alertModal').classList.add('show');
+                },
+                close: function() {
+                    document.getElementById('alertModal').classList.remove('show');
+                    app.data.pendingJobData = null;
+                }
+            },
+
+            dataManager: {
+                save: function() {
+                    try {
+                        const data = {
+                            employees: app.data.employees,
+                            jobs: app.data.jobs,
+                            savedAddresses: app.data.savedAddresses,
+                            currentFilter: app.data.currentFilter,
+                            lastSaved: new Date().toISOString()
+                        };
+                        localStorage.setItem(app.config.storageKey, JSON.stringify(data));
+                    } catch (e) { console.error('Save error:', e); }
+                },
+                clearAll: function() {
+                    if (confirm('⚠️ ATENÇÃO: Isso apagará TODOS os dados!
+
+Tem certeza?')) {
+                        if (confirm('Confirmação final: Esta ação não pode ser desfeita.')) {
+                            localStorage.removeItem(app.config.storageKey);
+                            if (app.data.isOnline && confirm('Também apagar dados da nuvem?')) {
+                                db.collection('employees').get().then(snap => { snap.docs.forEach(doc => doc.ref.delete()); });
+                                db.collection('jobs').get().then(snap => { snap.docs.forEach(doc => doc.ref.delete()); });
+                                db.collection('weeks').get().then(snap => { snap.docs.forEach(doc => doc.ref.delete()); });
+                            }
+                            location.reload();
+                        }
+                    }
+                }
+            }
+        };
+
+        // Initialize
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => app.init());
+        } else {
+            app.init();
+        }
+    </script>
+</body>
+</html>
 
             modals: {
                 show: function(title, content) {
