@@ -53,10 +53,35 @@
         .stat-box { background: white; border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .stat-value { font-size: 1.8rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .stat-label { font-size: 0.85rem; color: #666; margin-top: 5px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
-        th { background: linear-gradient(135deg, var(--dark), #16213e); color: white; padding: 12px; text-align: left; font-weight: 600; }
+        
+        /* CORREÇÃO: Tabela com scroll e headers sticky */
+        .table-container { 
+            max-height: 400px; 
+            overflow-y: auto; 
+            overflow-x: auto; 
+            border-radius: 12px; 
+            border: 1px solid #e0e0e0; 
+            position: relative;
+        }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 0; }
+        
+        th { 
+            background: linear-gradient(135deg, var(--dark), #16213e); 
+            color: white; 
+            padding: 12px; 
+            text-align: left; 
+            font-weight: 600; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
         td { padding: 12px; border-bottom: 1px solid #e0e0e0; background: white; }
         tr:hover td { background: #f8f9fa; }
+        tr:last-child td { border-bottom: none; }
+        
         .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
         .filter-pill { padding: 8px 16px; border: 2px solid #e0e0e0; background: white; border-radius: 20px; cursor: pointer; font-weight: 500; font-size: 0.9rem; transition: all 0.3s; }
         .filter-pill:hover { border-color: var(--primary); color: var(--primary); }
@@ -98,7 +123,6 @@
         .danger-zone { background: #FFEBEE; border-left: 4px solid var(--danger); padding: 20px; border-radius: 12px; margin-top: 20px; }
         .danger-zone h4 { color: var(--danger); margin-bottom: 10px; font-size: 1rem; }
     </style>
-<base target="_blank">
 </head>
 <body>
     <div class="toast" id="toast"></div>
@@ -284,21 +308,24 @@
                         <h3 id="jobsTitle" data-i18n="jobsTitle">Jobs: Today</h3>
                         <span id="jobsCount" style="background: var(--primary); color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem; font-weight: 600;">0</span>
                     </div>
-                    <div style="overflow-x: auto;">
+                    
+                    <!-- CORREÇÃO: Container com scroll para a tabela -->
+                    <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    <th data-i18n="employee">Employee</th>
-                                    <th data-i18n="house">House</th>
-                                    <th data-i18n="date">Date</th>
-                                    <th data-i18n="hours">Hours</th>
-                                    <th data-i18n="amount">Amount</th>
-                                    <th data-i18n="actions">Actions</th>
+                                    <th>👤 <span data-i18n="employee">Employee</span></th>
+                                    <th>🏠 <span data-i18n="house">House</span></th>
+                                    <th>📅 <span data-i18n="date">Date</span></th>
+                                    <th>⏰ <span data-i18n="hours">Hours</span></th>
+                                    <th>💰 <span data-i18n="amount">Amount</span></th>
+                                    <th>⚙️ <span data-i18n="actions">Actions</span></th>
                                 </tr>
                             </thead>
                             <tbody id="jobsTable"></tbody>
                         </table>
                     </div>
+                    
                     <div class="empty-state" id="noJobs" style="display: none;">
                         <div style="font-size: 3rem; margin-bottom: 10px;">📋</div>
                         <p data-i18n="noJobs">No jobs registered for this period</p>
@@ -581,15 +608,14 @@
                     this.applyTranslations();
                 },
                 
+                // CORREÇÃO: Removida lógica de preservação de emojis que causava duplicação
                 applyTranslations: function() {
                     const elements = document.querySelectorAll('[data-i18n]');
                     elements.forEach(el => {
                         const key = el.getAttribute('data-i18n');
                         if (this.texts[this.currentLang][key]) {
-                            // Preserva emojis no início se existirem
-                            const original = el.textContent;
-                            const emoji = original.match(/^[^\w\s]+/) ? original.match(/^[^\w\s]+/)[0] + ' ' : '';
-                            el.textContent = emoji + this.texts[this.currentLang][key];
+                            // Apenas substitui o texto, sem tentar preservar emojis antigos
+                            el.textContent = this.texts[this.currentLang][key];
                         }
                     });
                     
@@ -694,8 +720,6 @@
                 document.getElementById('btnCSV').addEventListener('click', () => this.export.csv());
                 document.getElementById('btnPDF').addEventListener('click', () => this.export.pdf());
                 document.getElementById('btnReport').addEventListener('click', () => this.export.report());
-                
-                // REMOVIDO: Event listener do btnClearAll (agora está no modal de settings)
                 
                 document.addEventListener('click', (e) => {
                     if (!e.target.closest('.autocomplete-container')) {
