@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BSOS Cloud Pro v8.0 - Bright & Shine</title>
+    <title>BSOS Cloud Pro v8.1 - Bright & Shine</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -141,7 +141,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .form-group { margin-bottom: 16px; }
+        .form-group { margin-bottom: 16px; position: relative; }
 
         label {
             display: block;
@@ -270,15 +270,23 @@
         }
 
         .stat-value {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
             background: linear-gradient(135deg, var(--primary), #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .stat-value.profit-positive { color: var(--success); -webkit-text-fill-color: var(--success); }
-        .stat-value.profit-negative { color: var(--danger); -webkit-text-fill-color: var(--danger); }
+        .stat-value.profit-positive { 
+            background: none;
+            -webkit-text-fill-color: var(--success);
+            color: var(--success); 
+        }
+        .stat-value.profit-negative { 
+            background: none;
+            -webkit-text-fill-color: var(--danger);
+            color: var(--danger); 
+        }
 
         .stat-label { font-size: 0.85rem; color: var(--secondary); margin-top: 5px; font-weight: 600; }
 
@@ -664,6 +672,27 @@
         .badge-green { background: #d1fae5; color: #065f46; }
         .badge-yellow { background: #fef3c7; color: #92400e; }
         .badge-purple { background: #e9d5ff; color: #7c3aed; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+
+        .property-preview {
+            background: #e0e7ff; 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin-top: 8px; 
+            font-size: 0.9rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .low-margin-alert {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 5px;
+            border: 1px solid var(--warning);
+        }
     </style>
 <base target="_blank">
 </head>
@@ -793,9 +822,10 @@
                 </div>
                 <div class="form-group">
                     <label>Property (optional)</label>
-                    <select id="timerProperty" class="form-control">
+                    <select id="timerProperty" class="form-control" onchange="app.timer.onPropertyChange()">
                         <option value="">No Property</option>
                     </select>
+                    <div id="timerPropertyPreview"></div>
                 </div>
                 <div class="form-group">
                     <label>Rate ($/h)</label>
@@ -809,9 +839,9 @@
     <div class="container">
         <div class="header">
             <h1>🏠 Bright & Shine Pro</h1>
-            <p class="subtitle">BSOS Cloud Pro v8.0 - Payment & Profit Control</p>
+            <p class="subtitle">BSOS Cloud Pro v8.1 - Payment & Profit Control</p>
             <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-                <span style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">v8.0 ENTERPRISE</span>
+                <span style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">v8.1 PRODUCTION</span>
                 <button class="btn btn-secondary" onclick="app.modals.open('settingsModal')" style="padding: 8px 16px; font-size: 0.9rem;">⚙️ Settings</button>
                 <button class="btn btn-info" onclick="app.modals.open('calendarModal'); app.calendar.render()" style="padding: 8px 16px; font-size: 0.9rem;">📅 Calendar</button>
                 <button class="btn btn-warning" onclick="app.modals.open('timerModal')" style="padding: 8px 16px; font-size: 0.9rem;">⏱️ Timer</button>
@@ -899,9 +929,10 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                         <div class="form-group">
                             <label>Property (for profit tracking)</label>
-                            <select id="propertyLink" onchange="app.jobs.updateProfitPreview()">
+                            <select id="propertyLink" onchange="app.jobs.onPropertyChange()">
                                 <option value="">No Property</option>
                             </select>
+                            <div id="propertyPricePreview"></div>
                         </div>
                         <div class="form-group">
                             <label>Job Type</label>
@@ -993,7 +1024,8 @@
                                     <th>House</th>
                                     <th>Date</th>
                                     <th>Hours</th>
-                                    <th>Amount</th>
+                                    <th>Cost</th>
+                                    <th>Revenue</th>
                                     <th>Profit</th>
                                     <th>Payment</th>
                                     <th>Action</th>
@@ -1020,9 +1052,32 @@
                     </div>
                 </div>
 
+                <!-- Financial Dashboard -->
+                <div class="card" id="financialDashboard" style="display: none;">
+                    <div class="section-title">📊 Financial Overview</div>
+                    <div class="stat-grid">
+                        <div class="stat-box">
+                            <div class="stat-value" id="totalRevenue" style="color: var(--primary);">$0</div>
+                            <div class="stat-label">Revenue</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="totalCost" style="color: var(--danger);">$0</div>
+                            <div class="stat-label">Labor Cost</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="totalProfit">$0</div>
+                            <div class="stat-label">Net Profit</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="profitMargin" style="color: var(--secondary);">0%</div>
+                            <div class="stat-label">Margin</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Daily Profit -->
                 <div class="card" id="dailyProfitCard" style="display: none;">
-                    <div class="section-title">📊 Today's Profit</div>
+                    <div class="section-title">📅 Today's Profit</div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center;">
                         <div style="padding: 15px; background: var(--bg); border-radius: 12px;">
                             <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary);" id="todayRevenue">$0</div>
@@ -1048,7 +1103,7 @@
                 </div>
 
                 <div class="card">
-                    <div class="section-title">📈 Dashboard</div>
+                    <div class="section-title">📈 Performance</div>
                     <div class="stat-grid">
                         <div class="stat-box">
                             <div class="stat-value" id="statHours">0</div>
@@ -1057,14 +1112,6 @@
                         <div class="stat-box">
                             <div class="stat-value" id="statJobs">0</div>
                             <div class="stat-label">Houses</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value" id="statTotal">$0</div>
-                            <div class="stat-label">Labor Cost</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value" id="statPending">$0</div>
-                            <div class="stat-label">Pending</div>
                         </div>
                     </div>
 
@@ -1091,7 +1138,8 @@
 
     <script>
         // ==========================================
-        // BSOS CLOUD PRO v8.0 - COMPLETE SYSTEM
+        // BSOS CLOUD PRO v8.1 - PRODUCTION READY
+        // CORREÇÕES: ID String/Number, Profit Calc, ESC Key, Revenue Display
         // ==========================================
 
         const appUtils = {
@@ -1114,6 +1162,24 @@
                     regularHours: Math.round(regularHours * 100) / 100,
                     overtimeHours: Math.round(overtimeHours * 100) / 100
                 };
+            },
+
+            calculateProfit(job) {
+                if (!job.propertyId) return { profit: 0, revenue: 0 };
+                // FIX: String comparison para evitar bug number vs string
+                const prop = appStore.properties.find(p => String(p.id) === String(job.propertyId));
+                if (!prop) return { profit: 0, revenue: 0 };
+                return {
+                    profit: prop.price - job.total,
+                    revenue: prop.price
+                };
+            },
+
+            recalculateJobProfit(job) {
+                const { profit, revenue } = this.calculateProfit(job);
+                job.profit = profit;
+                job.revenue = revenue;
+                return job;
             },
 
             calculateHoursFromTimes(start, end) {
@@ -1173,7 +1239,7 @@
                     this.settings.toggleProfitMode();
                 }
 
-                console.log('BSOS v8.0 Initialized');
+                console.log('BSOS v8.1 Production Ready');
             },
 
             loadData() {
@@ -1212,6 +1278,14 @@
             },
 
             setupEventListeners() {
+                // ESC key para fechar modais - FIX CRÍTICO
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        document.querySelectorAll('.modal-overlay.show')
+                            .forEach(m => m.classList.remove('show'));
+                    }
+                });
+                
                 // Close modal on outside click
                 window.onclick = function(event) {
                     if (event.target.classList.contains('modal-overlay')) {
@@ -1325,7 +1399,7 @@
 
                     const tbody = document.getElementById('jobsTable');
                     if (jobs.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--secondary);">No jobs found</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: var(--secondary);">No jobs found</td></tr>';
                         return;
                     }
 
@@ -1337,11 +1411,18 @@
                             airbnb: '<span class="job-tag tag-airbnb">Airbnb</span>'
                         };
 
-                        const profitDisplay = (j.propertyId && appStore.ui.profitMode) 
+                        // NEW: Mostrar Revenue e Profit com segurança
+                        const hasProperty = j.propertyId && j.revenue > 0;
+                        const revenueDisplay = hasProperty 
+                            ? `<td style="color: var(--primary); font-weight: 600;">$${j.revenue.toFixed(0)}</td>`
+                            : '<td style="color: var(--secondary);">-</td>';
+                            
+                        const profitDisplay = hasProperty 
                             ? `<td style="font-weight: 700;" class="${j.profit >= 0 ? 'profit-positive' : 'profit-negative'}">
                                  ${j.profit >= 0 ? '+' : ''}$${j.profit.toFixed(0)}
+                                 ${j.profit < 30 && j.profit >= 0 ? '<span class="low-margin-alert">LOW</span>' : ''}
                                </td>`
-                            : '<td>-</td>';
+                            : '<td style="color: var(--secondary);">-</td>';
 
                         return `
                             <tr class="${j.paymentStatus}">
@@ -1353,6 +1434,7 @@
                                 <td>${appUtils.formatDate(j.date)}</td>
                                 <td>${j.hours}h</td>
                                 <td><strong>$${j.total.toFixed(2)}</strong></td>
+                                ${revenueDisplay}
                                 ${profitDisplay}
                                 <td>
                                     <span class="payment-status ${j.paymentStatus}" onclick="app.jobs.togglePayment('${j.id}')">
@@ -1374,13 +1456,30 @@
                 dashboard() {
                     const jobs = app.filters.getFiltered();
                     const hours = jobs.reduce((s, j) => s + j.hours, 0);
-                    const total = jobs.reduce((s, j) => s + j.total, 0);
-                    const pending = jobs.filter(j => j.paymentStatus === 'pending').reduce((s, j) => s + j.total, 0);
+                    
+                    // NEW: Cálculos financeiros completos
+                    const totalRevenue = jobs.reduce((s, j) => s + (j.revenue || 0), 0);
+                    const totalCost = jobs.reduce((s, j) => s + j.total, 0);
+                    const totalProfit = totalRevenue - totalCost;
+                    const margin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
+                    // Update basic stats
                     document.getElementById('statHours').textContent = hours.toFixed(1);
                     document.getElementById('statJobs').textContent = jobs.length;
-                    document.getElementById('statTotal').textContent = '$' + total.toFixed(0);
-                    document.getElementById('statPending').textContent = '$' + pending.toFixed(0);
+
+                    // NEW: Financial Dashboard
+                    if (appStore.ui.profitMode) {
+                        document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toFixed(0);
+                        document.getElementById('totalCost').textContent = '$' + totalCost.toFixed(0);
+                        
+                        const profitEl = document.getElementById('totalProfit');
+                        profitEl.textContent = '$' + totalProfit.toFixed(0);
+                        profitEl.className = 'stat-value ' + (totalProfit >= 0 ? 'profit-positive' : 'profit-negative');
+                        
+                        const marginEl = document.getElementById('profitMargin');
+                        marginEl.textContent = margin.toFixed(1) + '%';
+                        marginEl.style.color = margin >= 30 ? 'var(--success)' : (margin >= 0 ? 'var(--warning)' : 'var(--danger)');
+                    }
 
                     // Top performers
                     const stats = {};
@@ -1420,7 +1519,7 @@
                     jobs.forEach(j => {
                         if (!j.propertyId) return;
                         if (!propStats[j.propertyId]) {
-                            const prop = appStore.properties.find(p => p.id === j.propertyId);
+                            const prop = appStore.properties.find(p => String(p.id) === String(j.propertyId));
                             propStats[j.propertyId] = { name: prop?.name || 'Unknown', profit: 0, visits: 0 };
                         }
                         propStats[j.propertyId].profit += (j.profit || 0);
@@ -1434,11 +1533,11 @@
                                 <div style="font-weight: 700;">${p.name}</div>
                                 <div style="font-size: 0.8rem; color: var(--secondary);">${p.visits} visits</div>
                             </div>
-                            <div style="font-weight: 700; color: var(--profit);">$${p.profit.toFixed(0)}</div>
+                            <div style="font-weight: 700; color: ${p.profit >= 0 ? 'var(--profit)' : 'var(--danger)'};">$${p.profit.toFixed(0)}</div>
                         </div>
                     `).join('') || '<p style="color: var(--secondary); text-align: center;">No property data</p>';
 
-                    // Bad properties alert
+                    // Bad properties alert (negative profit)
                     const badProps = Object.values(propStats).filter(p => p.profit < 0);
                     if (badProps.length > 0 && appStore.ui.profitMode) {
                         document.getElementById('badPropertiesCard').style.display = 'block';
@@ -1651,7 +1750,8 @@
                 // Profit preview
                 const propId = document.getElementById('propertyLink').value;
                 if (propId) {
-                    const prop = appStore.properties.find(p => p.id === propId);
+                    // FIX: String comparison
+                    const prop = appStore.properties.find(p => String(p.id) === String(propId));
                     if (prop) {
                         const profit = prop.price - calc.total;
                         document.getElementById('profitPreview').style.display = 'block';
@@ -1661,6 +1761,27 @@
                 } else {
                     document.getElementById('profitPreview').style.display = 'none';
                 }
+            },
+
+            onPropertyChange() {
+                const propId = document.getElementById('propertyLink').value;
+                const priceDisplay = document.getElementById('propertyPricePreview');
+                
+                if (propId) {
+                    // FIX: String comparison
+                    const prop = appStore.properties.find(p => String(p.id) === String(propId));
+                    if (prop) {
+                        priceDisplay.innerHTML = `
+                            <div class="property-preview">
+                                💰 Service Price: <strong>$${prop.price}</strong> | 
+                                Margin Target: <strong>$${(prop.price * 0.3).toFixed(0)}</strong>
+                            </div>
+                        `;
+                    }
+                } else {
+                    priceDisplay.innerHTML = '';
+                }
+                this.calcTotal();
             },
 
             register() {
@@ -1694,18 +1815,8 @@
                 const emp = appStore.employees.find(e => e.id == empId);
                 const calc = appUtils.calculateTotal(hours, rate);
                 
-                // Calculate profit
-                let profit = 0;
-                let revenue = 0;
-                if (propertyId) {
-                    const prop = appStore.properties.find(p => p.id === propertyId);
-                    if (prop) {
-                        revenue = prop.price;
-                        profit = revenue - calc.total;
-                    }
-                }
-
-                const job = {
+                // Calculate profit usando função central
+                let job = {
                     id: appUtils.generateId(),
                     employeeId: parseInt(empId),
                     employeeName: emp.name,
@@ -1722,17 +1833,18 @@
                     jobType,
                     propertyId: propertyId || null,
                     paymentStatus: 'pending',
-                    profit,
-                    revenue,
                     createdAt: new Date().toISOString()
                 };
+
+                // FIX: Usa função central para calcular profit
+                appUtils.recalculateJobProfit(job);
 
                 appStore.jobs.push(job);
                 app.saveData();
                 app.render.all();
                 
                 const msg = propertyId ? 
-                    `${emp.name}: ${hours}h registered. Profit: $${profit.toFixed(2)}` :
+                    `${emp.name}: ${hours}h registered. Profit: $${job.profit.toFixed(2)}` :
                     `${emp.name}: ${hours}h registered`;
                 app.showToast(msg);
 
@@ -1744,6 +1856,7 @@
                 document.getElementById('workNotes').value = '';
                 document.getElementById('totalDisplay').textContent = '$0.00';
                 document.getElementById('profitPreview').style.display = 'none';
+                document.getElementById('propertyPricePreview').innerHTML = '';
             },
 
             remove(id) {
@@ -1754,7 +1867,6 @@
             },
 
             edit(id) {
-                // Simple edit via prompt for now (can be expanded to modal)
                 const job = appStore.jobs.find(j => j.id === id);
                 const newHours = prompt('Edit hours:', job.hours);
                 if (newHours && !isNaN(newHours)) {
@@ -1764,24 +1876,20 @@
                     job.regularHours = calc.regularHours;
                     job.overtimeHours = calc.overtimeHours;
                     
-                    // Recalculate profit
-                    if (job.propertyId) {
-                        const prop = appStore.properties.find(p => p.id === job.propertyId);
-                        if (prop) {
-                            job.revenue = prop.price;
-                            job.profit = prop.price - job.total;
-                        }
-                    }
+                    // FIX: Recalcula profit automaticamente
+                    appUtils.recalculateJobProfit(job);
                     
                     job.updatedAt = new Date().toISOString();
                     app.saveData();
                     app.render.all();
-                    app.showToast('Job updated');
+                    app.showToast('Job updated - Profit recalculated');
                 }
             },
 
             duplicate(id) {
                 const job = appStore.jobs.find(j => j.id === id);
+                
+                // Preenche todos os campos incluindo property
                 document.getElementById('selEmployee').value = job.employeeId;
                 document.getElementById('houseAddr').value = job.house;
                 document.getElementById('workHours').value = job.hours;
@@ -1792,8 +1900,9 @@
                 document.getElementById('workStart').value = job.startTime || '';
                 document.getElementById('workEnd').value = job.endTime || '';
                 
+                // Trigger visual updates
+                this.onPropertyChange();
                 app.employees.select(job.employeeId);
-                this.calcTotal();
                 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 app.showToast('Job duplicated - adjust date/time and save');
@@ -1841,7 +1950,7 @@
 
             remove(id) {
                 if (!confirm('Delete this property?')) return;
-                appStore.properties = appStore.properties.filter(p => p.id !== id);
+                appStore.properties = appStore.properties.filter(p => String(p.id) !== String(id));
                 app.saveData();
                 this.render();
                 app.render.selects();
@@ -1853,7 +1962,7 @@
                 
                 container.innerHTML = appStore.properties.map(p => {
                     // Calculate stats
-                    const jobs = appStore.jobs.filter(j => j.propertyId === p.id);
+                    const jobs = appStore.jobs.filter(j => String(j.propertyId) === String(p.id));
                     const totalRevenue = jobs.length * p.price;
                     const totalCost = jobs.reduce((s, j) => s + j.total, 0);
                     const profit = totalRevenue - totalCost;
@@ -2027,6 +2136,20 @@
                 // Already loaded in render.selects
             },
 
+            onPropertyChange() {
+                const propId = document.getElementById('timerProperty').value;
+                const preview = document.getElementById('timerPropertyPreview');
+                
+                if (propId) {
+                    const prop = appStore.properties.find(p => String(p.id) === String(propId));
+                    if (prop) {
+                        preview.innerHTML = `<div class="property-preview">💰 Price: $${prop.price}</div>`;
+                    }
+                } else {
+                    preview.innerHTML = '';
+                }
+            },
+
             start() {
                 if (appStore.ui.timerRunning) return;
                 
@@ -2062,21 +2185,11 @@
                 
                 const calc = appUtils.calculateTotal(hours, rate);
                 
-                let profit = 0;
-                let revenue = 0;
-                if (propId) {
-                    const prop = appStore.properties.find(p => p.id === propId);
-                    if (prop) {
-                        revenue = prop.price;
-                        profit = revenue - calc.total;
-                    }
-                }
-
-                const job = {
+                let job = {
                     id: appUtils.generateId(),
                     employeeId: parseInt(empId),
                     employeeName: emp.name,
-                    house: propId ? (appStore.properties.find(p => p.id === propId)?.address || 'Timer Job') : 'Timer Job',
+                    house: propId ? (appStore.properties.find(p => String(p.id) === String(propId))?.address || 'Timer Job') : 'Timer Job',
                     date: today,
                     hours: hours,
                     rate: rate,
@@ -2085,17 +2198,18 @@
                     overtimeHours: calc.overtimeHours,
                     propertyId: propId || null,
                     paymentStatus: 'pending',
-                    profit,
-                    revenue,
                     notes: `Timer: ${this.formatTime(appStore.ui.timerSeconds)}`,
                     createdAt: new Date().toISOString()
                 };
+
+                // Calcula profit
+                appUtils.recalculateJobProfit(job);
 
                 appStore.jobs.push(job);
                 app.saveData();
                 app.render.all();
                 
-                app.showToast(`Timer saved: ${hours.toFixed(2)}h`);
+                app.showToast(`Timer saved: ${hours.toFixed(2)}h | Profit: $${job.profit.toFixed(2)}`);
                 this.reset();
             },
 
@@ -2107,6 +2221,7 @@
                 document.getElementById('timerDisplay').classList.remove('timer-active');
                 document.getElementById('startTimerBtn').style.display = 'inline-flex';
                 document.getElementById('stopTimerBtn').style.display = 'none';
+                document.getElementById('timerPropertyPreview').innerHTML = '';
             },
 
             updateDisplay() {
@@ -2144,15 +2259,18 @@
             toggleProfitMode() {
                 appStore.ui.profitMode = !appStore.ui.profitMode;
                 const toggle = document.getElementById('profitToggle');
-                const card = document.getElementById('dailyProfitCard');
+                const financialCard = document.getElementById('financialDashboard');
+                const dailyCard = document.getElementById('dailyProfitCard');
                 
                 if (appStore.ui.profitMode) {
                     toggle.classList.add('active');
-                    card.style.display = 'block';
+                    financialCard.style.display = 'block';
+                    dailyCard.style.display = 'block';
                     localStorage.setItem('bsos_profit_mode', 'true');
                 } else {
                     toggle.classList.remove('active');
-                    card.style.display = 'none';
+                    financialCard.style.display = 'none';
+                    dailyCard.style.display = 'none';
                     document.getElementById('badPropertiesCard').style.display = 'none';
                     localStorage.setItem('bsos_profit_mode', 'false');
                 }
@@ -2166,7 +2284,7 @@
         app.backup = {
             export() {
                 const data = {
-                    version: 8.0,
+                    version: 8.1,
                     timestamp: new Date().toISOString(),
                     employees: appStore.employees,
                     jobs: appStore.jobs,
