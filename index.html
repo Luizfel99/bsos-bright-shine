@@ -1735,8 +1735,9 @@
                 
                 form.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    const email = document.getElementById('authEmail').value.trim();
-                    const password = document.getElementById('authPassword').value;
+                    // CORREÇÃO APLICADA AQUI: trim() e toLowerCase() no email, trim() na senha
+                    const email = document.getElementById('authEmail').value.trim().toLowerCase();
+                    const password = document.getElementById('authPassword').value.trim();
                     const btn = document.getElementById('authBtn');
                     const loading = document.getElementById('authLoading');
                     const errorDiv = document.getElementById('authError');
