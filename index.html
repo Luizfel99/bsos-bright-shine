@@ -1,14 +1,62 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BSOS Cloud Pro v8.1 - Bright & Shine</title>
+    <title>BSOS Cloud Pro v11.2 - Bright & Shine Firebase Edition</title>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js';
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut, 
+            onAuthStateChanged,
+            setPersistence,
+            browserLocalPersistence
+        } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js';
+        import { 
+            getFirestore,
+            collection,
+            doc,
+            setDoc,
+            getDoc,
+            getDocs,
+            updateDoc,
+            deleteDoc,
+            onSnapshot,
+            query,
+            where,
+            orderBy,
+            limit,
+            startAfter,
+            enableIndexedDbPersistence,
+            writeBatch,
+            serverTimestamp,
+            Timestamp,
+            getCountFromServer
+        } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js';
+        
+        window.firebaseModules = {
+            initializeApp,
+            getAuth, getFirestore,
+            createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+            setPersistence, browserLocalPersistence,
+            collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot,
+            query, where, orderBy, limit, startAfter,
+            enableIndexedDbPersistence, writeBatch, serverTimestamp, Timestamp,
+            getCountFromServer
+        };
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
         :root {
             --primary: #2563eb;
@@ -30,6 +78,7 @@
             --paid: #10b981;
             --pending: #f59e0b;
             --profit: #8b5cf6;
+            --whatsapp: #25D366;
         }
 
         [data-theme="dark"] {
@@ -98,6 +147,20 @@
             border: 1px solid var(--border);
             transition: all 0.3s ease;
             margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card.loading::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(2px);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .section-title {
@@ -182,9 +245,11 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            position: relative;
         }
 
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
         .btn-primary {
             background: linear-gradient(135deg, var(--primary), #3b82f6);
@@ -218,6 +283,11 @@
             font-size: 0.85rem;
         }
 
+        .btn-whatsapp {
+            background: linear-gradient(135deg, var(--whatsapp), #128C7E);
+            color: white;
+        }
+
         .btn-sm { padding: 8px 16px; font-size: 0.85rem; }
 
         .employee-card {
@@ -236,7 +306,6 @@
 
         .employee-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
         .employee-card.selected { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
-        .employee-card.overbooked { border-color: var(--danger); background: rgba(239, 68, 68, 0.05); }
 
         .employee-name { font-weight: 700; font-size: 1rem; color: var(--text); }
         .employee-rate { font-size: 0.85rem; color: var(--secondary); }
@@ -253,6 +322,8 @@
             border: none;
             font-family: inherit;
         }
+
+        .rate-tag:hover { transform: scale(1.1); }
 
         .stat-grid {
             display: grid;
@@ -275,17 +346,6 @@
             background: linear-gradient(135deg, var(--primary), #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .stat-value.profit-positive { 
-            background: none;
-            -webkit-text-fill-color: var(--success);
-            color: var(--success); 
-        }
-        .stat-value.profit-negative { 
-            background: none;
-            -webkit-text-fill-color: var(--danger);
-            color: var(--danger); 
         }
 
         .stat-label { font-size: 0.85rem; color: var(--secondary); margin-top: 5px; font-weight: 600; }
@@ -314,7 +374,6 @@
 
         td { padding: 12px; border-bottom: 1px solid var(--border); background: var(--card); color: var(--text); }
         tr:hover td { background: var(--bg); }
-        tr.paid td { background: rgba(16, 185, 129, 0.05); }
 
         .filter-bar {
             display: flex;
@@ -341,19 +400,22 @@
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0,0,0,0.6);
             backdrop-filter: blur(4px);
             z-index: 1000;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .modal-overlay.show { display: flex; }
+        .modal-overlay.show { 
+            display: flex; 
+            opacity: 1;
+        }
 
         .modal-box {
             background: var(--card);
@@ -368,32 +430,40 @@
             animation: modalSlide 0.3s ease;
             color: var(--text);
             border: 1px solid var(--border);
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
         }
 
+        .modal-overlay.show .modal-box { transform: scale(1); }
+
         @keyframes modalSlide {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from { transform: translateY(-20px) scale(0.95); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
         }
 
         .modal-close {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
+            top: 15px; right: 15px;
+            background: var(--bg);
+            border: 2px solid var(--border);
             font-size: 1.5rem;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            transition: background 0.2s;
+            transition: all 0.2s;
             color: var(--text);
+            z-index: 10;
         }
 
-        .modal-close:hover { background: var(--bg); }
+        .modal-close:hover { 
+            background: var(--danger); 
+            color: white;
+            border-color: var(--danger);
+            transform: rotate(90deg);
+        }
 
         .payment-status {
             display: inline-flex;
@@ -420,186 +490,9 @@
             border-color: var(--warning);
         }
 
-        .emp-summary-card {
-            background: linear-gradient(135deg, var(--bg), var(--card));
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 12px;
-            transition: all 0.2s;
-        }
-
-        .emp-summary-card:hover {
-            border-color: var(--primary);
-            transform: translateX(5px);
-        }
-
-        .emp-summary-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .emp-summary-name { font-weight: 700; font-size: 1rem; }
-
-        .emp-summary-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            font-size: 0.9rem;
-        }
-
-        .emp-summary-stat {
-            text-align: center;
-            padding: 8px;
-            background: var(--card);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-
-        .emp-summary-value {
-            font-weight: 700;
-            color: var(--success);
-            font-size: 1.1rem;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-            margin-top: 15px;
-        }
-
-        .calendar-header {
-            text-align: center;
-            font-weight: 700;
-            font-size: 0.8rem;
-            color: var(--secondary);
-            padding: 8px;
-        }
-
-        .calendar-day {
-            aspect-ratio: 1;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: var(--card);
-        }
-
-        .calendar-day:hover { border-color: var(--primary); background: var(--bg); }
-        .calendar-day.has-jobs {
-            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-            border-color: var(--primary);
-        }
-
-        .timer-display {
-            font-family: monospace;
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            text-align: center;
-            padding: 30px;
-            background: var(--bg);
-            border-radius: 16px;
-            border: 3px solid var(--border);
-            margin-bottom: 20px;
-        }
-
-        .timer-active {
-            animation: pulse 1s infinite;
-            border-color: var(--success);
-            color: var(--success);
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        .property-card {
-            background: var(--card);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.2s;
-        }
-
-        .property-card:hover { border-color: var(--profit); }
-
-        .property-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 10px;
-        }
-
-        .property-name { font-weight: 700; font-size: 1.1rem; }
-
-        .tag-selector {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 8px;
-        }
-
-        .tag-option {
-            padding: 8px 16px;
-            border: 2px solid var(--border);
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.2s;
-            background: var(--card);
-        }
-
-        .tag-option:hover { border-color: var(--primary); }
-        .tag-option.selected {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .job-tag {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-left: 5px;
-        }
-
-        .tag-standard { background: #e0e7ff; color: #3730a3; }
-        .tag-deep { background: #fce7f3; color: #be185d; }
-        .tag-moveout { background: #fee2e2; color: #991b1b; }
-        .tag-airbnb { background: #d1fae5; color: #065f46; }
-
-        .overbooking-alert {
-            background: #fee2e2;
-            border: 2px solid var(--danger);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .overbooking-alert.show { display: block; }
-
-        .profit-positive { color: var(--success) !important; }
-        .profit-negative { color: var(--danger) !important; }
-
         .toast {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            top: 20px; right: 20px;
             background: var(--success);
             color: white;
             padding: 16px 24px;
@@ -609,6 +502,8 @@
             z-index: 2000;
             font-weight: 600;
             animation: slideIn 0.3s ease;
+            max-width: 400px;
+            word-wrap: break-word;
         }
 
         .toast.show { display: block; }
@@ -633,8 +528,7 @@
 
         .toggle-switch {
             position: relative;
-            width: 50px;
-            height: 26px;
+            width: 50px; height: 26px;
             background: var(--secondary);
             border-radius: 13px;
             cursor: pointer;
@@ -644,10 +538,8 @@
         .toggle-switch.active { background: var(--primary); }
         .toggle-slider {
             position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 20px;
-            height: 20px;
+            top: 3px; left: 3px;
+            width: 20px; height: 20px;
             background: white;
             border-radius: 50%;
             transition: all 0.3s;
@@ -655,215 +547,317 @@
 
         .toggle-switch.active .toggle-slider { transform: translateX(24px); }
 
-        .top-performer {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px;
+        .export-menu {
+            display: none;
+            position: absolute;
             background: var(--card);
-            border-radius: 10px;
-            margin-bottom: 8px;
             border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 10px;
+            z-index: 100;
+            box-shadow: var(--shadow-lg);
+            min-width: 200px;
         }
+
+        .export-menu.show { display: block; }
+
+        .export-option {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .export-option:hover { background: var(--bg); }
+
+        .global-loader {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 9998;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .global-loader.show { display: flex; }
+
+        .loader-spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        .loader-text { color: white; font-weight: 600; font-size: 1.1rem; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Auth Styles */
+        .auth-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--gradient-bg);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .auth-header { text-align: center; margin-bottom: 30px; }
+
+        .auth-logo { font-size: 3rem; margin-bottom: 15px; }
+
+        .auth-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .auth-subtitle { color: var(--secondary); font-size: 0.95rem; }
+
+        .auth-form { display: flex; flex-direction: column; gap: 20px; }
+
+        .auth-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37,99,235,0.1);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auth-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(37,99,235,0.3);
+        }
+
+        .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 25px;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        .auth-link {
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .auth-link:hover { text-decoration: underline; }
+
+        .auth-error {
+            background: #fee2e2;
+            color: var(--danger);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--danger);
+            display: none;
+        }
+
+        .auth-error.show { display: block; }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: var(--bg);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .user-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .sync-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: var(--bg);
+            border: 1px solid var(--border);
+        }
+
+        .sync-indicator.online { background: #d1fae5; color: #065f46; border-color: var(--success); }
+        .sync-indicator.offline { background: #fee2e2; color: #991b1b; border-color: var(--danger); }
+        .sync-indicator.syncing { background: #dbeafe; color: #1e40af; border-color: var(--primary); }
+
+        .hidden { display: none !important; }
 
         .action-btns { display: flex; gap: 5px; flex-wrap: wrap; }
-        .btn-duplicate { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; font-size: 0.8rem; padding: 6px 12px; }
-
-        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
-        .badge-green { background: #d1fae5; color: #065f46; }
-        .badge-yellow { background: #fef3c7; color: #92400e; }
-        .badge-purple { background: #e9d5ff; color: #7c3aed; }
-        .badge-red { background: #fee2e2; color: #991b1b; }
-
-        .property-preview {
-            background: #e0e7ff; 
-            padding: 10px; 
-            border-radius: 8px; 
-            margin-top: 8px; 
-            font-size: 0.9rem;
-            border-left: 4px solid var(--primary);
+        
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
         }
 
-        .low-margin-alert {
-            background: #fef3c7;
-            color: #92400e;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-left: 5px;
-            border: 1px solid var(--warning);
+        @media print {
+            body { background: white; }
+            .no-print { display: none !important; }
         }
     </style>
-<base target="_blank">
 </head>
 <body>
     <div class="toast" id="toast"></div>
+    
+    <div class="global-loader" id="globalLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Syncing with cloud...</div>
+    </div>
 
-    <!-- Settings Modal -->
-    <div class="modal-overlay" id="settingsModal">
-        <div class="modal-box" style="max-width: 500px;">
-            <button class="modal-close" onclick="app.modals.close('settingsModal')">&times;</button>
-            <h2 style="margin-bottom: 25px;">⚙️ Settings</h2>
-
-            <div class="form-group">
-                <label>🌐 Language</label>
-                <select id="languageSelect" onchange="app.settings.changeLanguage(this.value)">
-                    <option value="en-US">🇺🇸 English (US)</option>
-                    <option value="pt-BR">🇧🇷 Português (Brasil)</option>
-                </select>
+    <!-- Auth Container -->
+    <div class="auth-container" id="authContainer">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">🏠</div>
+                <div class="auth-title">Bright & Shine Pro</div>
+                <div class="auth-subtitle" id="authSubtitle">Sign in to manage your business</div>
             </div>
 
-            <div class="theme-toggle">
-                <div style="display: flex; align-items: center; gap: 10px; font-weight: 600;">
-                    <span>🌙</span>
-                    <span>Dark Mode</span>
-                </div>
-                <div class="toggle-switch" id="themeToggle" onclick="app.settings.toggleTheme()">
-                    <div class="toggle-slider"></div>
-                </div>
-            </div>
+            <div class="auth-error" id="authError"></div>
 
-            <div style="margin-top: 20px; padding: 20px; background: var(--bg); border-radius: 12px; border: 2px solid var(--border);">
-                <h3 style="font-size: 1rem; margin-bottom: 15px;">💾 Backup & Restore</h3>
-                <button class="btn btn-secondary" onclick="app.backup.export()" style="width: 100%; margin-bottom: 10px;">
-                    📤 Export Backup (JSON)
+            <form class="auth-form" id="authForm" onsubmit="return false;">
+                <input type="email" class="auth-input" id="authEmail" placeholder="Email address" required autocomplete="email">
+                <input type="password" class="auth-input" id="authPassword" placeholder="Password" required autocomplete="current-password" minlength="6">
+                
+                <button type="submit" class="auth-btn" id="authBtn">
+                    <span id="authBtnText">Sign In</span>
+                    <span class="loader-spinner" id="authLoading" style="display: none; width: 20px; height: 20px; border-width: 2px;"></span>
                 </button>
-                <input type="file" id="backupFileInput" accept=".json" style="display: none;" onchange="app.backup.import(this)">
-                <button class="btn btn-danger" onclick="document.getElementById('backupFileInput').click()" style="width: 100%;">
-                    📥 Import Backup
-                </button>
-            </div>
+            </form>
 
-            <div style="background: #fee2e2; border-left: 4px solid var(--danger); padding: 20px; border-radius: 12px; margin-top: 20px;">
-                <h4 style="color: var(--danger); margin-bottom: 10px;">🗑️ Danger Zone</h4>
-                <button class="btn btn-danger" onclick="app.dataManager.clearAll()" style="width: 100%;">
-                    ⚠️ Clear All Data
-                </button>
+            <div class="auth-footer">
+                <span id="authFooterText">Don't have an account?</span>
+                <a href="#" class="auth-link" id="authToggle">Sign up</a>
+            </div>
+            
+            <div style="margin-top: 15px; text-align: center; font-size: 0.8rem; color: var(--secondary);">
+                <span id="modeIndicator" style="background: var(--bg); padding: 4px 12px; border-radius: 12px; border: 1px solid var(--border);">Mode: Sign In</span>
             </div>
         </div>
     </div>
 
-    <!-- Properties Modal -->
-    <div class="modal-overlay" id="propertiesModal">
-        <div class="modal-box">
-            <button class="modal-close" onclick="app.modals.close('propertiesModal')">&times;</button>
-            <h2 style="margin-bottom: 20px;">🏠 Properties</h2>
-            
-            <div class="tab-buttons">
-                <button class="tab-btn active" onclick="app.ui.switchTab('prop-list')">All Properties</button>
-                <button class="tab-btn" onclick="app.ui.switchTab('prop-add')">+ Add New</button>
-            </div>
-
-            <div id="panel-prop-list" class="tab-panel active">
-                <div id="propertiesList"></div>
-            </div>
-
-            <div id="panel-prop-add" class="tab-panel">
-                <div class="form-group">
-                    <label>Property Name</label>
-                    <input type="text" id="newPropName" placeholder="Ex: Ocean View Airbnb">
-                </div>
-                <div class="form-group">
-                    <label>Address</label>
-                    <input type="text" id="newPropAddress" placeholder="123 Main St">
-                </div>
-                <div class="form-group">
-                    <label>Service Price ($)</label>
-                    <input type="number" id="newPropPrice" placeholder="180" step="0.01">
-                </div>
-                <button class="btn btn-primary" onclick="app.properties.add()" style="width: 100%;">Add Property</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Calendar Modal -->
-    <div class="modal-overlay" id="calendarModal">
-        <div class="modal-box" style="max-width: 900px;">
-            <button class="modal-close" onclick="app.modals.close('calendarModal')">&times;</button>
-            <h2 style="margin-bottom: 20px;">📅 Calendar View</h2>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <button class="btn btn-secondary" onclick="app.calendar.prevMonth()">← Prev</button>
-                <h3 id="calendarMonth">March 2026</h3>
-                <button class="btn btn-secondary" onclick="app.calendar.nextMonth()">Next →</button>
-            </div>
-            
-            <div class="calendar-grid" id="calendarHeader">
-                <div class="calendar-header">Sun</div>
-                <div class="calendar-header">Mon</div>
-                <div class="calendar-header">Tue</div>
-                <div class="calendar-header">Wed</div>
-                <div class="calendar-header">Thu</div>
-                <div class="calendar-header">Fri</div>
-                <div class="calendar-header">Sat</div>
-            </div>
-            <div class="calendar-grid" id="calendarGrid"></div>
-        </div>
-    </div>
-
-    <!-- Timer Modal -->
-    <div class="modal-overlay" id="timerModal">
-        <div class="modal-box" style="max-width: 400px;">
-            <button class="modal-close" onclick="app.modals.close('timerModal')">&times;</button>
-            <h2 style="margin-bottom: 20px;">⏱️ Timer</h2>
-            
-            <div id="timerDisplay" class="timer-display">00:00:00</div>
-            
-            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
-                <button class="btn btn-success" id="startTimerBtn" onclick="app.timer.start()">Start</button>
-                <button class="btn btn-danger" id="stopTimerBtn" onclick="app.timer.stop()" style="display: none;">Stop & Save</button>
-                <button class="btn btn-secondary" onclick="app.timer.reset()">Reset</button>
-            </div>
-            
-            <div style="background: var(--bg); padding: 20px; border-radius: 12px;">
-                <div class="form-group">
-                    <label>Employee</label>
-                    <select id="timerEmployee" class="form-control"></select>
-                </div>
-                <div class="form-group">
-                    <label>Property (optional)</label>
-                    <select id="timerProperty" class="form-control" onchange="app.timer.onPropertyChange()">
-                        <option value="">No Property</option>
-                    </select>
-                    <div id="timerPropertyPreview"></div>
-                </div>
-                <div class="form-group">
-                    <label>Rate ($/h)</label>
-                    <input type="number" id="timerRate" value="25" step="0.01">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Container -->
-    <div class="container">
+    <!-- Main App Container -->
+    <div class="container hidden" id="appContainer">
         <div class="header">
-            <h1>🏠 Bright & Shine Pro</h1>
-            <p class="subtitle">BSOS Cloud Pro v8.1 - Payment & Profit Control</p>
-            <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-                <span style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">v8.1 PRODUCTION</span>
-                <button class="btn btn-secondary" onclick="app.modals.open('settingsModal')" style="padding: 8px 16px; font-size: 0.9rem;">⚙️ Settings</button>
-                <button class="btn btn-info" onclick="app.modals.open('calendarModal'); app.calendar.render()" style="padding: 8px 16px; font-size: 0.9rem;">📅 Calendar</button>
-                <button class="btn btn-warning" onclick="app.modals.open('timerModal')" style="padding: 8px 16px; font-size: 0.9rem;">⏱️ Timer</button>
-                <button class="btn btn-success" onclick="app.modals.open('propertiesModal')" style="padding: 8px 16px; font-size: 0.9rem;">🏠 Properties</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <div style="text-align: left;">
+                    <h1 style="font-size: 1.8rem; text-align: left;">🏠 Bright & Shine Pro</h1>
+                    <p class="subtitle" style="text-align: left; margin-bottom: 0;">BSOS Cloud v11.2 - Firebase Edition</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <div class="sync-indicator online" id="syncStatus">
+                        <span>🟢</span>
+                        <span>Online</span>
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <div style="font-weight: 600; font-size: 0.9rem;" id="userName">User</div>
+                        <button class="btn btn-sm btn-secondary" data-action="logout" style="margin-left: 8px;">Logout</button>
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <div class="overbooking-alert" id="overbookingAlert">
-            <div style="font-weight: 700; color: var(--danger); margin-bottom: 5px;">
-                <i class="fas fa-exclamation-triangle"></i> Overbooking Detected!
+            
+            <div class="quick-actions">
+                <span style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">Firebase Live</span>
+                <button class="btn btn-secondary" data-action="openModal" data-modal-id="settingsModal">⚙️ Settings</button>
+                <button class="btn btn-info" data-action="openModal" data-modal-id="calendarModal">📅 Calendar</button>
+                <button class="btn btn-warning" data-action="openModal" data-modal-id="timerModal">⏱️ Timer</button>
+                <button class="btn btn-success" data-action="openModal" data-modal-id="propertiesModal">🏠 Properties</button>
+                
+                <div style="position: relative;">
+                    <button class="btn btn-primary" data-action="toggleExportMenu">📊 Export</button>
+                    <div class="export-menu" id="exportMenu">
+                        <div class="export-option" data-action="exportPDF">
+                            <span>📄</span> Export PDF Report
+                        </div>
+                        <div class="export-option" data-action="exportCSV">
+                            <span>📊</span> Export CSV
+                        </div>
+                        <div class="export-option" data-action="exportWhatsApp">
+                            <span>💬</span> Send WhatsApp Summary
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div id="overbookingContent"></div>
         </div>
 
         <div class="grid">
             <!-- Column 1: Team -->
             <div>
-                <div class="card">
+                <div class="card" id="teamCard">
                     <div class="section-title">👥 Team</div>
                     <div class="tab-buttons">
-                        <button class="tab-btn active" onclick="app.ui.switchTab('list')">Team</button>
-                        <button class="tab-btn" onclick="app.ui.switchTab('add')">+ New</button>
+                        <button class="tab-btn active" data-tab="list">Team</button>
+                        <button class="tab-btn" data-tab="add">+ New</button>
                     </div>
 
                     <div id="panel-list" class="tab-panel active">
@@ -872,19 +866,18 @@
 
                     <div id="panel-add" class="tab-panel">
                         <div class="form-group">
-                            <label>Full Name</label>
-                            <input type="text" id="newName" placeholder="Ex: Maria Silva">
+                            <label>Full Name *</label>
+                            <input type="text" id="newName" placeholder="Maria Silva">
                         </div>
                         <div class="form-group">
-                            <label>Hourly Rate ($)</label>
-                            <input type="number" id="newRate" placeholder="25.00" step="0.01">
+                            <label>Hourly Rate ($) *</label>
+                            <input type="number" id="newRate" placeholder="25.00" step="0.01" min="0">
                         </div>
-                        <button class="btn btn-primary" onclick="app.employees.add()" style="width: 100%;">Add Employee</button>
+                        <button class="btn btn-primary" data-action="addEmployee" style="width: 100%;">Add Employee</button>
                     </div>
                 </div>
 
-                <!-- Employee Summary -->
-                <div class="card">
+                <div class="card" id="summaryCard">
                     <div class="section-title">💰 Employee Summary</div>
                     <div id="employeeSummaryList"></div>
                 </div>
@@ -892,120 +885,103 @@
 
             <!-- Column 2: Job Registration -->
             <div>
-                <div class="card">
+                <div class="card" id="jobCard">
                     <div class="section-title">📋 Job Registration</div>
 
-                    <div id="quickBanner" style="display: none; background: linear-gradient(135deg, var(--success), #059669); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-size: 0.85rem; opacity: 0.9;">Registering for</div>
-                                <div style="font-size: 1.2rem; font-weight: 700;" id="quickName"></div>
+                    <form id="jobForm" onsubmit="return false;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div class="form-group">
+                                <label>Employee *</label>
+                                <select id="selEmployee" required>
+                                    <option value="">Select...</option>
+                                </select>
                             </div>
-                            <button onclick="app.employees.exitQuickMode()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer;">✕ Exit</button>
+                            <div class="form-group">
+                                <label>Date *</label>
+                                <input type="date" id="workDate" required>
+                            </div>
                         </div>
-                    </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                         <div class="form-group">
-                            <label>Employee</label>
-                            <select id="selEmployee" onchange="app.employees.onSelectChange()">
-                                <option value="">Select...</option>
-                            </select>
+                            <label>House Address *</label>
+                            <input type="text" id="houseAddr" placeholder="123 Main St" required autocomplete="off">
                         </div>
-                        <div class="form-group">
-                            <label>Date</label>
-                            <input type="date" id="workDate">
-                        </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label>House Address</label>
-                        <input type="text" id="houseAddr" placeholder="Type address..." oninput="app.addresses.handleInput()">
-                        <div id="autocompleteList" style="display: none; position: absolute; background: white; border: 2px solid var(--primary); border-radius: 12px; width: 100%; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: var(--shadow-lg);"></div>
-                        <small style="color: var(--secondary); font-size: 0.8rem; display: block; margin-top: 5px;">💡 Type to see suggestions</small>
-                        <div id="smartSuggestion" style="display: none; margin-top: 10px; padding: 10px; background: rgba(37,99,235,0.05); border-radius: 8px; font-size: 0.9rem;"></div>
-                    </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div class="form-group">
+                                <label>Property (for profit)</label>
+                                <select id="propertyLink">
+                                    <option value="">No Property</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Job Type</label>
+                                <select id="jobType">
+                                    <option value="standard">Standard Cleaning</option>
+                                    <option value="deep">Deep Clean</option>
+                                    <option value="moveout">Move-out</option>
+                                    <option value="airbnb">Airbnb</option>
+                                </select>
+                            </div>
+                        </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div class="form-group">
-                            <label>Property (for profit tracking)</label>
-                            <select id="propertyLink" onchange="app.jobs.onPropertyChange()">
-                                <option value="">No Property</option>
-                            </select>
-                            <div id="propertyPricePreview"></div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div class="form-group">
+                                <label>Start</label>
+                                <input type="time" id="workStart">
+                            </div>
+                            <div class="form-group">
+                                <label>End</label>
+                                <input type="time" id="workEnd">
+                            </div>
+                            <div class="form-group">
+                                <label>Hours *</label>
+                                <input type="number" id="workHours" placeholder="3.50" step="0.01" min="0.01" required>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Job Type</label>
-                            <select id="jobType">
-                                <option value="standard">Standard Cleaning</option>
-                                <option value="deep">Deep Clean</option>
-                                <option value="moveout">Move-out</option>
-                                <option value="airbnb">Airbnb</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                        <div class="form-group">
-                            <label>Start</label>
-                            <input type="time" id="workStart" onchange="app.jobs.calculateFromTime()">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div class="form-group">
+                                <label>Rate ($/h) *</label>
+                                <input type="number" id="workRate" step="0.01" value="25.00" min="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label style="color: var(--success);">Total Payment</label>
+                                <div style="background: var(--dark); color: #00E676; padding: 12px; border-radius: 12px; font-size: 1.5rem; font-weight: 700; text-align: center; font-family: 'Courier New', monospace;" id="totalDisplay">$0.00</div>
+                            </div>
                         </div>
+                        
                         <div class="form-group">
-                            <label>End</label>
-                            <input type="time" id="workEnd" onchange="app.jobs.calculateFromTime()">
+                            <label>Notes</label>
+                            <textarea id="workNotes" rows="2" placeholder="Special instructions..." style="resize: vertical;"></textarea>
                         </div>
-                        <div class="form-group">
-                            <label>Hours</label>
-                            <input type="number" id="workHours" placeholder="3.5" step="0.5" oninput="app.jobs.calcTotal()">
-                        </div>
-                    </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                        <div class="form-group">
-                            <label>Rate ($/h)</label>
-                            <input type="number" id="workRate" step="0.01" value="25.00" oninput="app.jobs.calcTotal()">
-                        </div>
-                        <div class="form-group">
-                            <label style="color: var(--success);">Total Payment</label>
-                            <div style="background: var(--dark); color: #00E676; padding: 12px; border-radius: 12px; font-size: 1.5rem; font-weight: 700; text-align: center; font-family: monospace;" id="totalDisplay">$0.00</div>
-                        </div>
-                    </div>
-
-                    <div id="profitPreview" style="display: none; background: linear-gradient(135deg, #f3e8ff, #e9d5ff); border: 2px solid var(--profit); border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: center;">
-                        <div style="font-size: 0.9rem; color: var(--secondary);">Estimated Profit</div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--profit);" id="profitAmount">+$0.00</div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Notes</label>
-                        <textarea id="workNotes" rows="2" placeholder="Special instructions..." style="resize: vertical;"></textarea>
-                    </div>
-
-                    <button class="btn btn-success" onclick="app.jobs.register()" style="width: 100%; margin-top: 10px;">💾 Register Job</button>
+                        <button type="submit" class="btn btn-success" data-action="registerJob" style="width: 100%; margin-top: 10px;">💾 Register Job</button>
+                    </form>
                 </div>
 
                 <!-- Jobs Table -->
-                <div class="card">
+                <div class="card" id="jobsCard">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <strong>Filter by:</strong>
                     </div>
                     
-                    <div class="filter-bar">
-                        <button class="filter-pill active" onclick="app.filters.set('today', this)">Today</button>
-                        <button class="filter-pill" onclick="app.filters.set('week', this)">Week</button>
-                        <button class="filter-pill" onclick="app.filters.set('month', this)">Month</button>
-                        <button class="filter-pill" onclick="app.filters.set('pending', this)" style="border-color: var(--warning);">🟡 Pending</button>
-                        <button class="filter-pill" onclick="app.filters.set('paid', this)" style="border-color: var(--success);">🟢 Paid</button>
+                    <div class="filter-bar" id="filterBar">
+                        <button class="filter-pill active" data-filter="today">Today</button>
+                        <button class="filter-pill" data-filter="week">Week</button>
+                        <button class="filter-pill" data-filter="month">Month</button>
+                        <button class="filter-pill" data-filter="pending" style="border-color: var(--warning); color: var(--warning);">🟡 Pending</button>
+                        <button class="filter-pill" data-filter="paid" style="border-color: var(--success); color: var(--success);">🟢 Paid</button>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                        <select id="filterEmployee" onchange="app.filters.apply()">
+                        <select id="filterEmployee">
                             <option value="">All Employees</option>
                         </select>
-                        <select id="filterType" onchange="app.filters.apply()">
+                        <select id="filterType">
                             <option value="">All Types</option>
                             <option value="standard">Standard</option>
-                            <option value="deep">Deep Clean</option>
+                            <option value="deep">Deep</option>
                             <option value="moveout">Move-out</option>
                             <option value="airbnb">Airbnb</option>
                         </select>
@@ -1013,10 +989,9 @@
 
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <h3 style="font-size: 1.1rem;">Jobs <span id="jobsCount" style="background: var(--primary); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">0</span></h3>
-                        <span id="pendingBadge" style="display: none; background: var(--warning); color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;"></span>
                     </div>
 
-                    <div class="table-container">
+                    <div class="table-container" id="jobsTableContainer">
                         <table>
                             <thead>
                                 <tr>
@@ -1025,9 +1000,7 @@
                                     <th>Date</th>
                                     <th>Hours</th>
                                     <th>Cost</th>
-                                    <th>Revenue</th>
-                                    <th>Profit</th>
-                                    <th>Payment</th>
+                                    <th>Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -1039,69 +1012,6 @@
 
             <!-- Column 3: Dashboard -->
             <div>
-                <!-- Profit Mode Toggle -->
-                <div class="card" style="background: linear-gradient(135deg, #f3e8ff, #e9d5ff); border-color: var(--profit);">
-                    <div class="theme-toggle" style="border: none; margin-bottom: 0;">
-                        <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--profit);">
-                            <span>💰</span>
-                            <span>Profit Mode</span>
-                        </div>
-                        <div class="toggle-switch" id="profitToggle" onclick="app.settings.toggleProfitMode()">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Financial Dashboard -->
-                <div class="card" id="financialDashboard" style="display: none;">
-                    <div class="section-title">📊 Financial Overview</div>
-                    <div class="stat-grid">
-                        <div class="stat-box">
-                            <div class="stat-value" id="totalRevenue" style="color: var(--primary);">$0</div>
-                            <div class="stat-label">Revenue</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value" id="totalCost" style="color: var(--danger);">$0</div>
-                            <div class="stat-label">Labor Cost</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value" id="totalProfit">$0</div>
-                            <div class="stat-label">Net Profit</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value" id="profitMargin" style="color: var(--secondary);">0%</div>
-                            <div class="stat-label">Margin</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Daily Profit -->
-                <div class="card" id="dailyProfitCard" style="display: none;">
-                    <div class="section-title">📅 Today's Profit</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center;">
-                        <div style="padding: 15px; background: var(--bg); border-radius: 12px;">
-                            <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary);" id="todayRevenue">$0</div>
-                            <div style="font-size: 0.8rem; color: var(--secondary);">Revenue</div>
-                        </div>
-                        <div style="padding: 15px; background: var(--bg); border-radius: 12px;">
-                            <div style="font-size: 1.2rem; font-weight: 700; color: var(--danger);" id="todayCost">$0</div>
-                            <div style="font-size: 0.8rem; color: var(--secondary);">Cost</div>
-                        </div>
-                        <div style="padding: 15px; background: var(--bg); border-radius: 12px;">
-                            <div style="font-size: 1.4rem; font-weight: 700; color: var(--success);" id="todayProfit">$0</div>
-                            <div style="font-size: 0.8rem; color: var(--secondary);">Profit</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bad Properties Alert -->
-                <div class="card" id="badPropertiesCard" style="display: none; border-color: var(--danger); background: #fee2e2;">
-                    <div style="font-weight: 700; color: var(--danger); margin-bottom: 10px;">
-                        <i class="fas fa-exclamation-triangle"></i> Losing Money
-                    </div>
-                    <div id="badPropertiesList"></div>
-                </div>
-
                 <div class="card">
                     <div class="section-title">📈 Performance</div>
                     <div class="stat-grid">
@@ -1127,1229 +1037,1229 @@
                     <div class="section-title">🏆 Top Performers</div>
                     <div id="topList"></div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="card">
-                    <div class="section-title">🏠 Top Properties</div>
-                    <div id="topPropertiesList"></div>
+    <!-- Modals -->
+    <div class="modal-overlay" id="settingsModal" data-modal="true">
+        <div class="modal-box">
+            <button class="modal-close" data-action="closeModal">&times;</button>
+            <h2 style="margin-bottom: 25px;">⚙️ Settings</h2>
+
+            <div class="form-group">
+                <label>🌐 Language</label>
+                <select id="languageSelect">
+                    <option value="en-US">🇺🇸 English (US)</option>
+                    <option value="pt-BR">🇧🇷 Português (Brasil)</option>
+                </select>
+            </div>
+
+            <div class="theme-toggle">
+                <div style="display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                    <span>🌙</span>
+                    <span>Dark Mode</span>
+                </div>
+                <div class="toggle-switch" id="themeToggle" data-action="toggleTheme">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; padding: 20px; background: var(--bg); border-radius: 12px; border: 2px solid var(--border);">
+                <h3 style="font-size: 1rem; margin-bottom: 15px;">💾 Backup & Restore</h3>
+                <button class="btn btn-secondary" data-action="exportBackup" style="width: 100%; margin-bottom: 10px;">
+                    📤 Export Backup
+                </button>
+                <input type="file" id="backupFileInput" accept=".json" style="display: none;">
+                <button class="btn btn-danger" data-action="triggerImport" style="width: 100%;">
+                    📥 Import Backup
+                </button>
+            </div>
+
+            <div style="background: #fee2e2; border-left: 4px solid var(--danger); padding: 20px; border-radius: 12px; margin-top: 20px;">
+                <h4 style="color: var(--danger); margin-bottom: 10px;">🗑️ Danger Zone</h4>
+                <button class="btn btn-danger" data-action="clearAllData" style="width: 100%;">
+                    ⚠️ Clear All Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="propertiesModal" data-modal="true">
+        <div class="modal-box">
+            <button class="modal-close" data-action="closeModal">&times;</button>
+            <h2 style="margin-bottom: 20px;">🏠 Properties</h2>
+            
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="prop-list">All Properties</button>
+                <button class="tab-btn" data-tab="prop-add">+ Add New</button>
+            </div>
+
+            <div id="panel-prop-list" class="tab-panel active">
+                <div id="propertiesList"></div>
+            </div>
+
+            <div id="panel-prop-add" class="tab-panel">
+                <div class="form-group">
+                    <label>Property Name *</label>
+                    <input type="text" id="newPropName" placeholder="Ex: Ocean View Airbnb">
+                </div>
+                <div class="form-group">
+                    <label>Address *</label>
+                    <input type="text" id="newPropAddress" placeholder="123 Main St, City">
+                </div>
+                <div class="form-group">
+                    <label>Service Price ($) *</label>
+                    <input type="number" id="newPropPrice" placeholder="180.00" step="0.01" min="0">
+                </div>
+                <button class="btn btn-primary" data-action="addProperty" style="width: 100%;">Add Property</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="calendarModal" data-modal="true">
+        <div class="modal-box" style="max-width: 900px;">
+            <button class="modal-close" data-action="closeModal">&times;</button>
+            <h2 style="margin-bottom: 20px;">📅 Calendar View</h2>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <button class="btn btn-secondary" data-action="prevMonth">← Prev</button>
+                <h3 id="calendarMonth" style="font-size: 1.3rem; font-weight: 700;">March 2026</h3>
+                <button class="btn btn-secondary" data-action="nextMonth">Next →</button>
+            </div>
+            
+            <div class="calendar-grid" id="calendarHeader">
+                <div class="calendar-header">Sun</div>
+                <div class="calendar-header">Mon</div>
+                <div class="calendar-header">Tue</div>
+                <div class="calendar-header">Wed</div>
+                <div class="calendar-header">Thu</div>
+                <div class="calendar-header">Fri</div>
+                <div class="calendar-header">Sat</div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="timerModal" data-modal="true">
+        <div class="modal-box" style="max-width: 400px;">
+            <button class="modal-close" data-action="closeModal">&times;</button>
+            <h2 style="margin-bottom: 20px;">⏱️ Timer</h2>
+            
+            <div id="timerDisplay" class="timer-display" style="font-family: 'Courier New', monospace; font-size: 3rem; font-weight: 700; color: var(--primary); text-align: center; padding: 30px; background: var(--bg); border-radius: 16px; border: 3px solid var(--border); margin-bottom: 20px; letter-spacing: 4px;">00:00:00</div>
+            
+            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+                <button class="btn btn-success" id="startTimerBtn" data-action="startTimer">Start</button>
+                <button class="btn btn-danger hidden" id="stopTimerBtn" data-action="stopTimer">Stop & Save</button>
+                <button class="btn btn-secondary" data-action="resetTimer">Reset</button>
+            </div>
+            
+            <div style="background: var(--bg); padding: 20px; border-radius: 12px;">
+                <div class="form-group">
+                    <label>Employee *</label>
+                    <select id="timerEmployee"></select>
+                </div>
+                <div class="form-group">
+                    <label>Rate ($/h)</label>
+                    <input type="number" id="timerRate" value="25" step="0.01" min="0">
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // ==========================================
-        // BSOS CLOUD PRO v8.1 - PRODUCTION READY
-        // CORREÇÕES: ID String/Number, Profit Calc, ESC Key, Revenue Display
-        // ==========================================
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js';
+        import { 
+            getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
+            signOut, onAuthStateChanged, setPersistence, browserLocalPersistence 
+        } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js';
+        import { 
+            getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc,
+            onSnapshot, query, where, orderBy, limit, writeBatch, serverTimestamp, Timestamp
+        } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js';
 
-        const appUtils = {
-            generateId() {
-                if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-                    return crypto.randomUUID();
-                }
-                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        // Configuration
+        const CONFIG = {
+            FIREBASE: {
+                apiKey: "AIzaSyCnHzNJhh4TQ_KjOH3oyoh4XfO7UEUWvz8",
+                authDomain: "bsos-cloud.firebaseapp.com",
+                projectId: "bsos-cloud",
+                storageBucket: "bsos-cloud.firebasestorage.app",
+                messagingSenderId: "766281559296",
+                appId: "1:766281559296:web:2f63c58abb4d867a6097e5"
             },
+            PAGINATION: { EMPLOYEES_LIMIT: 100, JOBS_LIMIT: 200, PROPERTIES_LIMIT: 100 }
+        };
 
-            calculateTotal(hours, rate) {
+        // Initialize Firebase
+        const app = initializeApp(CONFIG.FIREBASE);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Enable offline persistence
+        try {
+            await enableIndexedDbPersistence(db);
+        } catch (err) {
+            console.warn('Persistence error:', err);
+        }
+
+        // Error Logger
+        class ErrorLogger {
+            constructor() {
+                this.errors = [];
+                this.maxErrors = 50;
+            }
+            log(error, context = '') {
+                const entry = {
+                    timestamp: new Date().toISOString(),
+                    message: error.message || error,
+                    context,
+                    stack: error.stack
+                };
+                this.errors.unshift(entry);
+                if (this.errors.length > this.maxErrors) this.errors.pop();
+                console.error(`[BSOS Error] ${context}:`, error);
+            }
+            getRecent(count = 10) { return this.errors.slice(0, count); }
+        }
+        const errorLogger = new ErrorLogger();
+
+        // Loading Manager
+        class LoadingManager {
+            constructor() {
+                this.activeOperations = new Set();
+                this.elements = {
+                    global: document.getElementById('globalLoader'),
+                    cards: new Map()
+                };
+            }
+            start(operationId, targetElement = null) {
+                this.activeOperations.add(operationId);
+                if (targetElement) {
+                    targetElement.classList.add('loading');
+                    this.elements.cards.set(operationId, targetElement);
+                } else if (this.activeOperations.size === 1) {
+                    this.elements.global?.classList.add('show');
+                }
+                this.updateSyncIndicator('syncing');
+            }
+            end(operationId) {
+                this.activeOperations.delete(operationId);
+                const card = this.elements.cards.get(operationId);
+                if (card) {
+                    card.classList.remove('loading');
+                    this.elements.cards.delete(operationId);
+                }
+                if (this.activeOperations.size === 0) {
+                    this.elements.global?.classList.remove('show');
+                    this.updateSyncIndicator('online');
+                }
+            }
+            updateSyncIndicator(status) {
+                const el = document.getElementById('syncStatus');
+                if (!el) return;
+                const states = {
+                    syncing: { class: 'syncing', icon: '🔵', text: 'Syncing...' },
+                    online: { class: 'online', icon: '🟢', text: 'Online' },
+                    offline: { class: 'offline', icon: '🔴', text: 'Offline' }
+                };
+                const state = states[status];
+                el.className = `sync-indicator ${state.class}`;
+                el.innerHTML = `<span>${state.icon}</span><span>${state.text}</span>`;
+            }
+        }
+        const loadingManager = new LoadingManager();
+
+        // Storage Adapter
+        class StorageAdapter {
+            constructor(db) {
+                this.db = db;
+                this.userId = null;
+                this.listeners = new Map();
+                this.isOnline = navigator.onLine;
+                window.addEventListener('online', () => this.handleConnectivityChange(true));
+                window.addEventListener('offline', () => this.handleConnectivityChange(false));
+            }
+            setUserId(uid) { this.userId = uid; }
+            clearUser() {
+                this.userId = null;
+                this.clearListeners();
+            }
+            handleConnectivityChange(online) {
+                this.isOnline = online;
+                loadingManager.updateSyncIndicator(online ? 'online' : 'offline');
+            }
+            getCollectionRef(name) {
+                if (!this.userId) throw new Error('Authentication required');
+                return collection(this.db, 'users', this.userId, name);
+            }
+            getDocRef(collection, id) {
+                if (!this.userId) throw new Error('Authentication required');
+                return doc(this.db, 'users', this.userId, collection, id);
+            }
+            setupListeners(store) {
+                if (!this.userId) return;
+                this.clearListeners();
+                
+                // Employees listener
+                const empQuery = query(this.getCollectionRef('employees'), orderBy('createdAt', 'desc'), limit(CONFIG.PAGINATION.EMPLOYEES_LIMIT));
+                const empUnsub = onSnapshot(empQuery, (snapshot) => {
+                    const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    store.set('employees', docs);
+                    loadingManager.end('employees_load');
+                }, (error) => {
+                    errorLogger.log(error, 'employees_listener');
+                });
+                this.listeners.set('employees', empUnsub);
+                loadingManager.start('employees_load');
+
+                // Jobs listener
+                const jobsQuery = query(this.getCollectionRef('jobs'), orderBy('date', 'desc'), limit(CONFIG.PAGINATION.JOBS_LIMIT));
+                const jobsUnsub = onSnapshot(jobsQuery, (snapshot) => {
+                    const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    store.set('jobs', docs);
+                    loadingManager.end('jobs_load');
+                }, (error) => {
+                    errorLogger.log(error, 'jobs_listener');
+                });
+                this.listeners.set('jobs', jobsUnsub);
+                loadingManager.start('jobs_load');
+
+                // Properties listener
+                const propQuery = query(this.getCollectionRef('properties'), orderBy('createdAt', 'desc'), limit(CONFIG.PAGINATION.PROPERTIES_LIMIT));
+                const propUnsub = onSnapshot(propQuery, (snapshot) => {
+                    const docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    store.set('properties', docs);
+                    loadingManager.end('properties_load');
+                }, (error) => {
+                    errorLogger.log(error, 'properties_listener');
+                });
+                this.listeners.set('properties', propUnsub);
+                loadingManager.start('properties_load');
+            }
+            clearListeners() {
+                this.listeners.forEach(unsub => { try { unsub(); } catch(e) {} });
+                this.listeners.clear();
+            }
+            async addEmployee(employee) {
+                if (!this.userId) throw new Error('Authentication required');
+                const id = doc(this.getCollectionRef('employees')).id;
+                const data = { ...employee, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
+                await setDoc(this.getDocRef('employees', id), data);
+                return { id, ...employee };
+            }
+            async deleteEmployee(id) {
+                await deleteDoc(this.getDocRef('employees', id));
+            }
+            async addJob(job) {
+                if (!this.userId) throw new Error('Authentication required');
+                const id = doc(this.getCollectionRef('jobs')).id;
+                const data = { ...job, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
+                await setDoc(this.getDocRef('jobs', id), data);
+                return { id, ...job };
+            }
+            async updateJob(id, data) {
+                await updateDoc(this.getDocRef('jobs', id), { ...data, updatedAt: serverTimestamp() });
+            }
+            async deleteJob(id) {
+                await deleteDoc(this.getDocRef('jobs', id));
+            }
+            async addProperty(property) {
+                if (!this.userId) throw new Error('Authentication required');
+                const id = doc(this.getCollectionRef('properties')).id;
+                await setDoc(this.getDocRef('properties', id), { ...property, createdAt: serverTimestamp() });
+                return { id, ...property };
+            }
+            async deleteProperty(id) {
+                await deleteDoc(this.getDocRef('properties', id));
+            }
+            async exportBackup() {
+                if (!this.userId) throw new Error('Authentication required');
+                const [employeesSnap, jobsSnap, propsSnap] = await Promise.all([
+                    getDocs(query(this.getCollectionRef('employees'), limit(500))),
+                    getDocs(query(this.getCollectionRef('jobs'), limit(1000))),
+                    getDocs(query(this.getCollectionRef('properties'), limit(500)))
+                ]);
+                return {
+                    version: 11.2,
+                    timestamp: new Date().toISOString(),
+                    userId: this.userId,
+                    employees: employeesSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+                    jobs: jobsSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+                    properties: propsSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+                };
+            }
+            async importBackup(data) {
+                if (!this.userId) throw new Error('Authentication required');
+                if (data.userId && data.userId !== this.userId && !confirm('Different account backup. Import?')) return false;
+                
+                const batch = writeBatch(this.db);
+                if (data.employees) {
+                    data.employees.forEach(item => {
+                        const { id, ...rest } = item;
+                        const ref = doc(this.db, 'users', this.userId, 'employees', id || doc(collection(this.db, 'users', this.userId, 'employees')).id);
+                        batch.set(ref, { ...rest, importedAt: serverTimestamp() });
+                    });
+                }
+                if (data.jobs) {
+                    data.jobs.forEach(item => {
+                        const { id, ...rest } = item;
+                        const ref = doc(this.db, 'users', this.userId, 'jobs', id || doc(collection(this.db, 'users', this.userId, 'jobs')).id);
+                        batch.set(ref, { ...rest, importedAt: serverTimestamp() });
+                    });
+                }
+                await batch.commit();
+                return true;
+            }
+            async clearAll() {
+                if (!this.userId) return;
+                const collections = ['employees', 'jobs', 'properties'];
+                for (const coll of collections) {
+                    const snapshot = await getDocs(this.getCollectionRef(coll));
+                    const batch = writeBatch(this.db);
+                    snapshot.docs.forEach(d => batch.delete(d.ref));
+                    await batch.commit();
+                }
+            }
+        }
+        const storageAdapter = new StorageAdapter(db);
+
+        // Store
+        class Store {
+            constructor() {
+                this.state = {
+                    employees: [],
+                    jobs: [],
+                    properties: [],
+                    ui: {
+                        currentFilter: 'today',
+                        darkMode: false,
+                        language: 'pt-BR',
+                        activeModal: null,
+                        user: null
+                    }
+                };
+                this.subscribers = new Map();
+            }
+            get(path) {
+                const keys = path.split('.');
+                let target = this.state;
+                for (const key of keys) {
+                    if (target === undefined) return undefined;
+                    target = target[key];
+                }
+                return target;
+            }
+            set(path, value) {
+                const keys = path.split('.');
+                let target = this.state;
+                for (let i = 0; i < keys.length - 1; i++) {
+                    if (!(keys[i] in target)) target[keys[i]] = {};
+                    target = target[keys[i]];
+                }
+                const finalKey = keys[keys.length - 1];
+                if (JSON.stringify(target[finalKey]) === JSON.stringify(value)) return false;
+                target[finalKey] = value;
+                this.notify(path);
+                return true;
+            }
+            notify(path) {
+                const subs = this.subscribers.get(path);
+                if (subs) subs.forEach(cb => cb(this.get(path)));
+            }
+            subscribe(path, callback) {
+                if (!this.subscribers.has(path)) this.subscribers.set(path, new Set());
+                this.subscribers.get(path).add(callback);
+                callback(this.get(path));
+                return () => this.subscribers.get(path).delete(callback);
+            }
+        }
+        const store = new Store();
+
+        // Computation Service
+        class ComputationService {
+            calculatePayment(hours, rate) {
                 const h = parseFloat(hours) || 0;
                 const r = parseFloat(rate) || 0;
-                const regularHours = Math.min(h, 8);
-                const overtimeHours = Math.max(h - 8, 0);
-                const total = (regularHours * r) + (overtimeHours * r * 1.5);
-                
-                return {
-                    total: Math.round(total * 100) / 100,
-                    regularHours: Math.round(regularHours * 100) / 100,
-                    overtimeHours: Math.round(overtimeHours * 100) / 100
-                };
-            },
-
-            calculateProfit(job) {
-                if (!job.propertyId) return { profit: 0, revenue: 0 };
-                // FIX: String comparison para evitar bug number vs string
-                const prop = appStore.properties.find(p => String(p.id) === String(job.propertyId));
-                if (!prop) return { profit: 0, revenue: 0 };
-                return {
-                    profit: prop.price - job.total,
-                    revenue: prop.price
-                };
-            },
-
-            recalculateJobProfit(job) {
-                const { profit, revenue } = this.calculateProfit(job);
-                job.profit = profit;
-                job.revenue = revenue;
-                return job;
-            },
-
-            calculateHoursFromTimes(start, end) {
-                if (!start || !end) return 0;
-                const startDate = new Date('2000-01-01T' + start);
-                const endDate = new Date('2000-01-01T' + end);
-                let hours = (endDate - startDate) / (1000 * 60 * 60);
-                if (hours < 0) hours += 24;
-                return hours;
-            },
-
-            formatDate(dateStr) {
-                const date = new Date(dateStr + 'T12:00:00');
-                return date.toLocaleDateString('en-US');
-            },
-
-            clean(value) {
-                if (typeof value !== 'string') return value;
-                return value.trim().replace(/\s+/g, ' ');
+                return { total: Math.round(h * r * 100) / 100 };
             }
-        };
-
-        const appStore = {
-            employees: [
-                { id: 1, name: "Isabel Farias", rate: 25 },
-                { id: 2, name: "Liliane Barbosa", rate: 25 },
-                { id: 3, name: "Leoni Gaspar", rate: 20 },
-                { id: 4, name: "Akyla Ferreira", rate: 20 }
-            ],
-            jobs: [],
-            properties: [],
-            ui: {
-                currentFilter: 'today',
-                quickEmployeeId: null,
-                darkMode: false,
-                profitMode: false,
-                calendarDate: new Date(),
-                timerRunning: false,
-                timerSeconds: 0,
-                timerInterval: null
+            getFilteredJobs(filterType, employeeFilter, typeFilter, jobs) {
+                const today = new Date().toISOString().split('T')[0];
+                let filtered = [...jobs];
+                switch(filterType) {
+                    case 'today': filtered = filtered.filter(j => j.date === today); break;
+                    case 'week':
+                        const weekAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0];
+                        filtered = filtered.filter(j => j.date >= weekAgo);
+                        break;
+                    case 'month':
+                        const monthAgo = new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0];
+                        filtered = filtered.filter(j => j.date >= monthAgo);
+                        break;
+                    case 'pending': filtered = filtered.filter(j => j.paymentStatus === 'pending'); break;
+                    case 'paid': filtered = filtered.filter(j => j.paymentStatus === 'paid'); break;
+                }
+                if (employeeFilter) filtered = filtered.filter(j => j.employeeId === employeeFilter);
+                if (typeFilter) filtered = filtered.filter(j => j.jobType === typeFilter);
+                return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
             }
-        };
+        }
+        const computationService = new ComputationService();
 
-        const app = {
+        // Renderer
+        class Renderer {
+            constructor(store, computationService) {
+                this.store = store;
+                this.compute = computationService;
+                this.elements = new Map();
+            }
             init() {
-                this.loadData();
-                this.setupEventListeners();
-                
-                const today = new Date().toISOString().split('T')[0];
-                document.getElementById('workDate').value = today;
-                
-                this.render.all();
-                this.charts.init();
-                
-                // Check profit mode
-                if (localStorage.getItem('bsos_profit_mode') === 'true') {
-                    this.settings.toggleProfitMode();
-                }
-
-                console.log('BSOS v8.1 Production Ready');
-            },
-
-            loadData() {
-                try {
-                    const saved = localStorage.getItem('bsos_cloud_pro_v8');
-                    if (saved) {
-                        const data = JSON.parse(saved);
-                        if (data.employees) appStore.employees = data.employees;
-                        if (data.jobs) appStore.jobs = data.jobs;
-                        if (data.properties) appStore.properties = data.properties;
-                        if (data.ui) {
-                            appStore.ui.darkMode = data.ui.darkMode || false;
-                            appStore.ui.profitMode = data.ui.profitMode || false;
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error loading data:', e);
-                }
-            },
-
-            saveData() {
-                try {
-                    const data = {
-                        employees: appStore.employees,
-                        jobs: appStore.jobs,
-                        properties: appStore.properties,
-                        ui: {
-                            darkMode: appStore.ui.darkMode,
-                            profitMode: appStore.ui.profitMode
-                        }
-                    };
-                    localStorage.setItem('bsos_cloud_pro_v8', JSON.stringify(data));
-                } catch (e) {
-                    console.error('Error saving data:', e);
-                }
-            },
-
-            setupEventListeners() {
-                // ESC key para fechar modais - FIX CRÍTICO
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape') {
-                        document.querySelectorAll('.modal-overlay.show')
-                            .forEach(m => m.classList.remove('show'));
-                    }
-                });
-                
-                // Close modal on outside click
-                window.onclick = function(event) {
-                    if (event.target.classList.contains('modal-overlay')) {
-                        event.target.classList.remove('show');
-                    }
-                }
-            },
-
-            showToast(message, type = 'success') {
-                const toast = document.getElementById('toast');
-                toast.textContent = message;
-                toast.className = 'toast show ' + type;
-                setTimeout(() => toast.classList.remove('show'), 3000);
-            },
-
-            modals: {
-                open(id) {
-                    document.getElementById(id).classList.add('show');
-                    if (id === 'propertiesModal') app.properties.render();
-                    if (id === 'timerModal') app.timer.loadSelects();
-                },
-                close(id) {
-                    document.getElementById(id).classList.remove('show');
-                }
-            },
-
-            ui: {
-                switchTab(tabName) {
-                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                    
-                    const panel = document.getElementById('panel-' + tabName);
-                    if (panel) panel.classList.add('active');
-                    
-                    event.target.classList.add('active');
-                }
-            },
-
-            render: {
-                all() {
-                    this.employees();
-                    this.selects();
-                    this.jobs();
-                    this.dashboard();
-                    this.employeeSummaries();
-                    this.overbookingAlert();
-                    this.properties();
-                },
-
-                employees() {
-                    const container = document.getElementById('employeeList');
-                    const today = new Date().toISOString().split('T')[0];
-                    
-                    container.innerHTML = appStore.employees.map(emp => {
-                        const todayJobs = appStore.jobs.filter(j => j.employeeId === emp.id && j.date === today);
-                        const todayHours = todayJobs.reduce((s, j) => s + j.hours, 0);
-                        const isOverbooked = todayHours > 10 || todayJobs.length > 3;
-                        
-                        return `
-                            <div class="employee-card ${appStore.ui.quickEmployeeId === emp.id ? 'selected' : ''} ${isOverbooked ? 'overbooked' : ''}" 
-                                 onclick="app.employees.select(${emp.id})">
-                                <div style="flex: 1;">
-                                    <div class="employee-name">${emp.name}</div>
-                                    <div class="employee-rate">$${emp.rate.toFixed(2)}/h</div>
-                                    ${isOverbooked ? '<small style="color: var(--danger);">⚠️ Overbooked today</small>' : ''}
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <button class="rate-tag" onclick="event.stopPropagation(); app.employees.editRate(${emp.id})">
-                                        $${emp.rate.toFixed(2)}
-                                    </button>
-                                    <button class="btn btn-info" onclick="event.stopPropagation(); app.employees.remove(${emp.id})">🗑️</button>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                },
-
-                selects() {
-                    // Employee selects
-                    const empOptions = appStore.employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
-                    document.getElementById('selEmployee').innerHTML = '<option value="">Select...</option>' + empOptions;
-                    document.getElementById('filterEmployee').innerHTML = '<option value="">All Employees</option>' + empOptions;
-                    document.getElementById('timerEmployee').innerHTML = '<option value="">Select...</option>' + empOptions;
-
-                    // Property selects
-                    const propOptions = appStore.properties.map(p => `<option value="${p.id}">${p.name} ($${p.price})</option>`).join('');
-                    document.getElementById('propertyLink').innerHTML = '<option value="">No Property</option>' + propOptions;
-                    document.getElementById('timerProperty').innerHTML = '<option value="">No Property</option>' + propOptions;
-                },
-
-                jobs() {
-                    let jobs = app.filters.getFiltered();
-                    
-                    // Apply payment filter
-                    if (appStore.ui.currentFilter === 'pending') {
-                        jobs = jobs.filter(j => j.paymentStatus === 'pending');
-                    } else if (appStore.ui.currentFilter === 'paid') {
-                        jobs = jobs.filter(j => j.paymentStatus === 'paid');
-                    }
-
-                    document.getElementById('jobsCount').textContent = jobs.length;
-                    
-                    const pending = jobs.filter(j => j.paymentStatus === 'pending');
-                    const pendingBadge = document.getElementById('pendingBadge');
-                    if (pending.length > 0) {
-                        pendingBadge.style.display = 'inline-block';
-                        pendingBadge.textContent = `${pending.length} pending ($${pending.reduce((s, j) => s + j.total, 0).toFixed(0)})`;
-                    } else {
-                        pendingBadge.style.display = 'none';
-                    }
-
-                    const tbody = document.getElementById('jobsTable');
-                    if (jobs.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: var(--secondary);">No jobs found</td></tr>';
-                        return;
-                    }
-
-                    tbody.innerHTML = jobs.sort((a, b) => new Date(b.date) - new Date(a.date)).map(j => {
-                        const typeTags = {
-                            standard: '<span class="job-tag tag-standard">Standard</span>',
-                            deep: '<span class="job-tag tag-deep">Deep</span>',
-                            moveout: '<span class="job-tag tag-moveout">Move-out</span>',
-                            airbnb: '<span class="job-tag tag-airbnb">Airbnb</span>'
-                        };
-
-                        // NEW: Mostrar Revenue e Profit com segurança
-                        const hasProperty = j.propertyId && j.revenue > 0;
-                        const revenueDisplay = hasProperty 
-                            ? `<td style="color: var(--primary); font-weight: 600;">$${j.revenue.toFixed(0)}</td>`
-                            : '<td style="color: var(--secondary);">-</td>';
-                            
-                        const profitDisplay = hasProperty 
-                            ? `<td style="font-weight: 700;" class="${j.profit >= 0 ? 'profit-positive' : 'profit-negative'}">
-                                 ${j.profit >= 0 ? '+' : ''}$${j.profit.toFixed(0)}
-                                 ${j.profit < 30 && j.profit >= 0 ? '<span class="low-margin-alert">LOW</span>' : ''}
-                               </td>`
-                            : '<td style="color: var(--secondary);">-</td>';
-
-                        return `
-                            <tr class="${j.paymentStatus}">
-                                <td><strong>${j.employeeName}</strong>${typeTags[j.jobType] || ''}</td>
-                                <td>
-                                    ${j.house}
-                                    ${j.propertyId ? '<span class="badge badge-purple" style="margin-left: 5px;">Linked</span>' : ''}
-                                </td>
-                                <td>${appUtils.formatDate(j.date)}</td>
-                                <td>${j.hours}h</td>
-                                <td><strong>$${j.total.toFixed(2)}</strong></td>
-                                ${revenueDisplay}
-                                ${profitDisplay}
-                                <td>
-                                    <span class="payment-status ${j.paymentStatus}" onclick="app.jobs.togglePayment('${j.id}')">
-                                        ${j.paymentStatus === 'paid' ? '✓ Paid' : '🟡 Pending'}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="action-btns">
-                                        <button class="btn btn-info btn-sm" onclick="app.jobs.edit('${j.id}')">✏️</button>
-                                        <button class="btn btn-duplicate" onclick="app.jobs.duplicate('${j.id}')">📋</button>
-                                        <button class="btn btn-danger btn-sm" onclick="app.jobs.remove('${j.id}')">🗑️</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
-                },
-
-                dashboard() {
-                    const jobs = app.filters.getFiltered();
-                    const hours = jobs.reduce((s, j) => s + j.hours, 0);
-                    
-                    // NEW: Cálculos financeiros completos
-                    const totalRevenue = jobs.reduce((s, j) => s + (j.revenue || 0), 0);
-                    const totalCost = jobs.reduce((s, j) => s + j.total, 0);
-                    const totalProfit = totalRevenue - totalCost;
-                    const margin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
-
-                    // Update basic stats
-                    document.getElementById('statHours').textContent = hours.toFixed(1);
-                    document.getElementById('statJobs').textContent = jobs.length;
-
-                    // NEW: Financial Dashboard
-                    if (appStore.ui.profitMode) {
-                        document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toFixed(0);
-                        document.getElementById('totalCost').textContent = '$' + totalCost.toFixed(0);
-                        
-                        const profitEl = document.getElementById('totalProfit');
-                        profitEl.textContent = '$' + totalProfit.toFixed(0);
-                        profitEl.className = 'stat-value ' + (totalProfit >= 0 ? 'profit-positive' : 'profit-negative');
-                        
-                        const marginEl = document.getElementById('profitMargin');
-                        marginEl.textContent = margin.toFixed(1) + '%';
-                        marginEl.style.color = margin >= 30 ? 'var(--success)' : (margin >= 0 ? 'var(--warning)' : 'var(--danger)');
-                    }
-
-                    // Top performers
-                    const stats = {};
-                    jobs.forEach(j => {
-                        if (!stats[j.employeeId]) stats[j.employeeId] = { name: j.employeeName, hours: 0, total: 0 };
-                        stats[j.employeeId].hours += j.hours;
-                        stats[j.employeeId].total += j.total;
-                    });
-
-                    const top = Object.values(stats).sort((a, b) => b.hours - a.hours).slice(0, 3);
-                    document.getElementById('topList').innerHTML = top.map((t, i) => `
-                        <div class="top-performer" style="${i === 0 ? 'background: #fef3c7; border-color: var(--warning);' : ''}">
-                            <div>
-                                <div style="font-weight: 700;">${t.name}</div>
-                                <div style="font-size: 0.8rem; color: var(--secondary);">${t.hours.toFixed(1)}h</div>
-                            </div>
-                            <div style="font-weight: 700; color: var(--success);">$${t.total.toFixed(0)}</div>
-                        </div>
-                    `).join('') || '<p style="color: var(--secondary); text-align: center;">No data</p>';
-
-                    // Daily profit (if profit mode)
-                    if (appStore.ui.profitMode) {
-                        const today = new Date().toISOString().split('T')[0];
-                        const todayJobs = jobs.filter(j => j.date === today);
-                        const revenue = todayJobs.reduce((s, j) => s + (j.revenue || 0), 0);
-                        const cost = todayJobs.reduce((s, j) => s + j.total, 0);
-                        const profit = revenue - cost;
-
-                        document.getElementById('todayRevenue').textContent = '$' + revenue.toFixed(0);
-                        document.getElementById('todayCost').textContent = '$' + cost.toFixed(0);
-                        document.getElementById('todayProfit').textContent = '$' + profit.toFixed(0);
-                        document.getElementById('todayProfit').style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
-                    }
-
-                    // Top properties
-                    const propStats = {};
-                    jobs.forEach(j => {
-                        if (!j.propertyId) return;
-                        if (!propStats[j.propertyId]) {
-                            const prop = appStore.properties.find(p => String(p.id) === String(j.propertyId));
-                            propStats[j.propertyId] = { name: prop?.name || 'Unknown', profit: 0, visits: 0 };
-                        }
-                        propStats[j.propertyId].profit += (j.profit || 0);
-                        propStats[j.propertyId].visits++;
-                    });
-
-                    const sortedProps = Object.values(propStats).sort((a, b) => b.profit - a.profit).slice(0, 3);
-                    document.getElementById('topPropertiesList').innerHTML = sortedProps.map(p => `
-                        <div class="top-performer">
-                            <div>
-                                <div style="font-weight: 700;">${p.name}</div>
-                                <div style="font-size: 0.8rem; color: var(--secondary);">${p.visits} visits</div>
-                            </div>
-                            <div style="font-weight: 700; color: ${p.profit >= 0 ? 'var(--profit)' : 'var(--danger)'};">$${p.profit.toFixed(0)}</div>
-                        </div>
-                    `).join('') || '<p style="color: var(--secondary); text-align: center;">No property data</p>';
-
-                    // Bad properties alert (negative profit)
-                    const badProps = Object.values(propStats).filter(p => p.profit < 0);
-                    if (badProps.length > 0 && appStore.ui.profitMode) {
-                        document.getElementById('badPropertiesCard').style.display = 'block';
-                        document.getElementById('badPropertiesList').innerHTML = badProps.map(p => `
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                                <span>${p.name}</span>
-                                <span style="color: var(--danger); font-weight: 600;">-$${Math.abs(p.profit).toFixed(0)}</span>
-                            </div>
-                        `).join('');
-                    } else {
-                        document.getElementById('badPropertiesCard').style.display = 'none';
-                    }
-                },
-
-                employeeSummaries() {
-                    const container = document.getElementById('employeeSummaryList');
-                    const weekJobs = appStore.jobs.filter(j => {
-                        const jobDate = new Date(j.date);
-                        const weekAgo = new Date();
-                        weekAgo.setDate(weekAgo.getDate() - 7);
-                        return jobDate >= weekAgo && j.status !== 'closed';
-                    });
-                    
-                    const empData = {};
-                    appStore.employees.forEach(e => {
-                        empData[e.id] = { name: e.name, hours: 0, total: 0, pending: 0 };
-                    });
-                    
-                    weekJobs.forEach(j => {
-                        if (empData[j.employeeId]) {
-                            empData[j.employeeId].hours += j.hours;
-                            empData[j.employeeId].total += j.total;
-                            if (j.paymentStatus === 'pending') {
-                                empData[j.employeeId].pending += j.total;
-                            }
-                        }
-                    });
-
-                    container.innerHTML = Object.values(empData).map(e => `
-                        <div class="emp-summary-card">
-                            <div class="emp-summary-header">
-                                <span class="emp-summary-name">${e.name}</span>
-                                <button class="btn btn-sm btn-info" onclick="app.export.employee(${Object.keys(empData).find(key => empData[key].name === e.name)})">📤</button>
-                            </div>
-                            <div class="emp-summary-stats">
-                                <div class="emp-summary-stat">
-                                    <div class="emp-summary-value">$${e.total.toFixed(0)}</div>
-                                    <div style="font-size: 0.75rem; color: var(--secondary);">Total</div>
-                                </div>
-                                <div class="emp-summary-stat">
-                                    <div class="emp-summary-value">${e.hours.toFixed(1)}h</div>
-                                    <div style="font-size: 0.75rem; color: var(--secondary);">Hours</div>
-                                </div>
-                            </div>
-                            ${e.pending > 0 ? `<div style="margin-top: 8px; font-size: 0.85rem; color: var(--warning); text-align: center;">🟡 $${e.pending.toFixed(0)} pending</div>` : ''}
-                        </div>
-                    `).join('');
-                },
-
-                overbookingAlert() {
-                    const today = new Date().toISOString().split('T')[0];
-                    const issues = [];
-                    
-                    appStore.employees.forEach(emp => {
-                        const todayJobs = appStore.jobs.filter(j => j.employeeId === emp.id && j.date === today);
-                        const totalHours = todayJobs.reduce((s, j) => s + j.hours, 0);
-                        
-                        if (totalHours > 10 || todayJobs.length >= 4) {
-                            issues.push(`${emp.name}: ${todayJobs.length} jobs, ${totalHours.toFixed(1)}h`);
-                        }
-                    });
-
-                    const alert = document.getElementById('overbookingAlert');
-                    if (issues.length > 0) {
-                        alert.classList.add('show');
-                        document.getElementById('overbookingContent').innerHTML = issues.map(i => `<div>• ${i}</div>`).join('');
-                    } else {
-                        alert.classList.remove('show');
-                    }
-                },
-
-                properties() {
-                    // Rendered in modal
-                }
-            },
-
-            charts: {
-                init() {
-                    const ctx = document.getElementById('miniChart');
-                    if (!ctx) return;
-                    
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                            datasets: [{
-                                label: 'Hours',
-                                data: [0, 0, 0, 0, 0, 0, 0],
-                                borderColor: '#2563eb',
-                                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                                fill: true,
-                                tension: 0.4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                y: { beginAtZero: true },
-                                x: { grid: { display: false } }
-                            }
-                        }
-                    });
-                }
+                this.store.subscribe('employees', () => this.renderAll());
+                this.store.subscribe('jobs', () => this.renderAll());
+                this.store.subscribe('properties', () => this.renderAll());
+                this.renderAll();
             }
-        };
-
-        app.employees = {
-            add() {
-                const name = appUtils.clean(document.getElementById('newName').value);
-                const rate = parseFloat(document.getElementById('newRate').value);
-                
-                if (!name || !rate || rate <= 0) {
-                    app.showToast('Please fill all fields correctly', 'error');
-                    return;
+            getEl(id) {
+                if (!this.elements.has(id)) {
+                    const el = document.getElementById(id);
+                    if (el) this.elements.set(id, el);
+                    return el;
                 }
-
-                appStore.employees.push({
-                    id: Date.now(),
-                    name,
-                    rate,
-                    createdAt: new Date().toISOString()
-                });
-
-                document.getElementById('newName').value = '';
-                document.getElementById('newRate').value = '';
-                
-                app.saveData();
-                app.render.all();
-                app.showToast('Employee added successfully');
-                app.ui.switchTab('list');
-            },
-
-            remove(id) {
-                const emp = appStore.employees.find(e => e.id === id);
-                if (!confirm(`Delete ${emp.name}?`)) return;
-                
-                appStore.employees = appStore.employees.filter(e => e.id !== id);
-                appStore.jobs = appStore.jobs.filter(j => j.employeeId !== id);
-                
-                app.saveData();
-                app.render.all();
-                app.showToast('Employee removed');
-            },
-
-            editRate(id) {
-                const emp = appStore.employees.find(e => e.id === id);
-                const newRate = prompt(`New rate for ${emp.name}?`, emp.rate);
-                if (newRate && !isNaN(newRate) && newRate > 0) {
-                    emp.rate = parseFloat(newRate);
-                    app.saveData();
-                    app.render.all();
-                    app.showToast('Rate updated');
-                }
-            },
-
-            select(id) {
-                appStore.ui.quickEmployeeId = id;
-                const emp = appStore.employees.find(e => e.id === id);
-                document.getElementById('quickBanner').style.display = 'block';
-                document.getElementById('quickName').textContent = emp.name;
-                document.getElementById('selEmployee').value = id;
-                document.getElementById('workRate').value = emp.rate;
-                app.render.employees();
-                app.jobs.calcTotal();
-            },
-
-            onSelectChange() {
-                const id = document.getElementById('selEmployee').value;
-                if (id) this.select(parseInt(id));
-                else this.exitQuickMode();
-            },
-
-            exitQuickMode() {
-                appStore.ui.quickEmployeeId = null;
-                document.getElementById('quickBanner').style.display = 'none';
-                document.getElementById('selEmployee').value = '';
+                return this.elements.get(id);
             }
-        };
-
-        app.jobs = {
-            calculateFromTime() {
-                const start = document.getElementById('workStart').value;
-                const end = document.getElementById('workEnd').value;
-                if (start && end) {
-                    const hours = appUtils.calculateHoursFromTimes(start, end);
-                    document.getElementById('workHours').value = hours.toFixed(2);
-                    this.calcTotal();
-                }
-            },
-
-            calcTotal() {
-                const hours = parseFloat(document.getElementById('workHours').value) || 0;
-                const rate = parseFloat(document.getElementById('workRate').value) || 0;
-                const calc = appUtils.calculateTotal(hours, rate);
-                
-                document.getElementById('totalDisplay').textContent = '$' + calc.total.toFixed(2);
-                
-                // Profit preview
-                const propId = document.getElementById('propertyLink').value;
-                if (propId) {
-                    // FIX: String comparison
-                    const prop = appStore.properties.find(p => String(p.id) === String(propId));
-                    if (prop) {
-                        const profit = prop.price - calc.total;
-                        document.getElementById('profitPreview').style.display = 'block';
-                        document.getElementById('profitAmount').textContent = (profit >= 0 ? '+' : '') + '$' + profit.toFixed(2);
-                        document.getElementById('profitAmount').style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
-                    }
-                } else {
-                    document.getElementById('profitPreview').style.display = 'none';
-                }
-            },
-
-            onPropertyChange() {
-                const propId = document.getElementById('propertyLink').value;
-                const priceDisplay = document.getElementById('propertyPricePreview');
-                
-                if (propId) {
-                    // FIX: String comparison
-                    const prop = appStore.properties.find(p => String(p.id) === String(propId));
-                    if (prop) {
-                        priceDisplay.innerHTML = `
-                            <div class="property-preview">
-                                💰 Service Price: <strong>$${prop.price}</strong> | 
-                                Margin Target: <strong>$${(prop.price * 0.3).toFixed(0)}</strong>
-                            </div>
-                        `;
-                    }
-                } else {
-                    priceDisplay.innerHTML = '';
-                }
-                this.calcTotal();
-            },
-
-            register() {
-                const empId = document.getElementById('selEmployee').value;
-                const house = appUtils.clean(document.getElementById('houseAddr').value);
-                const hours = parseFloat(document.getElementById('workHours').value);
-                const date = document.getElementById('workDate').value;
-                const rate = parseFloat(document.getElementById('workRate').value);
-                const notes = appUtils.clean(document.getElementById('workNotes').value);
-                const startTime = document.getElementById('workStart').value;
-                const endTime = document.getElementById('workEnd').value;
-                const jobType = document.getElementById('jobType').value;
-                let propertyId = document.getElementById('propertyLink').value;
-                
-                // Auto-link property by address
-                if (!propertyId && house) {
-                    const matched = appStore.properties.find(p => 
-                        p.address.toLowerCase().trim() === house.toLowerCase().trim()
-                    );
-                    if (matched) {
-                        propertyId = matched.id;
-                        app.showToast(`Auto-linked to: ${matched.name}`);
-                    }
-                }
-
-                if (!empId || !house || !hours || !date) {
-                    app.showToast('Please fill all required fields', 'error');
-                    return;
-                }
-
-                const emp = appStore.employees.find(e => e.id == empId);
-                const calc = appUtils.calculateTotal(hours, rate);
-                
-                // Calculate profit usando função central
-                let job = {
-                    id: appUtils.generateId(),
-                    employeeId: parseInt(empId),
-                    employeeName: emp.name,
-                    house,
-                    date,
-                    hours,
-                    rate,
-                    total: calc.total,
-                    regularHours: calc.regularHours,
-                    overtimeHours: calc.overtimeHours,
-                    notes,
-                    startTime,
-                    endTime,
-                    jobType,
-                    propertyId: propertyId || null,
-                    paymentStatus: 'pending',
-                    createdAt: new Date().toISOString()
-                };
-
-                // FIX: Usa função central para calcular profit
-                appUtils.recalculateJobProfit(job);
-
-                appStore.jobs.push(job);
-                app.saveData();
-                app.render.all();
-                
-                const msg = propertyId ? 
-                    `${emp.name}: ${hours}h registered. Profit: $${job.profit.toFixed(2)}` :
-                    `${emp.name}: ${hours}h registered`;
-                app.showToast(msg);
-
-                // Reset form
-                document.getElementById('houseAddr').value = '';
-                document.getElementById('workHours').value = '';
-                document.getElementById('workStart').value = '';
-                document.getElementById('workEnd').value = '';
-                document.getElementById('workNotes').value = '';
-                document.getElementById('totalDisplay').textContent = '$0.00';
-                document.getElementById('profitPreview').style.display = 'none';
-                document.getElementById('propertyPricePreview').innerHTML = '';
-            },
-
-            remove(id) {
-                if (!confirm('Delete this job?')) return;
-                appStore.jobs = appStore.jobs.filter(j => j.id !== id);
-                app.saveData();
-                app.render.all();
-            },
-
-            edit(id) {
-                const job = appStore.jobs.find(j => j.id === id);
-                const newHours = prompt('Edit hours:', job.hours);
-                if (newHours && !isNaN(newHours)) {
-                    job.hours = parseFloat(newHours);
-                    const calc = appUtils.calculateTotal(job.hours, job.rate);
-                    job.total = calc.total;
-                    job.regularHours = calc.regularHours;
-                    job.overtimeHours = calc.overtimeHours;
-                    
-                    // FIX: Recalcula profit automaticamente
-                    appUtils.recalculateJobProfit(job);
-                    
-                    job.updatedAt = new Date().toISOString();
-                    app.saveData();
-                    app.render.all();
-                    app.showToast('Job updated - Profit recalculated');
-                }
-            },
-
-            duplicate(id) {
-                const job = appStore.jobs.find(j => j.id === id);
-                
-                // Preenche todos os campos incluindo property
-                document.getElementById('selEmployee').value = job.employeeId;
-                document.getElementById('houseAddr').value = job.house;
-                document.getElementById('workHours').value = job.hours;
-                document.getElementById('workRate').value = job.rate;
-                document.getElementById('workNotes').value = job.notes || '';
-                document.getElementById('jobType').value = job.jobType || 'standard';
-                document.getElementById('propertyLink').value = job.propertyId || '';
-                document.getElementById('workStart').value = job.startTime || '';
-                document.getElementById('workEnd').value = job.endTime || '';
-                
-                // Trigger visual updates
-                this.onPropertyChange();
-                app.employees.select(job.employeeId);
-                
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                app.showToast('Job duplicated - adjust date/time and save');
-            },
-
-            togglePayment(id) {
-                const job = appStore.jobs.find(j => j.id === id);
-                job.paymentStatus = job.paymentStatus === 'paid' ? 'pending' : 'paid';
-                job.updatedAt = new Date().toISOString();
-                app.saveData();
-                app.render.jobs();
-                app.render.dashboard();
-                app.showToast(`Payment: ${job.paymentStatus.toUpperCase()}`);
+            escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
             }
-        };
-
-        app.properties = {
-            add() {
-                const name = appUtils.clean(document.getElementById('newPropName').value);
-                const address = appUtils.clean(document.getElementById('newPropAddress').value);
-                const price = parseFloat(document.getElementById('newPropPrice').value || 0);
-
-                if (!name || !address || !price) {
-                    app.showToast('Fill all property fields', 'error');
-                    return;
-                }
-
-                appStore.properties.push({
-                    id: appUtils.generateId(),
-                    name,
-                    address,
-                    price,
-                    createdAt: new Date().toISOString()
-                });
-
-                document.getElementById('newPropName').value = '';
-                document.getElementById('newPropAddress').value = '';
-                document.getElementById('newPropPrice').value = '';
-                
-                app.saveData();
-                this.render();
-                app.render.selects();
-                app.showToast(`Property "${name}" added`);
-            },
-
-            remove(id) {
-                if (!confirm('Delete this property?')) return;
-                appStore.properties = appStore.properties.filter(p => String(p.id) !== String(id));
-                app.saveData();
-                this.render();
-                app.render.selects();
-            },
-
-            render() {
-                const container = document.getElementById('propertiesList');
+            formatMoney(amount) {
+                const a = parseFloat(amount);
+                return '$' + (isNaN(a) ? '0.00' : a.toFixed(2));
+            }
+            renderAll() {
+                this.renderEmployees();
+                this.renderSelects();
+                this.renderJobs();
+                this.renderDashboard();
+                this.renderProperties();
+            }
+            renderEmployees() {
+                const container = this.getEl('employeeList');
                 if (!container) return;
+                const employees = this.store.get('employees');
+                if (employees.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--secondary);">No employees yet</div>';
+                    return;
+                }
+                container.innerHTML = employees.map(emp => `
+                    <div class="employee-card" data-action="selectEmployee" data-employee-id="${emp.id}">
+                        <div style="flex: 1;">
+                            <div class="employee-name">${this.escapeHtml(emp.name)}</div>
+                            <div class="employee-rate">$${parseFloat(emp.rate).toFixed(2)}/h</div>
+                        </div>
+                        <button class="rate-tag" data-action="deleteEmployee" data-employee-id="${emp.id}" onclick="event.stopPropagation()">🗑️</button>
+                    </div>
+                `).join('');
+            }
+            renderSelects() {
+                const employees = this.store.get('employees');
+                const properties = this.store.get('properties');
+                const empOptions = employees.map(e => `<option value="${e.id}">${this.escapeHtml(e.name)}</option>`).join('');
+                const propOptions = properties.map(p => `<option value="${p.id}">${this.escapeHtml(p.name)}</option>`).join('');
                 
-                container.innerHTML = appStore.properties.map(p => {
-                    // Calculate stats
-                    const jobs = appStore.jobs.filter(j => String(j.propertyId) === String(p.id));
-                    const totalRevenue = jobs.length * p.price;
-                    const totalCost = jobs.reduce((s, j) => s + j.total, 0);
-                    const profit = totalRevenue - totalCost;
-
+                ['selEmployee', 'filterEmployee', 'timerEmployee'].forEach(id => {
+                    const el = this.getEl(id);
+                    if (el) el.innerHTML = '<option value="">Select...</option>' + empOptions;
+                });
+                
+                ['propertyLink'].forEach(id => {
+                    const el = this.getEl(id);
+                    if (el) el.innerHTML = '<option value="">No Property</option>' + propOptions;
+                });
+            }
+            renderJobs() {
+                const tbody = this.getEl('jobsTable');
+                const countEl = this.getEl('jobsCount');
+                if (!tbody) return;
+                
+                const jobs = this.store.get('jobs');
+                const currentFilter = this.store.get('ui.currentFilter');
+                const empFilter = document.getElementById('filterEmployee')?.value || '';
+                const typeFilter = document.getElementById('filterType')?.value || '';
+                
+                const filtered = this.compute.getFilteredJobs(currentFilter, empFilter, typeFilter, jobs);
+                
+                if (countEl) countEl.textContent = filtered.length;
+                
+                if (filtered.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--secondary);">No jobs found</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = filtered.map(job => {
+                    const payment = this.compute.calculatePayment(job.hours, job.rate);
                     return `
-                        <div class="property-card">
-                            <div class="property-header">
-                                <div>
-                                    <div class="property-name">${p.name}</div>
-                                    <div style="font-size: 0.9rem; color: var(--secondary);">${p.address}</div>
-                                </div>
-                                <button class="btn btn-sm btn-danger" onclick="app.properties.remove('${p.id}')">🗑️</button>
-                            </div>
-                            <div style="display: flex; gap: 10px; margin: 10px 0;">
-                                <span class="badge badge-purple">Service: $${p.price}</span>
-                                <span class="badge badge-green">${jobs.length} visits</span>
-                            </div>
-                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; padding-top: 10px; border-top: 1px solid var(--border);">
-                                <div>
-                                    <div style="font-weight: 700; color: var(--primary);">$${totalRevenue.toFixed(0)}</div>
-                                    <div style="font-size: 0.75rem; color: var(--secondary);">Revenue</div>
-                                </div>
-                                <div>
-                                    <div style="font-weight: 700; color: var(--danger);">$${totalCost.toFixed(0)}</div>
-                                    <div style="font-size: 0.75rem; color: var(--secondary);">Cost</div>
-                                </div>
-                                <div>
-                                    <div style="font-weight: 700; color: ${profit >= 0 ? 'var(--success)' : 'var(--danger)'};">$${profit.toFixed(0)}</div>
-                                    <div style="font-size: 0.75rem; color: var(--secondary);">Profit</div>
-                                </div>
-                            </div>
-                        </div>
+                    <tr>
+                        <td>${this.escapeHtml(job.employeeName || 'Unknown')}</td>
+                        <td>${this.escapeHtml(job.house)}</td>
+                        <td>${job.date}</td>
+                        <td>${job.hours}h</td>
+                        <td>${this.formatMoney(payment.total)}</td>
+                        <td>
+                            <span class="payment-status ${job.paymentStatus || 'pending'}" data-action="togglePaymentStatus" data-job-id="${job.id}">
+                                ${job.paymentStatus === 'paid' ? '✓ Paid' : '⏳ Pending'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" data-action="deleteJob" data-job-id="${job.id}">🗑️</button>
+                        </td>
+                    </tr>
                     `;
-                }).join('') || '<p style="color: var(--secondary); text-align: center;">No properties registered</p>';
+                }).join('');
             }
-        };
-
-        app.filters = {
-            set(filter, btn) {
-                appStore.ui.currentFilter = filter;
-                document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                app.render.jobs();
-                app.render.dashboard();
-            },
-
-            apply() {
-                app.render.jobs();
-                app.render.dashboard();
-            },
-
-            getFiltered() {
-                const today = new Date().toISOString().split('T')[0];
-                const now = new Date();
-                const empFilter = document.getElementById('filterEmployee').value;
-                const typeFilter = document.getElementById('filterType').value;
-
-                let jobs = appStore.jobs;
-
-                if (appStore.ui.currentFilter === 'today') {
-                    jobs = jobs.filter(j => j.date === today);
-                } else if (appStore.ui.currentFilter === 'week') {
-                    const weekAgo = new Date(now.getTime() - 7*24*60*60*1000).toISOString().split('T')[0];
-                    jobs = jobs.filter(j => j.date >= weekAgo);
-                } else if (appStore.ui.currentFilter === 'month') {
-                    const monthAgo = new Date(now.getTime() - 30*24*60*60*1000).toISOString().split('T')[0];
-                    jobs = jobs.filter(j => j.date >= monthAgo);
-                }
-
-                if (empFilter) jobs = jobs.filter(j => j.employeeId == empFilter);
-                if (typeFilter) jobs = jobs.filter(j => j.jobType === typeFilter);
-
-                return jobs;
-            }
-        };
-
-        app.addresses = {
-            handleInput() {
-                const input = document.getElementById('houseAddr');
-                const list = document.getElementById('autocompleteList');
-                const val = input.value.toLowerCase();
-                
-                if (!val) {
-                    list.style.display = 'none';
+            renderProperties() {
+                const container = this.getEl('propertiesList');
+                if (!container) return;
+                const properties = this.store.get('properties');
+                if (properties.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--secondary);">No properties yet</div>';
                     return;
                 }
-                
-                const addresses = [...new Set(appStore.jobs.map(j => j.house))].filter(a => a.toLowerCase().includes(val));
-                
-                if (addresses.length > 0) {
-                    list.innerHTML = addresses.map(a => `
-                        <div style="padding: 10px; cursor: pointer; border-bottom: 1px solid var(--border);" 
-                             onclick="app.addresses.select('${a.replace(/'/g, "\\'")}')">${a}</div>
-                    `).join('');
-                    list.style.display = 'block';
-                } else {
-                    list.style.display = 'none';
-                }
-
-                // Smart suggestion
-                const exactMatch = appStore.jobs.find(j => j.house.toLowerCase() === val.toLowerCase());
-                if (exactMatch) {
-                    const suggestion = document.getElementById('smartSuggestion');
-                    suggestion.style.display = 'block';
-                    suggestion.innerHTML = `
-                        <strong>💡 Suggestion:</strong> ${exactMatch.hours}h @ $${exactMatch.rate}/h 
-                        <button class="btn btn-sm btn-primary" onclick="app.addresses.applySuggestion(${exactMatch.hours}, ${exactMatch.rate})" style="margin-left: 10px;">Apply</button>
-                    `;
-                }
-            },
-
-            select(address) {
-                document.getElementById('houseAddr').value = address;
-                document.getElementById('autocompleteList').style.display = 'none';
-                document.getElementById('smartSuggestion').style.display = 'none';
-            },
-
-            applySuggestion(hours, rate) {
-                document.getElementById('workHours').value = hours;
-                document.getElementById('workRate').value = rate;
-                app.jobs.calcTotal();
-                document.getElementById('smartSuggestion').style.display = 'none';
+                container.innerHTML = properties.map(prop => `
+                    <div class="card" style="margin-bottom: 10px; padding: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 700;">${this.escapeHtml(prop.name)}</div>
+                                <div style="font-size: 0.9rem; color: var(--secondary);">${this.escapeHtml(prop.address)}</div>
+                                <div style="font-size: 0.9rem; color: var(--success); font-weight: 600;">$${parseFloat(prop.price).toFixed(2)}</div>
+                            </div>
+                            <button class="btn btn-sm btn-danger" data-action="deleteProperty" data-property-id="${prop.id}">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
             }
-        };
-
-        app.calendar = {
-            render() {
-                const year = appStore.ui.calendarDate.getFullYear();
-                const month = appStore.ui.calendarDate.getMonth();
+            renderDashboard() {
+                const jobs = this.store.get('jobs');
+                const statHours = this.getEl('statHours');
+                const statJobs = this.getEl('statJobs');
+                if (statHours) statHours.textContent = jobs.reduce((s, j) => s + (parseFloat(j.hours) || 0), 0).toFixed(1);
+                if (statJobs) statJobs.textContent = jobs.length;
                 
-                document.getElementById('calendarMonth').textContent = 
-                    new Date(year, month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
-                const firstDay = new Date(year, month, 1).getDay();
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                // Employee summary
+                const empList = this.getEl('employeeSummaryList');
+                const employees = this.store.get('employees');
+                if (empList) {
+                    empList.innerHTML = employees.map(emp => {
+                        const empJobs = jobs.filter(j => j.employeeId === emp.id);
+                        const totalHours = empJobs.reduce((s, j) => s + (parseFloat(j.hours) || 0), 0);
+                        const totalPay = empJobs.reduce((s, j) => s + (parseFloat(j.total) || 0), 0);
+                        return `
+                        <div style="background: var(--bg); padding: 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border);">
+                            <div style="font-weight: 600; margin-bottom: 4px;">${this.escapeHtml(emp.name)}</div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--secondary);">
+                                <span>${totalHours.toFixed(1)}h worked</span>
+                                <span style="color: var(--success); font-weight: 600;">${this.formatMoney(totalPay)}</span>
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+                }
                 
-                const grid = document.getElementById('calendarGrid');
-                let html = '';
-                
-                for (let i = 0; i < firstDay; i++) html += '<div></div>';
-                
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const dayJobs = appStore.jobs.filter(j => j.date === dateStr);
-                    const hasJobs = dayJobs.length > 0;
+                // Top performers
+                const topList = this.getEl('topList');
+                if (topList) {
+                    const topEmployees = [...employees]
+                        .map(emp => ({
+                            ...emp,
+                            totalHours: jobs.filter(j => j.employeeId === emp.id).reduce((s, j) => s + (parseFloat(j.hours) || 0), 0)
+                        }))
+                        .sort((a, b) => b.totalHours - a.totalHours)
+                        .slice(0, 3);
                     
-                    html += `
-                        <div class="calendar-day ${hasJobs ? 'has-jobs' : ''}" onclick="alert('${dayJobs.length} jobs on ${dateStr}')">
-                            <div style="font-weight: 700;">${day}</div>
-                            ${hasJobs ? `<div style="font-size: 0.7rem; color: var(--primary);">${dayJobs.length} jobs</div>` : ''}
+                    topList.innerHTML = topEmployees.map((emp, i) => `
+                        <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--bg); border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border);">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1.2rem;">${i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>
+                                <span style="font-weight: 600;">${this.escapeHtml(emp.name)}</span>
+                            </div>
+                            <span style="color: var(--success); font-weight: 600;">${emp.totalHours.toFixed(1)}h</span>
                         </div>
-                    `;
+                    `).join('');
                 }
-                
-                grid.innerHTML = html;
-            },
-
-            prevMonth() {
-                appStore.ui.calendarDate.setMonth(appStore.ui.calendarDate.getMonth() - 1);
-                this.render();
-            },
-
-            nextMonth() {
-                appStore.ui.calendarDate.setMonth(appStore.ui.calendarDate.getMonth() + 1);
-                this.render();
             }
-        };
+            showToast(message, type = 'success') {
+                const toast = this.getEl('toast');
+                if (!toast) return;
+                toast.textContent = message;
+                toast.className = `toast show ${type}`;
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+        }
+        const renderer = new Renderer(store, computationService);
 
-        app.timer = {
-            loadSelects() {
-                // Already loaded in render.selects
-            },
-
-            onPropertyChange() {
-                const propId = document.getElementById('timerProperty').value;
-                const preview = document.getElementById('timerPropertyPreview');
+        // Auth Manager
+        class AuthManager {
+            constructor(store, renderer) {
+                this.store = store;
+                this.renderer = renderer;
+                this.isSignUp = false;
+            }
+            init() {
+                setPersistence(auth, browserLocalPersistence).catch(console.error);
+                onAuthStateChanged(auth, (user) => this.handleAuthChange(user));
+                this.setupAuthUI();
+            }
+            setupAuthUI() {
+                const form = document.getElementById('authForm');
+                const toggle = document.getElementById('authToggle');
+                const btnText = document.getElementById('authBtnText');
+                const footerText = document.getElementById('authFooterText');
+                const modeIndicator = document.getElementById('modeIndicator');
                 
-                if (propId) {
-                    const prop = appStore.properties.find(p => String(p.id) === String(propId));
-                    if (prop) {
-                        preview.innerHTML = `<div class="property-preview">💰 Price: $${prop.price}</div>`;
+                toggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.isSignUp = !this.isSignUp;
+                    if (this.isSignUp) {
+                        btnText.textContent = 'Create Account';
+                        footerText.textContent = 'Already have an account?';
+                        toggle.textContent = 'Sign in';
+                        modeIndicator.textContent = 'Mode: Sign Up';
+                    } else {
+                        btnText.textContent = 'Sign In';
+                        footerText.textContent = "Don't have an account?";
+                        toggle.textContent = 'Sign up';
+                        modeIndicator.textContent = 'Mode: Sign In';
                     }
+                });
+                
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('authEmail').value.trim();
+                    const password = document.getElementById('authPassword').value;
+                    const btn = document.getElementById('authBtn');
+                    const loading = document.getElementById('authLoading');
+                    const errorDiv = document.getElementById('authError');
+                    
+                    btn.disabled = true;
+                    loading.style.display = 'inline-block';
+                    errorDiv.style.display = 'none';
+                    
+                    try {
+                        if (this.isSignUp) {
+                            const cred = await createUserWithEmailAndPassword(auth, email, password);
+                            await setDoc(doc(db, 'users', cred.user.uid), {
+                                email: cred.user.email,
+                                createdAt: serverTimestamp(),
+                                companyName: 'Bright & Shine Pro'
+                            });
+                            renderer.showToast('Account created!');
+                        } else {
+                            await signInWithEmailAndPassword(auth, email, password);
+                        }
+                    } catch (error) {
+                        errorLogger.log(error, 'auth');
+                        errorDiv.textContent = this.getAuthErrorMessage(error.code);
+                        errorDiv.style.display = 'block';
+                        btn.disabled = false;
+                        loading.style.display = 'none';
+                    }
+                });
+            }
+            getAuthErrorMessage(code) {
+                const messages = {
+                    'auth/user-not-found': 'Account not found. Please sign up.',
+                    'auth/wrong-password': 'Invalid password.',
+                    'auth/email-already-in-use': 'Account exists. Please sign in.',
+                    'auth/invalid-email': 'Invalid email format.',
+                    'auth/weak-password': 'Password must be at least 6 characters.',
+                    'auth/invalid-credential': 'Invalid email or password.'
+                };
+                return messages[code] || `Authentication error: ${code}`;
+            }
+            handleAuthChange(user) {
+                if (user) {
+                    this.store.set('ui.user', { uid: user.uid, email: user.email });
+                    document.getElementById('userAvatar').textContent = user.email.charAt(0).toUpperCase();
+                    document.getElementById('userName').textContent = user.email.split('@')[0];
+                    document.getElementById('authContainer').classList.add('hidden');
+                    document.getElementById('appContainer').classList.remove('hidden');
+                    storageAdapter.setUserId(user.uid);
+                    storageAdapter.setupListeners(store);
                 } else {
-                    preview.innerHTML = '';
+                    document.getElementById('authContainer').classList.remove('hidden');
+                    document.getElementById('appContainer').classList.add('hidden');
+                    storageAdapter.clearUser();
                 }
-            },
+            }
+            async logout() {
+                await signOut(auth);
+            }
+        }
+        const authManager = new AuthManager(store, renderer);
 
-            start() {
-                if (appStore.ui.timerRunning) return;
-                
-                appStore.ui.timerRunning = true;
-                document.getElementById('timerDisplay').classList.add('timer-active');
-                document.getElementById('startTimerBtn').style.display = 'none';
-                document.getElementById('stopTimerBtn').style.display = 'inline-flex';
-                
-                appStore.ui.timerInterval = setInterval(() => {
-                    appStore.ui.timerSeconds++;
-                    this.updateDisplay();
-                }, 1000);
-            },
-
-            stop() {
-                if (!appStore.ui.timerRunning) return;
-                
-                const empId = document.getElementById('timerEmployee').value;
-                const propId = document.getElementById('timerProperty').value;
-                const rate = parseFloat(document.getElementById('timerRate').value) || 25;
-                
-                if (!empId) {
-                    app.showToast('Select employee first', 'error');
+        // Actions
+        const Actions = {
+            logout: () => authManager.logout(),
+            
+            addEmployee: async () => {
+                const name = document.getElementById('newName').value.trim();
+                const rate = parseFloat(document.getElementById('newRate').value);
+                if (!name || !rate) {
+                    renderer.showToast('Name and rate required', 'error');
                     return;
                 }
-
-                clearInterval(appStore.ui.timerInterval);
-                appStore.ui.timerRunning = false;
-                
-                const hours = appStore.ui.timerSeconds / 3600;
-                const emp = appStore.employees.find(e => e.id == empId);
-                const today = new Date().toISOString().split('T')[0];
-                
-                const calc = appUtils.calculateTotal(hours, rate);
-                
-                let job = {
-                    id: appUtils.generateId(),
-                    employeeId: parseInt(empId),
-                    employeeName: emp.name,
-                    house: propId ? (appStore.properties.find(p => String(p.id) === String(propId))?.address || 'Timer Job') : 'Timer Job',
-                    date: today,
-                    hours: hours,
-                    rate: rate,
-                    total: calc.total,
-                    regularHours: calc.regularHours,
-                    overtimeHours: calc.overtimeHours,
-                    propertyId: propId || null,
-                    paymentStatus: 'pending',
-                    notes: `Timer: ${this.formatTime(appStore.ui.timerSeconds)}`,
-                    createdAt: new Date().toISOString()
-                };
-
-                // Calcula profit
-                appUtils.recalculateJobProfit(job);
-
-                appStore.jobs.push(job);
-                app.saveData();
-                app.render.all();
-                
-                app.showToast(`Timer saved: ${hours.toFixed(2)}h | Profit: $${job.profit.toFixed(2)}`);
-                this.reset();
-            },
-
-            reset() {
-                clearInterval(appStore.ui.timerInterval);
-                appStore.ui.timerRunning = false;
-                appStore.ui.timerSeconds = 0;
-                this.updateDisplay();
-                document.getElementById('timerDisplay').classList.remove('timer-active');
-                document.getElementById('startTimerBtn').style.display = 'inline-flex';
-                document.getElementById('stopTimerBtn').style.display = 'none';
-                document.getElementById('timerPropertyPreview').innerHTML = '';
-            },
-
-            updateDisplay() {
-                document.getElementById('timerDisplay').textContent = this.formatTime(appStore.ui.timerSeconds);
-            },
-
-            formatTime(seconds) {
-                const h = Math.floor(seconds / 3600);
-                const m = Math.floor((seconds % 3600) / 60);
-                const s = seconds % 60;
-                return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-            }
-        };
-
-        app.settings = {
-            toggleTheme() {
-                appStore.ui.darkMode = !appStore.ui.darkMode;
-                const toggle = document.getElementById('themeToggle');
-                if (appStore.ui.darkMode) {
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                    toggle.classList.add('active');
-                } else {
-                    document.documentElement.removeAttribute('data-theme');
-                    toggle.classList.remove('active');
+                try {
+                    loadingManager.start('add_emp');
+                    await storageAdapter.addEmployee({ name, rate });
+                    renderer.showToast('Employee added!');
+                    document.getElementById('newName').value = '';
+                    document.getElementById('newRate').value = '';
+                } catch (e) {
+                    renderer.showToast(e.message, 'error');
+                } finally {
+                    loadingManager.end('add_emp');
                 }
-                app.saveData();
             },
-
-            changeLanguage(lang) {
-                appStore.ui.language = lang;
-                localStorage.setItem('bsos_language', lang);
-                app.showToast('Language changed');
+            
+            deleteEmployee: async (target) => {
+                const id = target.dataset.employeeId;
+                if (!confirm('Delete this employee?')) return;
+                try {
+                    await storageAdapter.deleteEmployee(id);
+                    renderer.showToast('Employee deleted');
+                } catch (e) {
+                    renderer.showToast(e.message, 'error');
+                }
             },
-
-            toggleProfitMode() {
-                appStore.ui.profitMode = !appStore.ui.profitMode;
-                const toggle = document.getElementById('profitToggle');
-                const financialCard = document.getElementById('financialDashboard');
-                const dailyCard = document.getElementById('dailyProfitCard');
+            
+            registerJob: async () => {
+                const employeeId = document.getElementById('selEmployee').value;
+                const house = document.getElementById('houseAddr').value.trim();
+                const date = document.getElementById('workDate').value;
+                const hours = parseFloat(document.getElementById('workHours').value);
+                const rate = parseFloat(document.getElementById('workRate').value);
+                const jobType = document.getElementById('jobType').value;
+                const notes = document.getElementById('workNotes').value.trim();
+                const propertyId = document.getElementById('propertyLink').value || null;
                 
-                if (appStore.ui.profitMode) {
-                    toggle.classList.add('active');
-                    financialCard.style.display = 'block';
-                    dailyCard.style.display = 'block';
-                    localStorage.setItem('bsos_profit_mode', 'true');
-                } else {
-                    toggle.classList.remove('active');
-                    financialCard.style.display = 'none';
-                    dailyCard.style.display = 'none';
-                    document.getElementById('badPropertiesCard').style.display = 'none';
-                    localStorage.setItem('bsos_profit_mode', 'false');
+                if (!employeeId || !house || !date || !hours) {
+                    renderer.showToast('Please fill all required fields', 'error');
+                    return;
                 }
                 
-                app.render.jobs();
-                app.render.dashboard();
-                app.saveData();
-            }
-        };
-
-        app.backup = {
-            export() {
-                const data = {
-                    version: 8.1,
-                    timestamp: new Date().toISOString(),
-                    employees: appStore.employees,
-                    jobs: appStore.jobs,
-                    properties: appStore.properties
-                };
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
+                const employee = store.get('employees').find(e => e.id === employeeId);
+                const payment = computationService.calculatePayment(hours, rate);
+                
+                try {
+                    loadingManager.start('add_job');
+                    await storageAdapter.addJob({
+                        employeeId,
+                        employeeName: employee?.name || 'Unknown',
+                        house,
+                        date,
+                        hours,
+                        rate,
+                        total: payment.total,
+                        jobType,
+                        notes,
+                        propertyId,
+                        paymentStatus: 'pending'
+                    });
+                    renderer.showToast('Job registered!');
+                    document.getElementById('houseAddr').value = '';
+                    document.getElementById('workHours').value = '';
+                    document.getElementById('workNotes').value = '';
+                } catch (e) {
+                    renderer.showToast(e.message, 'error');
+                } finally {
+                    loadingManager.end('add_job');
+                }
+            },
+            
+            deleteJob: async (target) => {
+                const id = target.dataset.jobId;
+                if (!confirm('Delete this job?')) return;
+                try {
+                    await storageAdapter.deleteJob(id);
+                    renderer.showToast('Job deleted');
+                } catch (e) {
+                    renderer.showToast(e.message, 'error');
+                }
+            },
+            
+            togglePaymentStatus: async (target) => {
+                const id = target.dataset.jobId;
+                const jobs = store.get('jobs');
+                const job = jobs.find(j => j.id === id);
+                if (!job) return;
+                const newStatus = job.paymentStatus === 'paid' ? 'pending' : 'paid';
+                try {
+                    await storageAdapter.updateJob(id, { paymentStatus: newStatus });
+                    renderer.showToast(`Payment marked as ${newStatus}`);
+                } catch (e) {
+                    renderer.showToast(e.message, 'error');
+                }
+            },
+            
+            addProperty: async () => {
+                const name = document.getElementById('newPropName').value.trim();
+                const address = document.getElementById('newPropAddress').value.trim();
+                const price = parseFloat(document.getElementById('newPropPrice').value);
+                if (!name || !address || !price) {
+                    renderer.showToast('All fields required', 'error');
+                    return;
+                }
+                try {
+                    await storageAdapter.addProperty({ name, address, price });
+                    renderer.showToast('Property added!');
+                    document.getElementById('newPropName').value = '';
+                    document.getElementById('newPropAddress').value = '';
+                    document.getElementById('newPropPrice').value = '';
+                } catch (e) {
+                    renderer.showToast(e.message, 'error');
+                }
+            },
+            
+            deleteProperty: async (target) => {
+                const id = target.dataset.propertyId;
+                if (!confirm('Delete this property?')) return;
+                try {
+                    await storageAdapter.deleteProperty(id);
+                    renderer.showToast('Property deleted');
+                } catch (e) {
+                    renderer.showToast(e.message, 'error');
+                }
+            },
+            
+            toggleExportMenu: () => {
+                const menu = document.getElementById('exportMenu');
+                menu.classList.toggle('show');
+            },
+            
+            exportPDF: async () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const jobs = store.get('jobs');
+                const employees = store.get('employees');
+                
+                // Header
+                doc.setFontSize(20);
+                doc.text('Bright & Shine Pro - Job Report', 14, 22);
+                doc.setFontSize(10);
+                doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+                
+                // Summary
+                const totalHours = jobs.reduce((s, j) => s + (parseFloat(j.hours) || 0), 0);
+                const totalPay = jobs.reduce((s, j) => s + (parseFloat(j.total) || 0), 0);
+                doc.text(`Total Hours: ${totalHours.toFixed(1)} | Total Payment: $${totalPay.toFixed(2)}`, 14, 38);
+                
+                // Table
+                const tableData = jobs.slice(0, 50).map(j => [
+                    j.employeeName || 'Unknown',
+                    j.house.substring(0, 30),
+                    j.date,
+                    j.hours.toString(),
+                    `$${parseFloat(j.total || 0).toFixed(2)}`,
+                    j.paymentStatus || 'pending'
+                ]);
+                
+                doc.autoTable({
+                    head: [['Employee', 'House', 'Date', 'Hours', 'Total', 'Status']],
+                    body: tableData,
+                    startY: 45,
+                    styles: { fontSize: 9 },
+                    headStyles: { fillColor: [37, 99, 235] }
+                });
+                
+                doc.save(`BSOS_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+                document.getElementById('exportMenu').classList.remove('show');
+                renderer.showToast('PDF exported!');
+            },
+            
+            exportCSV: () => {
+                const jobs = store.get('jobs');
+                let csv = 'Employee,House,Date,Hours,Rate,Total,Status,Notes\n';
+                jobs.forEach(j => {
+                    csv += `"${j.employeeName || ''}","${j.house}","${j.date}",${j.hours},${j.rate},${j.total || 0},${j.paymentStatus || 'pending'},"${j.notes || ''}"\n`;
+                });
+                const blob = new Blob([csv], { type: 'text/csv' });
                 const a = document.createElement('a');
-                a.href = url;
-                a.download = `BSOS_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.href = URL.createObjectURL(blob);
+                a.download = `BSOS_Jobs_${new Date().toISOString().split('T')[0]}.csv`;
                 a.click();
-                URL.revokeObjectURL(url);
-                app.showToast('Backup downloaded');
+                document.getElementById('exportMenu').classList.remove('show');
+                renderer.showToast('CSV exported!');
             },
-
-            import(input) {
-                const file = input.files[0];
-                if (!file) return;
+            
+            exportWhatsApp: () => {
+                const jobs = store.get('jobs');
+                const today = new Date().toISOString().split('T')[0];
+                const todayJobs = jobs.filter(j => j.date === today);
                 
+                let message = `*Bright & Shine Pro - Daily Summary*\n📅 ${today}\n\n`;
+                
+                if (todayJobs.length === 0) {
+                    message += 'No jobs registered today.';
+                } else {
+                    let totalHours = 0;
+                    let totalPay = 0;
+                    todayJobs.forEach(j => {
+                        message += `🏠 ${j.house}\n👤 ${j.employeeName}\n⏱️ ${j.hours}h - 💰 $${parseFloat(j.total || 0).toFixed(2)}\n\n`;
+                        totalHours += parseFloat(j.hours) || 0;
+                        totalPay += parseFloat(j.total) || 0;
+                    });
+                    message += `*Totals: ${totalHours.toFixed(1)}h - $${totalPay.toFixed(2)}*`;
+                }
+                
+                const encoded = encodeURIComponent(message);
+                window.open(`https://wa.me/?text=${encoded}`, '_blank');
+                document.getElementById('exportMenu').classList.remove('show');
+                renderer.showToast('WhatsApp opened!');
+            },
+            
+            exportBackup: async () => {
+                try {
+                    loadingManager.start('backup');
+                    const data = await storageAdapter.exportBackup();
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `BSOS_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+                    renderer.showToast('Backup exported!');
+                } catch (e) {
+                    renderer.showToast(e.message, 'error');
+                } finally {
+                    loadingManager.end('backup');
+                }
+            },
+            
+            triggerImport: () => {
+                document.getElementById('backupFileInput').click();
+            },
+            
+            importBackup: async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = async (event) => {
                     try {
-                        const data = JSON.parse(e.target.result);
-                        if (data.employees) appStore.employees = data.employees;
-                        if (data.jobs) appStore.jobs = data.jobs;
-                        if (data.properties) appStore.properties = data.properties;
-                        app.saveData();
-                        app.render.all();
-                        app.showToast('Backup restored');
+                        const data = JSON.parse(event.target.result);
+                        await storageAdapter.importBackup(data);
+                        renderer.showToast('Backup imported!');
                     } catch (err) {
-                        app.showToast('Invalid backup file', 'error');
+                        renderer.showToast('Import failed: ' + err.message, 'error');
                     }
                 };
                 reader.readAsText(file);
-            }
-        };
-
-        app.export = {
-            employee(empId) {
-                const emp = appStore.employees.find(e => e.id === empId);
-                const jobs = appStore.jobs.filter(j => j.employeeId === empId);
-                
-                let msg = `*${emp.name} - Payment Report*\n\n`;
-                jobs.forEach(j => {
-                    msg += `📅 ${j.date}\n🏠 ${j.house}\n⏱️ ${j.hours}h | 💰 $${j.total.toFixed(2)} | ${j.paymentStatus === 'paid' ? '✓ Paid' : '⏳ Pending'}\n\n`;
-                });
-                const total = jobs.reduce((s, j) => s + j.total, 0);
-                const pending = jobs.filter(j => j.paymentStatus === 'pending').reduce((s, j) => s + j.total, 0);
-                msg += `*Total: $${total.toFixed(2)}*\n*Pending: $${pending.toFixed(2)}*`;
-                
-                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
-            }
-        };
-
-        app.dataManager = {
-            clearAll() {
-                if (confirm('Clear ALL data? This cannot be undone!')) {
-                    localStorage.removeItem('bsos_cloud_pro_v8');
-                    location.reload();
+                e.target.value = '';
+            },
+            
+            clearAllData: async () => {
+                if (!confirm('WARNING: Delete ALL data permanently?')) return;
+                try {
+                    await storageAdapter.clearAll();
+                    renderer.showToast('All data cleared');
+                } catch (e) {
+                    renderer.showToast(e.message, 'error');
                 }
+            },
+            
+            openModal: (target) => {
+                const id = target.dataset.modalId;
+                const modal = document.getElementById(id);
+                if (modal) modal.classList.add('show');
+            },
+            
+            closeModal: (target) => {
+                const modal = target.closest('.modal-overlay');
+                if (modal) modal.classList.remove('show');
+            },
+            
+            toggleTheme: () => {
+                const isDark = document.documentElement.hasAttribute('data-theme');
+                if (isDark) {
+                    document.documentElement.removeAttribute('data-theme');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            },
+            
+            selectEmployee: (target) => {
+                const id = target.dataset.employeeId;
+                document.getElementById('selEmployee').value = id;
+                renderer.showToast('Employee selected');
+            },
+            
+            // Calendar navigation
+            prevMonth: () => {
+                const current = store.get('ui.calendarDate') || new Date();
+                current.setMonth(current.getMonth() - 1);
+                store.set('ui.calendarDate', current);
+                renderCalendar();
+            },
+            
+            nextMonth: () => {
+                const current = store.get('ui.calendarDate') || new Date();
+                current.setMonth(current.getMonth() + 1);
+                store.set('ui.calendarDate', current);
+                renderCalendar();
             }
         };
+
+        // Event Delegation
+        document.addEventListener('click', (e) => {
+            const target = e.target.closest('[data-action]');
+            if (!target) return;
+            const action = target.dataset.action;
+            if (Actions[action]) {
+                e.preventDefault();
+                e.stopPropagation();
+                Actions[action](target, e);
+            }
+        });
+
+        // Filter pills
+        document.getElementById('filterBar')?.addEventListener('click', (e) => {
+            if (e.target.classList.contains('filter-pill')) {
+                document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                e.target.classList.add('active');
+                store.set('ui.currentFilter', e.target.dataset.filter);
+                renderer.renderJobs();
+            }
+        });
+
+        // Filter selects
+        document.getElementById('filterEmployee')?.addEventListener('change', () => renderer.renderJobs());
+        document.getElementById('filterType')?.addEventListener('change', () => renderer.renderJobs());
+
+        // Tab buttons
+        document.querySelectorAll('.tab-buttons').forEach(container => {
+            container.addEventListener('click', (e) => {
+                if (e.target.classList.contains('tab-btn')) {
+                    const tab = e.target.dataset.tab;
+                    const parent = e.target.closest('.card') || e.target.closest('.modal-box');
+                    parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    parent.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                    e.target.classList.add('active');
+                    const panel = parent.querySelector(`#panel-${tab}`) || parent.querySelector(`#panel-prop-${tab}`);
+                    if (panel) panel.classList.add('active');
+                }
+            });
+        });
+
+        // Auto calculate total
+        const updateTotal = () => {
+            const hours = parseFloat(document.getElementById('workHours')?.value) || 0;
+            const rate = parseFloat(document.getElementById('workRate')?.value) || 0;
+            const total = hours * rate;
+            const display = document.getElementById('totalDisplay');
+            if (display) display.textContent = '$' + total.toFixed(2);
+        };
+        document.getElementById('workHours')?.addEventListener('input', updateTotal);
+        document.getElementById('workRate')?.addEventListener('input', updateTotal);
+
+        // Calendar render
+        function renderCalendar() {
+            const date = store.get('ui.calendarDate') || new Date();
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            document.getElementById('calendarMonth').textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            
+            const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+            const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            const startDayOfWeek = firstDay.getDay();
+            const daysInMonth = lastDay.getDate();
+            
+            const grid = document.getElementById('calendarGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            // Empty cells for start of month
+            for (let i = 0; i < startDayOfWeek; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'calendar-day';
+                empty.style.visibility = 'hidden';
+                grid.appendChild(empty);
+            }
+            
+            // Days
+            const today = new Date().toISOString().split('T')[0];
+            const jobs = store.get('jobs');
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayJobs = jobs.filter(j => j.date === dateStr);
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day' + (dayJobs.length > 0 ? ' has-jobs' : '') + (dateStr === today ? ' today' : '');
+                cell.innerHTML = `<div style="font-weight: 600;">${day}</div>${dayJobs.length > 0 ? `<div style="font-size: 0.7rem;">${dayJobs.length} jobs</div>` : ''}`;
+                grid.appendChild(cell);
+            }
+        }
+
+        // Timer
+        let timerInterval = null;
+        let timerSeconds = 0;
+        
+        Actions.startTimer = () => {
+            if (timerInterval) return;
+            document.getElementById('startTimerBtn').classList.add('hidden');
+            document.getElementById('stopTimerBtn').classList.remove('hidden');
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                const hours = Math.floor(timerSeconds / 3600);
+                const mins = Math.floor((timerSeconds % 3600) / 60);
+                const secs = timerSeconds % 60;
+                document.getElementById('timerDisplay').textContent = 
+                    `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }, 1000);
+        };
+        
+        Actions.stopTimer = () => {
+            if (!timerInterval) return;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            const hours = timerSeconds / 3600;
+            document.getElementById('workHours').value = hours.toFixed(2);
+            updateTotal();
+            renderer.showToast(`Timer stopped: ${hours.toFixed(2)} hours`);
+            document.getElementById('startTimerBtn').classList.remove('hidden');
+            document.getElementById('stopTimerBtn').classList.add('hidden');
+            document.querySelector('.modal-close')?.click();
+        };
+        
+        Actions.resetTimer = () => {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = null;
+            timerSeconds = 0;
+            document.getElementById('timerDisplay').textContent = '00:00:00';
+            document.getElementById('startTimerBtn').classList.remove('hidden');
+            document.getElementById('stopTimerBtn').classList.add('hidden');
+        };
+
+        // Close modals on outside click
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('show');
+            });
+        });
 
         // Initialize
-        window.onload = () => app.init();
+        authManager.init();
+        renderer.init();
+        renderCalendar();
+
+        // Close export menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('exportMenu');
+            if (menu && !menu.contains(e.target) && !e.target.closest('[data-action="toggleExportMenu"]')) {
+                menu.classList.remove('show');
+            }
+        });
+
+        console.log('[BSOS v11.2] Initialized successfully');
     </script>
 </body>
 </html>
